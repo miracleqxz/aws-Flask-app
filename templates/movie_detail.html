@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ movie.title }} - Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .cache-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .cache-badge.from-database {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .cache-badge.from-cache {
+            background: #10b981;
+            color: white;
+        }
+
+        .movie-container {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .movie-hero {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .movie-poster {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .movie-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .movie-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+
+        .movie-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 1.05em;
+        }
+
+        .movie-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fbbf24;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .movie-description {
+            background: #f9fafb;
+            padding: 25px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .description-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .description-text {
+            color: #4b5563;
+            line-height: 1.8;
+            font-size: 1.05em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 25px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #1f2937;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .movie-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/movies" class="back-link">← Back to All Movies</a>
+        
+        {% if from_cache %}
+        <div class="cache-badge from-cache">
+            ⚡ DATA FROM CACHE
+        </div>
+        {% else %}
+        <div class="cache-badge from-database">
+            💾 DATA FROM DATABASE
+        </div>
+        {% endif %}
+
+        <div class="movie-container">
+            <div class="movie-hero">
+                <img 
+                    src="/api/poster/{{ movie.poster_filename }}" 
+                    alt="{{ movie.title }}"
+                    class="movie-poster"
+                >
+                
+                <div class="movie-info">
+                    <h1 class="movie-title">{{ movie.title }}</h1>
+                    
+                    <div class="movie-meta">
+                        <div class="meta-item">
+                            <span>📅</span>
+                            <span>{{ movie.year }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>🎭</span>
+                            <span>{{ movie.genre }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>🎬</span>
+                            <span>{{ movie.director }}</span>
+                        </div>
+                    </div>
+
+                    <div class="movie-rating">
+                        ⭐ {{ movie.rating }}/10
+                    </div>
+                </div>
+            </div>
+
+            <div class="movie-description">
+                <h2 class="description-title">Synopsis</h2>
+                <p class="description-text">{{ movie.description }}</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Movie ID</div>
+                    <div class="stat-value">#{{ movie.id }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Rating</div>
+                    <div class="stat-value">{{ movie.rating }}/10</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Release Year</div>
+                    <div class="stat-value">{{ movie.year }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Data Source</div>
+                    <div class="stat-value">{{ 'Cache' if from_cache else 'Database' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
