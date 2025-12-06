@@ -10,9 +10,8 @@ def get_s3_client():
 def poster_exists(filename):
     try:
         s3 = get_s3_client()
-        key = f"posters/{filename}"
         
-        s3.head_object(Bucket=Config.S3_BUCKET_NAME, Key=key)
+        s3.head_object(Bucket=Config.S3_BUCKET_NAME, Key=filename)  
         return True
         
     except ClientError:
@@ -22,9 +21,8 @@ def poster_exists(filename):
 def download_poster(filename):
     try:
         s3 = get_s3_client()
-        key = f"posters/{filename}"
         
-        response = s3.get_object(Bucket=Config.S3_BUCKET_NAME, Key=key)
+        response = s3.get_object(Bucket=Config.S3_BUCKET_NAME, Key=filename)  
         return response['Body'].read()
         
     except ClientError as e:
@@ -35,18 +33,16 @@ def download_poster(filename):
 def upload_poster(filename, file_data, content_type='image/jpeg'):
     try:
         s3 = get_s3_client()
-        key = f"posters/{filename}"
         
         s3.put_object(
             Bucket=Config.S3_BUCKET_NAME,
-            Key=key,
+            Key=filename,  # ← БЕЗ posters/
             Body=file_data,
             ContentType=content_type,
             CacheControl='max-age=31536000'
         )
         
-        # Generate public URL
-        url = f"https://{Config.S3_BUCKET_NAME}.s3.{Config.AWS_REGION}.amazonaws.com/{key}"
+        url = f"https://{Config.S3_BUCKET_NAME}.s3.{Config.AWS_REGION}.amazonaws.com/{filename}"
         return url
         
     except ClientError as e:

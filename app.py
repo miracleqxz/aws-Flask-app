@@ -165,20 +165,19 @@ def search():
 
 
 @app.route('/api/poster/<filename>')
-def api_poster(filename):
-    if not poster_exists(filename):
-        return jsonify({'error': 'Poster not found'}), 404
+def get_poster(filename):
+    from database.s3_storage import download_poster
     
-    poster_data = download_poster(filename)
-    
-    if poster_data is None:
-        return jsonify({'error': 'Failed to retrieve poster'}), 500
-    
-    return send_file(
-        io.BytesIO(poster_data),
-        mimetype='image/jpeg',
-        download_name=filename
-    )
+    try:
+        image_data = download_poster(filename)
+        
+        if image_data:
+            return Response(image_data, mimetype='image/jpeg')
+        else:
+            return jsonify({'error': 'Poster not found'}), 404
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/movies')
