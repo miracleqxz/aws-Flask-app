@@ -1,35 +1,22 @@
-"""Redis caching for search results"""
 import redis
 import json
 from config import Config
 
 
 def get_redis_client():
-    """Create Redis client"""
     return redis.Redis(
         host=Config.REDIS_HOST,
         port=Config.REDIS_PORT,
-        decode_responses=True  # Auto-decode bytes to strings
+        decode_responses=True  
     )
 
 
 def cache_key(query):
-    """Generate cache key from search query"""
-    # Normalize: lowercase + trim
     normalized = query.lower().strip()
     return f"search:{normalized}"
 
 
 def get_cached_search(query):
-    """
-    Get cached search results
-    
-    Args:
-        query: search string
-    
-    Returns:
-        list: cached results or None
-    """
     client = get_redis_client()
     key = cache_key(query)
     
@@ -44,19 +31,10 @@ def get_cached_search(query):
 
 
 def set_cached_search(query, results, ttl=300):
-    """
-    Cache search results
-    
-    Args:
-        query: search string
-        results: list of movie dicts
-        ttl: time to live in seconds (default 5 min)
-    """
     client = get_redis_client()
     key = cache_key(query)
     
     try:
-        # Store as JSON
         client.setex(
             key,
             ttl,
@@ -67,11 +45,9 @@ def set_cached_search(query, results, ttl=300):
 
 
 def clear_search_cache():
-    """Clear all search cache"""
     client = get_redis_client()
     
     try:
-        # Find all search keys
         keys = client.keys("search:*")
         if keys:
             client.delete(*keys)
@@ -83,7 +59,6 @@ def clear_search_cache():
 
 
 def get_cache_stats():
-    """Get cache statistics"""
     client = get_redis_client()
     
     try:

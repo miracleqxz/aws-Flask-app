@@ -11,7 +11,8 @@ def check_postgres():
             database=Config.POSTGRES_DB,
             user=Config.POSTGRES_USER,
             password=Config.POSTGRES_PASSWORD,
-            connect_timeout=5
+            connect_timeout=5,
+            sslmode='require'
         )
         
         cursor = conn.cursor()

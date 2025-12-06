@@ -9,7 +9,8 @@ def get_db_connection():
         port=Config.POSTGRES_PORT,
         database=Config.POSTGRES_DB,
         user=Config.POSTGRES_USER,
-        password=Config.POSTGRES_PASSWORD
+        password=Config.POSTGRES_PASSWORD,
+        sslmode='require'
     )
 
 

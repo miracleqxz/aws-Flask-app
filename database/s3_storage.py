@@ -7,7 +7,7 @@ def get_s3_client():
     return boto3.client('s3', region_name=Config.AWS_REGION)
 
 
-def poster_exists_s3(filename):
+def poster_exists(filename):
     try:
         s3 = get_s3_client()
         key = f"posters/{filename}"
@@ -19,7 +19,7 @@ def poster_exists_s3(filename):
         return False
 
 
-def download_poster_s3(filename):
+def download_poster(filename):
     try:
         s3 = get_s3_client()
         key = f"posters/{filename}"
@@ -32,7 +32,7 @@ def download_poster_s3(filename):
         return None
 
 
-def upload_poster_s3(filename, file_data, content_type='image/jpeg'):
+def upload_poster(filename, file_data, content_type='image/jpeg'):
     try:
         s3 = get_s3_client()
         key = f"posters/{filename}"
