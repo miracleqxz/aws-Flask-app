@@ -64,7 +64,7 @@ def start_worker():
         sys.exit(1)
     
     try:
-        print(f"\Connecting to Amazon SQS...", flush=True)
+        print(f"Connecting to Amazon SQS...", flush=True)
         sqs = boto3.client('sqs', region_name=Config.AWS_REGION)
         
         response = sqs.get_queue_attributes(
