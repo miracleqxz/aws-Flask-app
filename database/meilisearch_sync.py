@@ -12,17 +12,27 @@ def get_meili_client():
 def search_movies_meili(query, limit=20):
     try:
         client = get_meili_client()
-        index = client.index('movies')
+        index = client.get_index('movies')
         
-        results = index.search(query, {
-            'limit': limit,
-            'attributesToRetrieve': ['id', 'title', 'year', 'genre', 'rating', 'poster_url']
-        })
+        results = index.search(query, {'limit': limit})
         
-        return results['hits']
+        movies = []
+        for hit in results.get('hits', []):
+            movies.append({
+                'id': hit.get('id'),
+                'title': hit.get('title'),
+                'description': hit.get('description'),
+                'poster_filename': hit.get('poster_filename'),  
+                'year': hit.get('year'),
+                'rating': hit.get('rating'),
+                'genre': hit.get('genre'),
+                'director': hit.get('director')
+            })
+        
+        return movies
         
     except Exception as e:
-        print(f"Meilisearch error: {e}")
+        print(f"Meilisearch search error: {e}")
         return []
 
 
