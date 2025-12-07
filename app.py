@@ -7,8 +7,6 @@ import json
 from services.redis_check import check_redis
 from services.postgres_check import check_postgres
 from services.meilisearch_check import check_meilisearch  
-from services.s3_check import check_s3  
-from services.sqs_check import check_sqs  
 from services.consul_check import check_consul
 from services.prometheus_check import check_prometheus
 from services.nginx_check import check_nginx
@@ -82,20 +80,6 @@ def check_postgres_endpoint():
 @app.route('/check/meilisearch')  
 def check_meilisearch_endpoint():
     result = check_meilisearch()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/s3')  
-def check_s3_endpoint():
-    result = check_s3()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/sqs')  
-def check_sqs_endpoint():
-    result = check_sqs()
     status_code = 200 if result['status'] == 'healthy' else 503
     return jsonify(result), status_code
 
@@ -315,8 +299,6 @@ def service_detail(service_name):
         'postgres': check_postgres,
         'redis': check_redis,
         'meilisearch': check_meilisearch,  
-        's3': check_s3,  
-        'sqs': check_sqs,  
         'consul': check_consul,
         'prometheus': check_prometheus,
         'nginx': check_nginx,
