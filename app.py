@@ -1,5 +1,6 @@
-from flask import Flask, jsonify, request, render_template, send_file
+from flask import Flask, jsonify, request, render_template, send_file, Response
 from config import Config
+import logging
 import io
 import json
 
@@ -26,6 +27,11 @@ from metrics import (
     CACHE_HIT_COUNT, CACHE_MISS_COUNT,
     SEARCH_QUERY_COUNT, SEARCH_RESULTS_COUNT,
     MOVIE_VIEWS
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
 
@@ -168,15 +174,22 @@ def search():
 def get_poster(filename):
     from database.s3_storage import download_poster
     
+    print(f"=== Poster request: {filename} ===")
+    
     try:
         image_data = download_poster(filename)
         
         if image_data:
+            print(f"Returning {len(image_data)} bytes")
             return Response(image_data, mimetype='image/jpeg')
         else:
+            print("No image data returned")
             return jsonify({'error': 'Poster not found'}), 404
             
     except Exception as e:
+        print(f"ENDPOINT ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 
