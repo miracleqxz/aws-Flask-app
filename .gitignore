@@ -2,101 +2,21 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual Environment
 venv/
 env/
-ENV/
-env.bak/
-venv.bak/
 
-# PyCharm
-.idea/
-*.iml
-*.iws
-
-# VS Code
+# IDE
 .vscode/
-*.code-workspace
-
-# Environment variables (IMPORTANT!)
-.env
-.env.local
-.env.*.local
-config.py
-secrets.py
+.idea/
 
 # OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+
+# Secrets
+*.pem
+*.key
+.env
+*.csv
 
 # Logs
 *.log
-logs/
-*.out
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Docker
-.dockerignore
-
-# AWS
-.aws/
-credentials
-
-# Testing
-.coverage
-.pytest_cache/
-htmlcov/
-.tox/
-.nox/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# PyTest
-.pytest_cache/
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Temporary files
-*.tmp
-*.bak
-*.swp
-*~
-
-# Project specific
-posters/
-uploads/
-.cache/
