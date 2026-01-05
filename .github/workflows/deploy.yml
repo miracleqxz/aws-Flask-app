@@ -1,7 +1,10 @@
-name: Build and Deploy to ECS
+name: Build, Test and Deploy to ECS
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
   workflow_dispatch:
@@ -12,12 +15,68 @@ env:
   IMAGE_TAG: aws
 
 jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run flake8 (Code Quality)
+        run: |
+          echo "Running code quality checks..."
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+      - name: Run bandit (Security)
+        run: |
+          echo "Running security scan..."
+          bandit -r . -ll -f json -o bandit-report.json || true
+          bandit -r . -ll
+
+      - name: Run pytest (Unit Tests)
+        run: |
+          echo "Running unit tests..."
+          pytest tests/ -v --tb=short
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: |
+            bandit-report.json
+
   build-and-deploy:
+    name: Build and Deploy
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      
+
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
