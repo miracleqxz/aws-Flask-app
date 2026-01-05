@@ -111,6 +111,12 @@ def check_grafana_endpoint():
     status_code = 200 if result['status'] == 'healthy' else 503
     return jsonify(result), status_code
 
+@app.route('/check/sqs')
+def check_sqs_endpoint():
+    from services.sqs_check import check_sqs  
+    result = check_sqs()
+    return jsonify(result)
+
 
 @app.route('/api/search')
 def search():
