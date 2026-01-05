@@ -55,6 +55,8 @@ jobs:
           bandit -r . -ll || true
 
       - name: Run pytest (Unit Tests)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "Running unit tests..."
           pytest tests/ -v --tb=short
