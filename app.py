@@ -11,6 +11,8 @@ from services.consul_check import check_consul
 from services.prometheus_check import check_prometheus
 from services.nginx_check import check_nginx
 from services.grafana_check import check_grafana
+from services.sqs_check import check_sqs  
+from services.s3_check import check_s3
 
 from database.movies_db import get_all_movies, get_movie_by_id, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
@@ -112,10 +114,15 @@ def check_grafana_endpoint():
     return jsonify(result), status_code
 
 @app.route('/check/sqs')
-def check_sqs_endpoint():
-    from services.sqs_check import check_sqs  
+def check_sqs_endpoint(): 
     result = check_sqs()
     return jsonify(result)
+
+@app.route('/check/s3')
+def check_s3_endpoint():
+    result = check_s3()
+    status_code = 200 if result['status'] == 'healthy' else 503
+    return jsonify(result), status_code
 
 
 @app.route('/api/search')
