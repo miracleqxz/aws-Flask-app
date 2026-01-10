@@ -130,7 +130,7 @@ jobs:
           echo "Waiting for service to become stable..."
           aws ecs wait services-stable \
             --cluster ${{ secrets.ECS_CLUSTER }} \
-            --services ${{ secrets.ECS_SERVICE }} \
+            --services ${{ secrets.ECS_SERVICE_FRONTEND }} \
             --region ${{ secrets.AWS_REGION }}
           echo "Deployment completed successfully!"
 
@@ -140,7 +140,7 @@ jobs:
           echo "Deployment Status:"
           aws ecs describe-services \
             --cluster ${{ secrets.ECS_CLUSTER }} \
-            --services ${{ secrets.ECS_SERVICE }} \
+            --services ${{ secrets.ECS_SERVICE_FRONTEND }} \
             --region ${{ secrets.AWS_REGION }} \
             --query 'services[0].deployments[0]' \
             --output json
