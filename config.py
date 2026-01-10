@@ -36,3 +36,5 @@ class Config:
 
     GRAFANA_HOST = os.getenv('GRAFANA_HOST', 'localhost')
     GRAFANA_PORT = int(os.getenv('GRAFANA_PORT', '3000'))
+
+    LAMBDA_BACKEND_CONTROL = os.getenv('LAMBDA_BACKEND_CONTROL', 'backend-control')

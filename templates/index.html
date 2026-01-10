@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,6 +33,191 @@
         .header h1 {
             font-size: 3em;
             margin-bottom: 10px;
+        }
+
+        /* Backend Control Panel */
+        .backend-control {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .backend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .backend-header h3 {
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .backend-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .status-indicator.running {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-indicator.stopped {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-indicator.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.running {
+            background: #10b981;
+        }
+
+        .status-dot.stopped {
+            background: #ef4444;
+        }
+
+        .status-dot.pending {
+            background: #fbbf24;
+        }
+
+        .backend-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-backend {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-backend:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .backend-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+
+        .info-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .heartbeat-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .heartbeat-icon {
+            animation: heartbeat 1s infinite;
+        }
+
+        .heartbeat-icon.inactive {
+            animation: none;
+            opacity: 0.3;
+        }
+
+        @keyframes heartbeat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .services-status {
@@ -101,6 +287,11 @@
             border-color: #ef4444;
         }
 
+        .service-item.offline {
+            border-color: #9ca3af;
+            opacity: 0.6;
+        }
+
         .service-name {
             font-weight: 600;
             font-size: 1.1em;
@@ -132,19 +323,37 @@
             animation: pulse-red 2s infinite;
         }
 
+        .service-status-dot.offline {
+            background: #9ca3af;
+        }
+
+        .service-location {
+            font-size: 0.7em;
+            color: #6b7280;
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+        }
+
         @keyframes pulse-green {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
             }
+
             50% {
                 box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
             }
         }
 
         @keyframes pulse-red {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
             }
+
             50% {
                 box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
             }
@@ -310,17 +519,74 @@
             .services-grid {
                 grid-template-columns: 1fr;
             }
+
+            .backend-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .backend-actions {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>🎬 Movie Database</h1>
             <p>Search across 20 popular movies with full-text search</p>
-            <a href="/movies" style="display: inline-block; margin-top: 15px; padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
-                 Browse All Movies
+            <a href="/movies"
+                style="display: inline-block; margin-top: 15px; padding: 12px 30px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                Browse All Movies
             </a>
+        </div>
+
+        <!-- Backend Control Panel -->
+        <div class="backend-control">
+            <div class="backend-header">
+                <h3>🖥️ Backend Services Control</h3>
+                <div class="backend-status">
+                    <div class="status-indicator stopped" id="backendStatusBadge">
+                        <span class="status-dot stopped" id="statusDot"></span>
+                        <span id="statusText">Checking...</span>
+                    </div>
+                    <div class="heartbeat-indicator" id="heartbeatIndicator" style="display: none;">
+                        <span class="heartbeat-icon">💓</span>
+                        <span>Heartbeat active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="backend-actions">
+                <button class="btn-backend btn-start" id="btnStart" onclick="startBackend()" disabled>
+                    🚀 Start Monitoring
+                </button>
+                <button class="btn-backend btn-stop" id="btnStop" onclick="stopBackend()" disabled>
+                    ⏹️ Stop Backend
+                </button>
+            </div>
+
+            <div class="backend-info" id="backendInfo" style="display: none;">
+                <div class="info-item">
+                    <div class="info-label">Instance ID</div>
+                    <div class="info-value" id="infoInstanceId">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Private IP</div>
+                    <div class="info-value" id="infoPrivateIp">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Auto-shutdown in</div>
+                    <div class="info-value" id="infoShutdownTimer">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Services</div>
+                    <div class="info-value">Redis, Meilisearch, Consul, Prometheus, Grafana</div>
+                </div>
+            </div>
         </div>
 
         <div class="services-status">
@@ -332,13 +598,8 @@
 
         <div class="search-box">
             <div class="search-input-wrapper">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    class="search-input" 
-                    placeholder="Search movies by title, director, or description..."
-                    autofocus
-                >
+                <input type="text" id="searchInput" class="search-input"
+                    placeholder="Search movies by title, director, or description..." autofocus>
                 <button class="search-btn" onclick="searchMovies()">🔍 Search</button>
             </div>
             <div class="search-meta" id="searchMeta"></div>
@@ -353,54 +614,298 @@
     </div>
 
     <script>
+        // Backend state
+        let backendState = 'unknown';
+        let heartbeatInterval = null;
+        let statusCheckInterval = null;
+
+        // Services that run on backend
+        const backendServices = ['redis', 'meilisearch', 'consul', 'prometheus', 'grafana'];
+        const frontendServices = ['postgres', 'nginx'];
+
         // Search on Enter key
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') searchMovies();
         });
 
-        // Load services status
+        // =====================================================================
+        // Backend Control Functions
+        // =====================================================================
+
+        async function checkBackendStatus() {
+            try {
+                const res = await fetch('/api/backend/status');
+                const data = await res.json();
+
+                updateBackendUI(data);
+                return data;
+            } catch (e) {
+                console.error('Backend status check failed:', e);
+                updateBackendUI({ state: 'unknown', message: e.message });
+                return null;
+            }
+        }
+
+        function updateBackendUI(data) {
+            const badge = document.getElementById('backendStatusBadge');
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+            const info = document.getElementById('backendInfo');
+            const heartbeat = document.getElementById('heartbeatIndicator');
+
+            const state = data.state || 'unknown';
+            backendState = state;
+
+            // Update badge
+            badge.className = 'status-indicator ' + getStateClass(state);
+            dot.className = 'status-dot ' + getStateClass(state);
+            text.textContent = getStateText(state);
+
+            // Update buttons
+            btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
+            btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
+
+            // Update info panel
+            if (state === 'running') {
+                info.style.display = 'grid';
+                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
+                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
+
+                if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
+                    document.getElementById('infoShutdownTimer').textContent =
+                        data.heartbeat.will_stop_in + ' minutes';
+                }
+
+                // Start heartbeat if not already running
+                if (!heartbeatInterval) {
+                    startHeartbeat();
+                }
+                heartbeat.style.display = 'flex';
+            } else {
+                info.style.display = 'none';
+                heartbeat.style.display = 'none';
+                stopHeartbeat();
+            }
+
+            // Refresh services status
+            loadServicesStatus();
+        }
+
+        function getStateClass(state) {
+            switch (state) {
+                case 'running': return 'running';
+                case 'stopped': return 'stopped';
+                case 'pending':
+                case 'starting':
+                case 'stopping': return 'pending';
+                default: return 'stopped';
+            }
+        }
+
+        function getStateText(state) {
+            switch (state) {
+                case 'running': return 'Running';
+                case 'stopped': return 'Stopped';
+                case 'pending': return 'Pending...';
+                case 'starting': return 'Starting...';
+                case 'stopping': return 'Stopping...';
+                default: return 'Unknown';
+            }
+        }
+
+        async function startBackend() {
+            const btn = document.getElementById('btnStart');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Starting...';
+
+            try {
+                const res = await fetch('/api/backend/start', { method: 'POST' });
+                const data = await res.json();
+
+                console.log('Start response:', data);
+
+                // Poll for status until running
+                pollUntilState('running', 60000); // 60 sec timeout
+
+            } catch (e) {
+                console.error('Start failed:', e);
+                alert('Failed to start backend: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Start Monitoring';
+            }
+        }
+
+        async function stopBackend() {
+            if (!confirm('Are you sure you want to stop the backend services?')) {
+                return;
+            }
+
+            const btn = document.getElementById('btnStop');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Stopping...';
+
+            try {
+                const res = await fetch('/api/backend/stop', { method: 'POST' });
+                const data = await res.json();
+
+                console.log('Stop response:', data);
+                stopHeartbeat();
+
+                // Poll for status until stopped
+                pollUntilState('stopped', 60000);
+
+            } catch (e) {
+                console.error('Stop failed:', e);
+                alert('Failed to stop backend: ' + e.message);
+                btn.disabled = false;
+                btn.innerHTML = '⏹️ Stop Backend';
+            }
+        }
+
+        async function pollUntilState(targetState, timeout) {
+            const startTime = Date.now();
+
+            const poll = async () => {
+                if (Date.now() - startTime > timeout) {
+                    console.log('Polling timeout');
+                    checkBackendStatus();
+                    return;
+                }
+
+                const data = await checkBackendStatus();
+
+                if (data && data.state === targetState) {
+                    console.log('Reached target state:', targetState);
+                    return;
+                }
+
+                setTimeout(poll, 3000); // Poll every 3 seconds
+            };
+
+            poll();
+        }
+
+        // =====================================================================
+        // Heartbeat Functions
+        // =====================================================================
+
+        function startHeartbeat() {
+            if (heartbeatInterval) return;
+
+            console.log('Starting heartbeat...');
+
+            // Send immediately
+            sendHeartbeat();
+
+            // Then every 30 seconds
+            heartbeatInterval = setInterval(sendHeartbeat, 30000);
+
+            // Update UI
+            const icon = document.querySelector('.heartbeat-icon');
+            if (icon) icon.classList.remove('inactive');
+        }
+
+        function stopHeartbeat() {
+            if (heartbeatInterval) {
+                console.log('Stopping heartbeat...');
+                clearInterval(heartbeatInterval);
+                heartbeatInterval = null;
+            }
+
+            const icon = document.querySelector('.heartbeat-icon');
+            if (icon) icon.classList.add('inactive');
+        }
+
+        async function sendHeartbeat() {
+            try {
+                await fetch('/api/backend/heartbeat', { method: 'POST' });
+                console.log('Heartbeat sent');
+            } catch (e) {
+                console.error('Heartbeat failed:', e);
+            }
+        }
+
+        // Stop heartbeat when leaving page
+        window.addEventListener('beforeunload', () => {
+            stopHeartbeat();
+        });
+
+        // =====================================================================
+        // Services Status
+        // =====================================================================
+
         async function loadServicesStatus() {
-            const services = [
-                'postgres', 'redis', 'meilisearch',
-                'consul', 'prometheus', 'nginx', 
-                'grafana'
-            ];
-            
+            const allServices = [...frontendServices, ...backendServices];
+
             const grid = document.getElementById('servicesGrid');
             grid.innerHTML = '';
-            
-            for (const service of services) {
+
+            for (const service of allServices) {
+                const isBackendService = backendServices.includes(service);
+
+                // If backend is not running, show offline for backend services
+                if (isBackendService && backendState !== 'running') {
+                    const a = document.createElement('a');
+                    a.href = `/service/${service}`;
+                    a.className = 'service-item offline';
+                    a.innerHTML = `
+                        <span class="service-status-dot offline"></span>
+                        <span class="service-name">${service}</span>
+                        <span class="service-location">backend</span>
+                    `;
+                    grid.appendChild(a);
+                    continue;
+                }
+
                 try {
                     const res = await fetch(`/check/${service}`);
                     const data = await res.json();
-                    
+
                     const a = document.createElement('a');
                     a.href = `/service/${service}`;
                     a.className = `service-item ${data.status}`;
                     a.innerHTML = `
                         <span class="service-status-dot ${data.status}"></span>
                         <span class="service-name">${service}</span>
+                        <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
                     `;
                     grid.appendChild(a);
                 } catch (e) {
                     console.error(`Error checking ${service}:`, e);
-                    
+
                     const a = document.createElement('a');
                     a.href = `/service/${service}`;
-                    a.className = `service-item unhealthy`;
+                    a.className = 'service-item unhealthy';
                     a.innerHTML = `
                         <span class="service-status-dot unhealthy"></span>
                         <span class="service-name">${service}</span>
+                        <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
                     `;
                     grid.appendChild(a);
                 }
             }
         }
 
-        // Search movies
+        // =====================================================================
+        // Search Functions
+        // =====================================================================
+
         async function searchMovies() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
+
+            // Check if backend is running (needed for Meilisearch)
+            if (backendState !== 'running') {
+                document.getElementById('results').innerHTML = `
+                    <div class="empty-state">
+                        <h2>⚠️ Backend Offline</h2>
+                        <p>Search requires Meilisearch. Please start the backend first.</p>
+                    </div>
+                `;
+                return;
+            }
 
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '<div class="loading">🔍 Searching...</div>';
@@ -452,19 +957,22 @@
             }
         }
 
-        // Load popular searches
+        // =====================================================================
+        // Analytics
+        // =====================================================================
+
         async function loadPopularSearches() {
             try {
                 const res = await fetch('/api/analytics/popular?limit=10');
                 const data = await res.json();
-                
+
                 const div = document.getElementById('popularSearches');
-                
+
                 if (data.popular_searches.length === 0) {
                     div.innerHTML = 'No searches yet';
                     return;
                 }
-                
+
                 div.innerHTML = data.popular_searches.map(item => `
                     <span class="popular-tag" onclick="document.getElementById('searchInput').value='${item.query}'; searchMovies();">
                         ${item.query} (${item.search_count})
@@ -475,9 +983,27 @@
             }
         }
 
-        // Init
-        loadServicesStatus();
-        loadPopularSearches();
+        // =====================================================================
+        // Initialization
+        // =====================================================================
+
+        async function init() {
+            // Check backend status first
+            await checkBackendStatus();
+
+            // Load services
+            loadServicesStatus();
+
+            // Load analytics
+            loadPopularSearches();
+
+            // Periodic status check (every 30 seconds)
+            statusCheckInterval = setInterval(checkBackendStatus, 30000);
+        }
+
+        // Start
+        init();
     </script>
 </body>
+
 </html>

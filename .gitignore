@@ -27,3 +27,26 @@ env/
 htmlcov/
 *.cover
 bandit-report.json
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfstate.d/
+terraform/*.tfvars
+terraform/*.tfvars.json
+terraform/crash.log
+terraform/crash.*.log
+terraform/*.tfplan
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
+terraform/lambda_backend_control.zip
+
+# SSH keys (на всякий случай)
+*.pem
+*.key
+
+ansible/README.md

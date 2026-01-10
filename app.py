@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request, render_template, send_file, Response
 from config import Config
+import boto3
+import os
 import logging
 import io
 import json
@@ -335,6 +337,100 @@ def service_detail(service_name):
 @track_request
 def metrics():
     return metrics_endpoint()
+
+@app.route('/api/backend/status')
+def backend_status():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'status'})
+        )
+        
+        result = json.loads(response['Payload'].read().decode())
+        
+        # Handle API Gateway response format
+        if 'body' in result:
+            return jsonify(json.loads(result['body']))
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Backend status error: {e}")
+        return jsonify({
+            'status': 'error',
+            'state': 'unknown',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/backend/start', methods=['POST'])
+def backend_start():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'start'})
+        )
+        
+        result = json.loads(response['Payload'].read().decode())
+        
+        if 'body' in result:
+            return jsonify(json.loads(result['body']))
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Backend start error: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/backend/stop', methods=['POST'])
+def backend_stop():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'stop'})
+        )
+        
+        result = json.loads(response['Payload'].read().decode())
+        
+        if 'body' in result:
+            return jsonify(json.loads(result['body']))
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Backend stop error: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/backend/heartbeat', methods=['POST'])
+def backend_heartbeat():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
+            InvocationType='Event',  # Async - don't wait for response
+            Payload=json.dumps({'action': 'heartbeat'})
+        )
+        
+        return jsonify({'status': 'ok'})
+        
+    except Exception as e:
+        logging.error(f"Heartbeat error: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 if __name__ == '__main__':
