@@ -547,14 +547,14 @@
         <!-- Backend Control Panel -->
         <div class="backend-control">
             <div class="backend-header">
-                <h3>🖥️ Backend Services Control</h3>
+                <h3>Backend Services Control</h3>
                 <div class="backend-status">
                     <div class="status-indicator stopped" id="backendStatusBadge">
                         <span class="status-dot stopped" id="statusDot"></span>
                         <span id="statusText">Checking...</span>
                     </div>
                     <div class="heartbeat-indicator" id="heartbeatIndicator" style="display: none;">
-                        <span class="heartbeat-icon">💓</span>
+                        <span class="heartbeat-icon"></span>
                         <span>Heartbeat active</span>
                     </div>
                 </div>
@@ -562,10 +562,10 @@
 
             <div class="backend-actions">
                 <button class="btn-backend btn-start" id="btnStart" onclick="startBackend()" disabled>
-                    🚀 Start Monitoring
+                    Start Monitoring
                 </button>
                 <button class="btn-backend btn-stop" id="btnStop" onclick="stopBackend()" disabled>
-                    ⏹️ Stop Backend
+                    Stop Backend
                 </button>
             </div>
 
@@ -608,7 +608,7 @@
         <div class="results" id="results"></div>
 
         <div class="analytics">
-            <h3>📊 Popular Searches (Last 7 Days)</h3>
+            <h3>Popular Searches (Last 7 Days)</h3>
             <div id="popularSearches">Loading...</div>
         </div>
     </div>
@@ -621,6 +621,7 @@
 
         // Services that run on backend
         const backendServices = ['redis', 'meilisearch', 'consul', 'prometheus', 'grafana'];
+        let isLoadingServices = false;  // Prevent duplicate calls
         const frontendServices = ['postgres', 'nginx'];
 
         // Search on Enter key
@@ -733,7 +734,7 @@
                 console.error('Start failed:', e);
                 alert('Failed to start backend: ' + e.message);
                 btn.disabled = false;
-                btn.innerHTML = '🚀 Start Monitoring';
+                btn.innerHTML = 'Start Monitoring';
             }
         }
 
@@ -760,7 +761,7 @@
                 console.error('Stop failed:', e);
                 alert('Failed to stop backend: ' + e.message);
                 btn.disabled = false;
-                btn.innerHTML = '⏹️ Stop Backend';
+                btn.innerHTML = 'Stop Backend';
             }
         }
 
@@ -836,11 +837,16 @@
         // Services Status
         // =====================================================================
 
+
         async function loadServicesStatus() {
+            // Prevent concurrent calls
+            if (isLoadingServices) return;
+            isLoadingServices = true;
+
             const allServices = [...frontendServices, ...backendServices];
 
             const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = '';
+            grid.innerHTML = '';  // Clear before adding
 
             for (const service of allServices) {
                 const isBackendService = backendServices.includes(service);
@@ -886,6 +892,8 @@
                     grid.appendChild(a);
                 }
             }
+
+            isLoadingServices = false;  // Release lock
         }
 
         // =====================================================================
