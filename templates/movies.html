@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎬 All Movies</title>
+    <title>All Movies</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             padding: 20px;
         }
@@ -25,18 +25,20 @@
 
         .header {
             text-align: center;
-            color: white;
+            color: #1f2937;
             margin-bottom: 40px;
         }
 
         .header h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 10px;
+            font-weight: 700;
+            color: #111827;
         }
 
         .back-link {
             display: inline-block;
-            color: rgba(255,255,255,0.9);
+            color: #2563eb;
             text-decoration: none;
             margin-bottom: 20px;
             font-size: 0.95em;
@@ -47,12 +49,12 @@
         }
 
         .stats {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
-            color: white;
+            color: #1f2937;
             text-align: center;
         }
 
@@ -64,10 +66,11 @@
 
         .movie-card {
             background: white;
-            border-radius: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
             cursor: pointer;
             text-decoration: none;
             color: inherit;
@@ -75,7 +78,9 @@
         }
 
         .movie-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #d1d5db;
         }
 
         .movie-poster {
@@ -117,12 +122,12 @@
     <div class="container">
         <div class="header">
             <a href="/" class="back-link">← Back to Dashboard</a>
-            <h1>🎬 All Movies</h1>
+            <h1>All Movies</h1>
             <p>Complete movie collection</p>
         </div>
 
         <div class="stats">
-            <h3>📊 Total Movies: {{ movies|length }}</h3>
+            <h3>Total Movies: {{ movies|length }}</h3>
         </div>
 
         <div class="movies-grid">
@@ -135,7 +140,7 @@
                 >
                 <div class="movie-info">
                     <div class="movie-title">{{ movie.title }}</div>
-                    <div class="movie-rating">⭐ {{ movie.rating }}/10</div>
+                    <div class="movie-rating">{{ movie.rating }}/10</div>
                     <div class="movie-meta">{{ movie.year }} • {{ movie.genre }}</div>
                 </div>
             </a>

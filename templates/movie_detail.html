@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             padding: 40px 20px;
         }
@@ -25,7 +25,7 @@
 
         .back-link {
             display: inline-block;
-            color: white;
+            color: #2563eb;
             text-decoration: none;
             margin-bottom: 20px;
             font-size: 0.95em;
@@ -57,9 +57,10 @@
 
         .movie-container {
             background: white;
-            border-radius: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .movie-hero {
@@ -177,11 +178,11 @@
         
         {% if from_cache %}
         <div class="cache-badge from-cache">
-            ⚡ DATA FROM CACHE
+            DATA FROM CACHE
         </div>
         {% else %}
         <div class="cache-badge from-database">
-            💾 DATA FROM DATABASE
+            DATA FROM DATABASE
         </div>
         {% endif %}
 
@@ -198,21 +199,18 @@
                     
                     <div class="movie-meta">
                         <div class="meta-item">
-                            <span>📅</span>
                             <span>{{ movie.year }}</span>
                         </div>
                         <div class="meta-item">
-                            <span>🎭</span>
                             <span>{{ movie.genre }}</span>
                         </div>
                         <div class="meta-item">
-                            <span>🎬</span>
                             <span>{{ movie.director }}</span>
                         </div>
                     </div>
 
                     <div class="movie-rating">
-                        ⭐ {{ movie.rating }}/10
+                        {{ movie.rating }}/10
                     </div>
                 </div>
             </div>
