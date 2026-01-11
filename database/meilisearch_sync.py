@@ -3,9 +3,11 @@ from config import Config
 
 
 def get_meili_client():
+    api_key = Config.MEILISEARCH_KEY if Config.MEILISEARCH_KEY else None
+    
     return meilisearch.Client(
         f'http://{Config.MEILISEARCH_HOST}:{Config.MEILISEARCH_PORT}',
-        Config.MEILISEARCH_KEY
+        api_key
     )
 
 
@@ -54,7 +56,6 @@ def index_all_movies():
             'filterableAttributes': ['genre', 'year', 'rating'],
             'sortableAttributes': ['year', 'rating', 'title']
         })
-        
         
         movies = get_all_movies()
         
