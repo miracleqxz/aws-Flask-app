@@ -670,6 +670,86 @@
             color: #ef4444;
         }
 
+        .featured-movies {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .featured-movies h3 {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .featured-movie-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .featured-movie-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: #d1d5db;
+        }
+
+        .featured-poster {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .featured-info {
+            padding: 12px;
+        }
+
+        .featured-title {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .featured-rating {
+            display: inline-block;
+            background: #fbbf24;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8em;
+        }
+
+        .featured-meta {
+            font-size: 0.75em;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
         @media (max-width: 768px) {
             .services-grid {
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -810,6 +890,10 @@
                         <div class="stat-card-detail-value" id="systemStatus">-</div>
                     </div>
                 </div>
+                <div
+                    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; font-size: 0.75em; color: #9ca3af; line-height: 1.4;">
+                    Based on Redis memory usage, activity (OPS), and database connection usage
+                </div>
             </div>
         </div>
 
@@ -823,6 +907,14 @@
         </div>
 
         <div class="results" id="results"></div>
+
+        <!-- Featured Movies Section -->
+        <div class="featured-movies" id="featuredMovies">
+            <h3>Top Rated Movies</h3>
+            <div class="featured-grid" id="featuredGrid">
+                <div class="loading">Loading featured movies...</div>
+            </div>
+        </div>
 
         <div class="analytics">
             <h3>Popular Searches (Last 7 Days)</h3>
@@ -1135,6 +1227,9 @@
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
 
+            // Hide featured movies when searching
+            document.getElementById('featuredMovies').style.display = 'none';
+
             try {
                 const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
                 const data = await res.json();
@@ -1150,6 +1245,8 @@
                             <p>Try different keywords</p>
                         </div>
                     `;
+                    // Show featured movies when no search results
+                    document.getElementById('featuredMovies').style.display = 'block';
                     return;
                 }
 
@@ -1169,6 +1266,9 @@
                         </div>
                     </div>
                 `).join('');
+
+                // Hide featured movies when showing search results
+                document.getElementById('featuredMovies').style.display = 'none';
 
                 loadPopularSearches();
 
@@ -1234,6 +1334,7 @@
 
                 if (redisData.status === 'healthy' && redisData.details) {
                     const perf = redisData.details.performance || {};
+                    const memory = redisData.details.memory || {};
                     const ops = perf.instantaneous_ops_per_sec || 0;
 
                     // Get Postgres stats for DB cache hit ratio
@@ -1241,7 +1342,7 @@
                     const pgData = await pgRes.json();
 
                     let dbCacheHit = '-';
-                    let systemLoadPercent = 0;
+                    let dbConnectionsPercent = 0;
                     let loadStatus = 'Normal';
 
                     if (pgData.status === 'healthy' && pgData.details) {
@@ -1249,13 +1350,43 @@
                         dbCacheHit = pgPerf.cache_hit_ratio ? `${pgPerf.cache_hit_ratio}%` : '-';
 
                         const connections = pgData.details.connections || {};
-                        systemLoadPercent = connections.usage_percent || 0;
+                        dbConnectionsPercent = connections.usage_percent || 0;
                     }
 
-                    // Calculate overall system load (combine Redis OPS and DB usage)
-                    // Normalize Redis OPS (assuming 1000 ops/sec is high load)
-                    const redisLoadPercent = Math.min((ops / 1000) * 100, 100);
-                    const overallLoad = Math.max(redisLoadPercent, systemLoadPercent);
+                    // Calculate system load based on:
+                    // 1. Redis memory usage (if we can parse it)
+                    // 2. Redis activity (OPS normalized)
+                    // 3. DB connection usage
+
+                    // Parse Redis memory (format: "1.2M", "500K", etc.)
+                    let redisMemoryPercent = 0;
+                    const memoryUsed = memory.used || '0';
+                    if (memoryUsed !== 'N/A' && memoryUsed !== '-') {
+                        // Try to extract number from memory string
+                        const memoryMatch = memoryUsed.match(/([\d.]+)([KMGT]?)/i);
+                        if (memoryMatch) {
+                            let bytes = parseFloat(memoryMatch[1]);
+                            const unit = memoryMatch[2].toUpperCase();
+                            if (unit === 'K') bytes *= 1024;
+                            else if (unit === 'M') bytes *= 1024 * 1024;
+                            else if (unit === 'G') bytes *= 1024 * 1024 * 1024;
+
+                            // Assume 512MB max for Redis (typical small instance)
+                            // This is an approximation
+                            redisMemoryPercent = Math.min((bytes / (512 * 1024 * 1024)) * 100, 100);
+                        }
+                    }
+
+                    // Normalize Redis OPS (assuming 500 ops/sec is medium load, 1000 is high)
+                    const redisOpsPercent = Math.min((ops / 500) * 50, 50);
+
+                    // Combine metrics: memory (40%), OPS (30%), DB connections (30%)
+                    const overallLoad = Math.min(
+                        (redisMemoryPercent * 0.4) +
+                        (redisOpsPercent * 0.3) +
+                        (dbConnectionsPercent * 0.3),
+                        100
+                    );
 
                     // Update UI
                     document.getElementById('systemLoadValue').textContent = overallLoad.toFixed(1) + '%';
@@ -1292,6 +1423,41 @@
                 console.error('Failed to load system load:', e);
                 document.getElementById('systemLoadValue').textContent = 'Error';
                 document.getElementById('loadValue').textContent = 'Error';
+            }
+        }
+
+        // =====================================================================
+        // Featured Movies
+        // =====================================================================
+
+        async function loadFeaturedMovies() {
+            try {
+                const res = await fetch('/api/movies/featured');
+                const data = await res.json();
+
+                if (data.movies && data.movies.length > 0) {
+                    const grid = document.getElementById('featuredGrid');
+                    const container = document.getElementById('featuredMovies');
+
+                    grid.innerHTML = data.movies.map(movie => `
+                        <a href="/movie/${movie.id}" class="featured-movie-card">
+                            <img 
+                                src="/api/poster/${movie.poster_filename}" 
+                                alt="${movie.title}"
+                                class="featured-poster"
+                            >
+                            <div class="featured-info">
+                                <div class="featured-title">${movie.title}</div>
+                                <div class="featured-rating">${movie.rating}/10</div>
+                                <div class="featured-meta">${movie.year} • ${movie.genre}</div>
+                            </div>
+                        </a>
+                    `).join('');
+
+                    container.style.display = 'block';
+                }
+            } catch (e) {
+                console.error('Failed to load featured movies:', e);
             }
         }
 
@@ -1337,6 +1503,9 @@
 
             // Load system load
             loadSystemLoad();
+
+            // Load featured movies
+            loadFeaturedMovies();
 
             // Load analytics
             loadPopularSearches();

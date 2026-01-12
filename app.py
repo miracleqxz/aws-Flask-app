@@ -286,6 +286,28 @@ def api_analytics_stats():
     return jsonify(stats)
 
 
+@app.route('/api/movies/featured')
+def api_featured_movies():
+    """Get top rated movies for featured section"""
+    movies = get_all_movies()
+    # Get top 6 movies by rating
+    featured = movies[:6]
+    
+    # Convert to dict format
+    result = []
+    for movie in featured:
+        result.append({
+            'id': movie['id'],
+            'title': movie['title'],
+            'rating': float(movie['rating']),
+            'year': movie['year'],
+            'genre': movie['genre'],
+            'poster_filename': movie['poster_filename']
+        })
+    
+    return jsonify({'movies': result})
+
+
 @app.route('/api/sqs/stats')  
 def api_sqs_stats():
     try:
