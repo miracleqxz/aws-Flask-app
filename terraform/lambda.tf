@@ -7,8 +7,13 @@ data "archive_file" "lambda_backend_control" {
 import json
 import boto3
 import os
+import logging
 from datetime import datetime, timezone
 from decimal import Decimal
+from botocore.exceptions import ClientError, WaiterError
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 ec2 = boto3.client('ec2')
 dynamodb = boto3.resource('dynamodb')
@@ -21,118 +26,138 @@ def get_table():
     return dynamodb.Table(DYNAMODB_TABLE)
 
 def get_instance_state():
-    """Get current state of backend EC2 instance"""
-    response = ec2.describe_instances(InstanceIds=[BACKEND_INSTANCE_ID])
-    if response['Reservations']:
-        instance = response['Reservations'][0]['Instances'][0]
-        return {
-            'state': instance['State']['Name'],
-            'private_ip': instance.get('PrivateIpAddress', ''),
-            'public_ip': instance.get('PublicIpAddress', '')
-        }
-    return {'state': 'unknown', 'private_ip': '', 'public_ip': ''}
+    try:
+        response = ec2.describe_instances(InstanceIds=[BACKEND_INSTANCE_ID])
+        if response['Reservations']:
+            instance = response['Reservations'][0]['Instances'][0]
+            state_info = {
+                'state': instance['State']['Name'],
+                'private_ip': instance.get('PrivateIpAddress', ''),
+                'public_ip': instance.get('PublicIpAddress', ''),
+                'state_code': instance['State']['Code']
+            }
+            logger.info(f"Instance state: {state_info['state']}")
+            return state_info
+        logger.warning("No reservations found for instance")
+        return {'state': 'unknown', 'private_ip': '', 'public_ip': '', 'state_code': 0}
+    except ClientError as e:
+        logger.error(f"Error describing instance: {e}")
+        raise
 
 def start_backend():
-    """Start the backend EC2 instance"""
-    instance_info = get_instance_state()
-    
-    if instance_info['state'] == 'running':
+    try:
+        instance_info = get_instance_state()
+        current_state = instance_info['state']
+        
+        if current_state == 'running':
+            logger.info("Instance already running")
+            return {
+                'status': 'already_running',
+                'instance_id': BACKEND_INSTANCE_ID,
+                'private_ip': instance_info['private_ip'],
+                'message': 'Backend is already running'
+            }
+        
+        if current_state in ['stopping', 'stopped']:
+            if current_state == 'stopping':
+                logger.warning("Instance is stopping, cannot start")
+                return {
+                    'status': 'stopping',
+                    'instance_id': BACKEND_INSTANCE_ID,
+                    'message': 'Backend is currently stopping, please wait'
+                }
+        
+        logger.info(f"Starting instance {BACKEND_INSTANCE_ID}")
+        ec2.start_instances(InstanceIds=[BACKEND_INSTANCE_ID])
+        
+        waiter = ec2.get_waiter('instance_running')
+        try:
+            waiter.wait(
+                InstanceIds=[BACKEND_INSTANCE_ID],
+                WaiterConfig={'Delay': 5, 'MaxAttempts': 12}
+            )
+            logger.info("Instance started successfully")
+        except WaiterError as e:
+            logger.error(f"Timeout waiting for instance to start: {e}")
+            return {
+                'status': 'starting',
+                'instance_id': BACKEND_INSTANCE_ID,
+                'message': f'Instance is starting but timeout occurred: {str(e)}'
+            }
+        
+        instance_info = get_instance_state()
+        
+        update_heartbeat()
+        
         return {
-            'status': 'already_running',
+            'status': 'started',
             'instance_id': BACKEND_INSTANCE_ID,
             'private_ip': instance_info['private_ip'],
-            'message': 'Backend is already running'
+            'message': 'Backend started successfully'
         }
-    
-    if instance_info['state'] == 'stopping':
+    except ClientError as e:
+        logger.error(f"Error starting instance: {e}")
+        raise
+
+def stop_backend():
+    try:
+        instance_info = get_instance_state()
+        
+        if instance_info['state'] == 'stopped':
+            logger.info("Instance already stopped")
+            return {
+                'status': 'already_stopped',
+                'instance_id': BACKEND_INSTANCE_ID,
+                'message': 'Backend is already stopped'
+            }
+        
+        logger.info(f"Stopping instance {BACKEND_INSTANCE_ID}")
+        ec2.stop_instances(InstanceIds=[BACKEND_INSTANCE_ID])
+        
+        try:
+            table = get_table()
+            table.delete_item(Key={'key': 'heartbeat'})
+            logger.info("Heartbeat cleared")
+        except Exception as e:
+            logger.warning(f"Failed to clear heartbeat: {e}")
+        
         return {
             'status': 'stopping',
             'instance_id': BACKEND_INSTANCE_ID,
-            'message': 'Backend is currently stopping, please wait'
+            'message': 'Backend is stopping'
         }
-    
-    # Start the instance
-    ec2.start_instances(InstanceIds=[BACKEND_INSTANCE_ID])
-    
-    # Wait for instance to be running (max 60 seconds)
-    waiter = ec2.get_waiter('instance_running')
-    try:
-        waiter.wait(
-            InstanceIds=[BACKEND_INSTANCE_ID],
-            WaiterConfig={'Delay': 5, 'MaxAttempts': 12}
-        )
-    except Exception as e:
-        return {
-            'status': 'starting',
-            'instance_id': BACKEND_INSTANCE_ID,
-            'message': f'Instance is starting: {str(e)}'
-        }
-    
-    # Get updated instance info
-    instance_info = get_instance_state()
-    
-    # Update heartbeat
-    update_heartbeat()
-    
-    return {
-        'status': 'started',
-        'instance_id': BACKEND_INSTANCE_ID,
-        'private_ip': instance_info['private_ip'],
-        'message': 'Backend started successfully'
-    }
-
-def stop_backend():
-    """Stop the backend EC2 instance"""
-    instance_info = get_instance_state()
-    
-    if instance_info['state'] == 'stopped':
-        return {
-            'status': 'already_stopped',
-            'instance_id': BACKEND_INSTANCE_ID,
-            'message': 'Backend is already stopped'
-        }
-    
-    # Stop the instance
-    ec2.stop_instances(InstanceIds=[BACKEND_INSTANCE_ID])
-    
-    # Clear heartbeat
-    table = get_table()
-    table.delete_item(Key={'key': 'heartbeat'})
-    
-    return {
-        'status': 'stopping',
-        'instance_id': BACKEND_INSTANCE_ID,
-        'message': 'Backend is stopping'
-    }
+    except ClientError as e:
+        logger.error(f"Error stopping instance: {e}")
+        raise
 
 def update_heartbeat():
-    """Update the heartbeat timestamp"""
-    table = get_table()
-    now = datetime.now(timezone.utc)
-    
-    table.put_item(Item={
-        'key': 'heartbeat',
-        'timestamp': now.isoformat(),
-        'epoch': Decimal(str(now.timestamp()))
-    })
-    
-    return {
-        'status': 'ok',
-        'timestamp': now.isoformat()
-    }
+    try:
+        table = get_table()
+        now = datetime.now(timezone.utc)
+        
+        table.put_item(Item={
+            'key': 'heartbeat',
+            'timestamp': now.isoformat(),
+            'epoch': Decimal(str(now.timestamp()))
+        })
+        
+        logger.info(f"Heartbeat updated: {now.isoformat()}")
+        return {
+            'status': 'ok',
+            'timestamp': now.isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error updating heartbeat: {e}")
+        raise
 
 def check_heartbeat():
-    """Check if heartbeat has timed out and stop backend if needed"""
     table = get_table()
     
-    # Get current heartbeat
     response = table.get_item(Key={'key': 'heartbeat'})
     
     if 'Item' not in response:
-        # No heartbeat, check if instance is running
         instance_info = get_instance_state()
         if instance_info['state'] == 'running':
-            # No heartbeat but running - stop it
             return stop_backend()
         return {
             'status': 'no_heartbeat',
@@ -145,7 +170,6 @@ def check_heartbeat():
     diff_minutes = (now - last_heartbeat).total_seconds() / 60
     
     if diff_minutes > HEARTBEAT_TIMEOUT:
-        # Timeout exceeded - stop backend
         result = stop_backend()
         result['reason'] = f'Heartbeat timeout ({diff_minutes:.1f} min > {HEARTBEAT_TIMEOUT} min)'
         return result
@@ -159,11 +183,9 @@ def check_heartbeat():
     }
 
 def get_status():
-    """Get current backend status"""
     instance_info = get_instance_state()
     table = get_table()
     
-    # Get heartbeat info
     response = table.get_item(Key={'key': 'heartbeat'})
     heartbeat_info = {}
     
@@ -187,13 +209,24 @@ def get_status():
     }
 
 def handler(event, context):
-    """Main Lambda handler"""
+    logger.info(f"Received event: {json.dumps(event)}")
     
-    # Get action from event
     action = event.get('action', 'status')
     
-    # Handle API Gateway events
-    if 'httpMethod' in event:
+    if 'requestContext' in event and 'http' in event['requestContext']:
+        path = event.get('rawPath', event.get('path', ''))
+        method = event.get('requestContext', {}).get('http', {}).get('method', '')
+        
+        if method == 'POST' and '/start' in path:
+            action = 'start'
+        elif method == 'POST' and '/stop' in path:
+            action = 'stop'
+        elif method == 'POST' and '/heartbeat' in path:
+            action = 'heartbeat'
+        elif method == 'GET' and '/status' in path:
+            action = 'status'
+    
+    elif 'httpMethod' in event:
         path = event.get('path', '')
         if '/start' in path:
             action = 'start'
@@ -204,11 +237,11 @@ def handler(event, context):
         elif '/status' in path:
             action = 'status'
     
-    # Handle EventBridge events
     if 'source' in event and event['source'] == 'aws.events':
         action = 'check'
     
-    # Execute action
+    logger.info(f"Executing action: {action}")
+    
     try:
         if action == 'start':
             result = start_backend()
@@ -221,22 +254,47 @@ def handler(event, context):
         else:
             result = get_status()
         
-        # Return API Gateway compatible response
+        logger.info(f"Action completed successfully: {action}")
+        
         return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
             },
             'body': json.dumps(result, default=str)
         }
         
-    except Exception as e:
+    except ClientError as e:
+        error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+        error_msg = e.response.get('Error', {}).get('Message', str(e))
+        logger.error(f"AWS ClientError ({error_code}): {error_msg}")
+        
         return {
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': json.dumps({
+                'status': 'error',
+                'error_code': error_code,
+                'message': error_msg
+            })
+        }
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
             },
             'body': json.dumps({
                 'status': 'error',
@@ -253,7 +311,7 @@ resource "aws_lambda_function" "backend_control" {
   role          = aws_iam_role.lambda_backend_control.arn
   handler       = "lambda_function.handler"
   runtime       = "python3.12"
-  timeout       = 120
+  timeout       = 60
   memory_size   = 128
 
   filename         = data.archive_file.lambda_backend_control.output_path
@@ -267,11 +325,14 @@ resource "aws_lambda_function" "backend_control" {
     }
   }
 
-  tags = {
-    Name        = var.lambda_function_name
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = var.lambda_function_name
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
 
   depends_on = [
     aws_cloudwatch_log_group.lambda
@@ -284,17 +345,21 @@ resource "aws_apigatewayv2_api" "backend_control" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["*"]
-    allow_methods = ["GET", "POST", "OPTIONS"]
-    allow_headers = ["*"]
-    max_age       = 300
+    allow_origins  = var.environment == "prod" ? [] : ["*"]
+    allow_methods  = ["GET", "POST", "OPTIONS"]
+    allow_headers  = ["Content-Type", "X-Amz-Date", "Authorization", "X-Api-Key"]
+    max_age        = 300
+    expose_headers = []
   }
 
-  tags = {
-    Name        = "${var.project_name}-backend-api"
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-backend-api"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
 }
 
 resource "aws_apigatewayv2_stage" "default" {
@@ -302,11 +367,47 @@ resource "aws_apigatewayv2_stage" "default" {
   name        = "$default"
   auto_deploy = true
 
-  tags = {
-    Name        = "${var.project_name}-backend-api-stage"
-    Project     = var.project_name
-    Environment = var.environment
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_gateway.arn
+    format = jsonencode({
+      requestId      = "$context.requestId"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
+    })
   }
+
+  default_route_settings {
+    throttling_burst_limit = 10
+    throttling_rate_limit  = 5
+  }
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-backend-api-stage"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
+}
+
+resource "aws_cloudwatch_log_group" "api_gateway" {
+  name              = "/aws/apigateway/${var.project_name}-backend-api"
+  retention_in_days = var.log_retention_days
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-api-gateway-logs"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
 }
 
 resource "aws_apigatewayv2_integration" "lambda" {
@@ -316,7 +417,6 @@ resource "aws_apigatewayv2_integration" "lambda" {
   payload_format_version = "2.0"
 }
 
-# Routes
 resource "aws_apigatewayv2_route" "start" {
   api_id    = aws_apigatewayv2_api.backend_control.id
   route_key = "POST /start"
@@ -341,7 +441,6 @@ resource "aws_apigatewayv2_route" "status" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
-# Lambda permission for API Gateway
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -356,11 +455,14 @@ resource "aws_cloudwatch_event_rule" "heartbeat_check" {
   description         = "Check backend heartbeat every minute"
   schedule_expression = "rate(${var.heartbeat_interval_seconds / 60} minute)"
 
-  tags = {
-    Name        = "${var.project_name}-heartbeat-check"
-    Project     = var.project_name
-    Environment = var.environment
-  }
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-heartbeat-check"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
 }
 
 resource "aws_cloudwatch_event_target" "heartbeat_check" {
@@ -379,4 +481,30 @@ resource "aws_lambda_permission" "eventbridge" {
   function_name = aws_lambda_function.backend_control.function_name
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.heartbeat_check.arn
+}
+
+resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
+  alarm_name          = "${var.project_name}-lambda-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Alert when Lambda function errors exceed threshold"
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    FunctionName = aws_lambda_function.backend_control.function_name
+  }
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-lambda-errors-alarm"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
 }
