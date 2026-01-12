@@ -18,7 +18,7 @@ def search_movies_meili(query, limit=20):
         
         results = index.search(query, {
             'limit': limit,
-            'matchingStrategy': 'last'  
+            'matchingStrategy': 'all'  # Require ALL words to match
         })
         
         movies = []
@@ -54,7 +54,6 @@ def index_all_movies():
         index = client.index('movies')
         
         index.update_settings({
-            # Priority order for searching
             'searchableAttributes': [
                 'title',
                 'director',
@@ -65,7 +64,6 @@ def index_all_movies():
             'filterableAttributes': ['genre', 'year', 'rating'],
             'sortableAttributes': ['year', 'rating', 'title'],
             
-            
             'rankingRules': [
                 'words',
                 'typo',
@@ -75,46 +73,34 @@ def index_all_movies():
                 'exactness'
             ],
             
-            # Typo tolerance - finds misspelled words
             'typoTolerance': {
                 'enabled': True,
                 'minWordSizeForTypos': {
-                    'oneTypo': 3,   # 1 typo allowed for 3+ char words
-                    'twoTypos': 6  # 2 typos allowed for 6+ char words
+                    'oneTypo': 4,   # More strict - 1 typo for 4+ chars
+                    'twoTypos': 8  # 2 typos only for 8+ chars
                 }
             },
             
-           
+            # Fewer stop words - keep important ones
             'stopWords': [
-                'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to',
-                'for', 'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are',
-                'were', 'been', 'be', 'have', 'has', 'had', 'do', 'does',
-                'did', 'will', 'would', 'could', 'should', 'it', 'its',
-                'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she',
-                'we', 'they', 'what', 'which', 'who', 'where', 'when', 'how'
+                'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to',
+                'for', 'of', 'with', 'by', 'from', 'as', 'is', 'was',
+                'are', 'were', 'been', 'be', 'have', 'has', 'had',
+                'it', 'its', 'this', 'that', 'i', 'you', 'he', 'she',
+                'we', 'they', 'what', 'which', 'who', 'where', 'when'
             ],
             
-            
             'synonyms': {
-                'film': ['movie', 'picture'],
-                'movie': ['film', 'picture'],
+                'film': ['movie'],
+                'movie': ['film'],
                 'scary': ['horror', 'thriller'],
                 'horror': ['scary', 'thriller'],
-                'funny': ['comedy', 'humor'],
-                'comedy': ['funny', 'humor'],
-                'action': ['adventure', 'thriller'],
-                'romantic': ['romance', 'love'],
-                'romance': ['romantic', 'love'],
+                'funny': ['comedy'],
+                'comedy': ['funny'],
                 'sci-fi': ['science fiction', 'scifi'],
                 'scifi': ['science fiction', 'sci-fi'],
-                'science fiction': ['sci-fi', 'scifi'],
-                'crime': ['gangster', 'mafia', 'noir'],
-                'gangster': ['crime', 'mafia'],
-                'war': ['military', 'battle'],
-                'animated': ['animation', 'cartoon'],
-                'animation': ['animated', 'cartoon'],
-                'documentary': ['doc', 'docu'],
-                'biography': ['biopic', 'bio']
+                'crime': ['gangster', 'mafia'],
+                'gangster': ['crime', 'mafia']
             }
         })
         
