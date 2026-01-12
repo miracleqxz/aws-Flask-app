@@ -38,16 +38,57 @@
         }
 
         .header {
-            text-align: center;
-            color: #1f2937;
-            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
-        .header h1 {
+        .header-text {
+            flex: 1;
+        }
+
+        .header-text h1 {
             font-size: 2.5em;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             font-weight: 700;
             color: #111827;
+        }
+
+        .header-subtitle {
+            color: #6b7280;
+            font-size: 1.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 22px;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #111827;
+            font-size: 0.95em;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-secondary:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+            transform: translateY(-1px);
         }
 
         /* Backend Control Panel */
@@ -767,6 +808,16 @@
             .btn-backend {
                 flex: 1;
             }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
@@ -774,13 +825,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Movie Database</h1>
-            <p style="color: #6b7280; font-size: 1.1em; margin-bottom: 20px;">Search across 20 popular movies with
-                full-text search</p>
-            <a href="/movies"
-                style="display: inline-block; margin-top: 15px; padding: 12px 30px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);">
-                Browse All Movies
-            </a>
+            <div class="header-text">
+                <h1>Movie Database</h1>
+                <p class="header-subtitle">Search across 20 popular movies with full-text search</p>
+            </div>
+            <div class="header-actions">
+                <a href="/movies" class="btn-secondary">
+                    Browse all movies
+                </a>
+            </div>
         </div>
 
         <!-- Main Grid: Backend Control and Services Status -->

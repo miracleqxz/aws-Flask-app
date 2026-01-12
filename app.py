@@ -288,10 +288,8 @@ def api_analytics_stats():
 
 @app.route('/api/movies/featured')
 def api_featured_movies():
-    """Get top rated movies for featured section"""
     movies = get_all_movies()
-    # Get top 6 movies by rating
-    featured = movies[:6]
+    featured = movies[:8]
     
     # Convert to dict format
     result = []
