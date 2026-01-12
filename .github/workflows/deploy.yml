@@ -4,10 +4,32 @@ on:
   push:
     branches:
       - main
+    paths:
+      # Application code
+      - '*.py'
+      - 'database/**'
+      - 'services/**'
+      - 'templates/**'
+      - 'requirements.txt'
+      - 'startup.sh'
+      # Docker
+      - 'Dockerfile'
+      - '.dockerignore'
+      # Workflow itself
+      - '.github/workflows/deploy.yml'
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+    paths:
+      - '*.py'
+      - 'database/**'
+      - 'services/**'
+      - 'templates/**'
+      - 'requirements.txt'
+      - 'startup.sh'
+      - 'Dockerfile'
+      - '.dockerignore'
+  workflow_dispatch:  # Manual trigger always works
 
 env:
   REGISTRY: ghcr.io
@@ -119,6 +141,7 @@ jobs:
             --force-new-deployment
 
       - name: Force ECS deployment - Backend
+        continue-on-error: true
         run: |
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER }} \

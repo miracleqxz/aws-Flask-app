@@ -56,3 +56,5 @@ ansible/README.md
 
 aws
 awscliv2.zip
+
+.dockerignore
