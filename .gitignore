@@ -58,4 +58,4 @@ aws
 awscliv2.zip
 
 .dockerignore
-.posters/*
+posters

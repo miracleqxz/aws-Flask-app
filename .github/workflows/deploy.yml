@@ -5,31 +5,28 @@ on:
     branches:
       - main
     paths:
-      # Application code
-      - '*.py'
-      - 'database/**'
-      - 'services/**'
-      - 'templates/**'
-      - 'requirements.txt'
-      - 'startup.sh'
-      # Docker
-      - 'Dockerfile'
-      - '.dockerignore'
-      # Workflow itself
-      - '.github/workflows/deploy.yml'
+      - "*.py"
+      - "database/**"
+      - "services/**"
+      - "templates/**"
+      - "requirements.txt"
+      - "startup.sh"
+      - "Dockerfile"
+      - ".dockerignore"
+      - ".github/workflows/deploy.yml"
   pull_request:
     branches:
       - main
     paths:
-      - '*.py'
-      - 'database/**'
-      - 'services/**'
-      - 'templates/**'
-      - 'requirements.txt'
-      - 'startup.sh'
-      - 'Dockerfile'
-      - '.dockerignore'
-  workflow_dispatch:  # Manual trigger always works
+      - "*.py"
+      - "database/**"
+      - "services/**"
+      - "templates/**"
+      - "requirements.txt"
+      - "startup.sh"
+      - "Dockerfile"
+      - ".dockerignore"
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io

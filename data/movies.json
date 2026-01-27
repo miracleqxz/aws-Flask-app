@@ -1,0 +1,2052 @@
+[
+  {
+    "id": 1,
+    "title": "The Shawshank Redemption",
+    "year": 1994,
+    "rating": 9.3,
+    "genre": "Drama",
+    "director": "Frank Darabont",
+    "description": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+    "poster_filename": "shawshank.jpg"
+  },
+  {
+    "id": 2,
+    "title": "Forrest Gump",
+    "year": 1994,
+    "rating": 8.8,
+    "genre": "Drama",
+    "director": "Robert Zemeckis",
+    "description": "The presidencies of Kennedy and Johnson, the Vietnam War, the Watergate scandal and other historical events unfold from the perspective of an Alabama man with an IQ of 75.",
+    "poster_filename": "forrest_gump.jpg"
+  },
+  {
+    "id": 3,
+    "title": "Fight Club",
+    "year": 1999,
+    "rating": 8.8,
+    "genre": "Drama",
+    "director": "David Fincher",
+    "description": "An insomniac office worker and a devil-may-care soap maker form an underground fight club that evolves into something much, much more.",
+    "poster_filename": "fight_club.jpg"
+  },
+  {
+    "id": 4,
+    "title": "Whiplash",
+    "year": 2014,
+    "rating": 8.5,
+    "genre": "Drama",
+    "director": "Damien Chazelle",
+    "description": "A promising young drummer enrolls at a cut-throat music conservatory where his dreams of greatness are mentored by an instructor who will stop at nothing to realize a student's potential.",
+    "poster_filename": "whiplash.jpg"
+  },
+  {
+    "id": 5,
+    "title": "The Green Mile",
+    "year": 1999,
+    "rating": 8.6,
+    "genre": "Crime",
+    "director": "Frank Darabont",
+    "description": "The lives of guards on Death Row are affected by one of their charges: a black man accused of child murder and rape, yet who has a mysterious gift.",
+    "poster_filename": "the_green_mile.jpg"
+  },
+  {
+    "id": 6,
+    "title": "Schindler’s List",
+    "year": 1993,
+    "rating": 9.0,
+    "genre": "Biography",
+    "director": "Steven Spielberg",
+    "description": "In German-occupied Poland during World War II, industrialist Oskar Schindler gradually becomes concerned for his Jewish workforce after witnessing their persecution by the Nazis.",
+    "poster_filename": "schindlers_list.jpg"
+  },
+  {
+    "id": 7,
+    "title": "Parasite",
+    "year": 2019,
+    "rating": 8.5,
+    "genre": "Thriller",
+    "director": "Bong Joon Ho",
+    "description": "Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.",
+    "poster_filename": "parasite.jpg"
+  },
+  {
+    "id": 8,
+    "title": "American Beauty",
+    "year": 1999,
+    "rating": 8.3,
+    "genre": "Drama",
+    "director": "Sam Mendes",
+    "description": "A sexually frustrated suburban father has a mid-life crisis after becoming infatuated with his daughter's best friend.",
+    "poster_filename": "american_beauty.jpg"
+  },
+  {
+    "id": 9,
+    "title": "There Will Be Blood",
+    "year": 2007,
+    "rating": 8.2,
+    "genre": "Drama",
+    "director": "Paul Thomas Anderson",
+    "description": "A story of family, religion, hatred, oil and madness, focusing on a turn-of-the-century prospector in the early days of the business.",
+    "poster_filename": "there_will_be_blood.jpg"
+  },
+  {
+    "id": 10,
+    "title": "A Beautiful Mind",
+    "year": 2001,
+    "rating": 8.2,
+    "genre": "Biography",
+    "director": "Ron Howard",
+    "description": "After John Nash, a brilliant but asocial mathematician, accepts secret work in cryptography, his life takes a turn for the nightmarish.",
+    "poster_filename": "a_beautiful_mind.jpg"
+  },
+  {
+    "id": 11,
+    "title": "12 Years a Slave",
+    "year": 2013,
+    "rating": 8.1,
+    "genre": "Biography",
+    "director": "Steve McQueen",
+    "description": "In the antebellum United States, Solomon Northup, a free black man from upstate New York, is abducted and sold into slavery.",
+    "poster_filename": "12_years_a_slave.jpg"
+  },
+  {
+    "id": 12,
+    "title": "Manchester by the Sea",
+    "year": 2016,
+    "rating": 7.8,
+    "genre": "Drama",
+    "director": "Kenneth Lonergan",
+    "description": "A depressed uncle is asked to take care of his teenage nephew after the boy's father dies.",
+    "poster_filename": "manchester_by_the_sea.jpg"
+  },
+  {
+    "id": 13,
+    "title": "Moonlight",
+    "year": 2016,
+    "rating": 7.4,
+    "genre": "Drama",
+    "director": "Barry Jenkins",
+    "description": "A young African-American man grapples with his identity and sexuality while experiencing the everyday struggles of childhood, adolescence, and burgeoning adulthood.",
+    "poster_filename": "moonlight.jpg"
+  },
+  {
+    "id": 14,
+    "title": "The Pianist",
+    "year": 2002,
+    "rating": 8.5,
+    "genre": "Biography",
+    "director": "Roman Polanski",
+    "description": "A Polish Jewish musician struggles to survive the destruction of the Warsaw ghetto of World War II.",
+    "poster_filename": "the_pianist.jpg"
+  },
+  {
+    "id": 15,
+    "title": "Requiem for a Dream",
+    "year": 2000,
+    "rating": 8.3,
+    "genre": "Drama",
+    "director": "Darren Aronofsky",
+    "description": "The drug-induced utopias of four Coney Island people are shattered when their addictions run deep.",
+    "poster_filename": "requiem_for_a_dream.jpg"
+  },
+  {
+    "id": 16,
+    "title": "No Country for Old Men",
+    "year": 2007,
+    "rating": 8.2,
+    "genre": "Crime",
+    "director": "Ethan Coen, Joel Coen",
+    "description": "Violence and mayhem ensue after a hunter stumbles upon a drug deal gone wrong and more than two million dollars in cash near the Rio Grande.",
+    "poster_filename": "no_country_for_old_men.jpg"
+  },
+  {
+    "id": 17,
+    "title": "The Social Network",
+    "year": 2010,
+    "rating": 7.8,
+    "genre": "Biography",
+    "director": "David Fincher",
+    "description": "As Harvard student Mark Zuckerberg creates the social networking site that would become known as Facebook, he is sued by the twins who claimed he stole their idea.",
+    "poster_filename": "the_social_network.jpg"
+  },
+  {
+    "id": 18,
+    "title": "Birdman",
+    "year": 2014,
+    "rating": 7.7,
+    "genre": "Comedy",
+    "director": "Alejandro G. Iñárritu",
+    "description": "A washed-up superhero actor attempts to revive his fading career by writing, directing, and starring in a Broadway production.",
+    "poster_filename": "birdman.jpg"
+  },
+  {
+    "id": 19,
+    "title": "The Wrestler",
+    "year": 2008,
+    "rating": 7.9,
+    "genre": "Drama",
+    "director": "Darren Aronofsky",
+    "description": "A faded professional wrestler must retire, but finds his quest for a new life outside the ring a dispiriting struggle.",
+    "poster_filename": "the_wrestler.jpg"
+  },
+  {
+    "id": 20,
+    "title": "The Father",
+    "year": 2020,
+    "rating": 8.2,
+    "genre": "Drama",
+    "director": "Florian Zeller",
+    "description": "A man refuses all assistance from his daughter as he ages. As he tries to make sense of his changing circumstances, he begins to doubt his loved ones.",
+    "poster_filename": "the_father.jpg"
+  },
+  {
+    "id": 21,
+    "title": "Titanic",
+    "year": 1997,
+    "rating": 7.9,
+    "genre": "Romance",
+    "director": "James Cameron",
+    "description": "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic.",
+    "poster_filename": "titanic.jpg"
+  },
+  {
+    "id": 22,
+    "title": "The Curious Case of Benjamin Button",
+    "year": 2008,
+    "rating": 7.8,
+    "genre": "Drama",
+    "director": "David Fincher",
+    "description": "Tells the story of Benjamin Button, a man who starts aging backwards with bizarre consequences.",
+    "poster_filename": "the_curious_case_of_benjamin_button.jpg"
+  },
+  {
+    "id": 23,
+    "title": "Blue Valentine",
+    "year": 2010,
+    "rating": 7.3,
+    "genre": "Romance",
+    "director": "Derek Cianfrance",
+    "description": "The relationship of a contemporary married couple, charting their evolution over the years by cross-cutting between periods.",
+    "poster_filename": "blue_valentine.jpg"
+  },
+  {
+    "id": 24,
+    "title": "Dallas Buyers Club",
+    "year": 2013,
+    "rating": 7.9,
+    "genre": "Biography",
+    "director": "Jean-Marc Vallée",
+    "description": "In 1985 Dallas, electrician and gambler Ron Woodroof works around the system to help AIDS patients get the medication they need.",
+    "poster_filename": "dallas_buyers_club.jpg"
+  },
+  {
+    "id": 25,
+    "title": "The Reader",
+    "year": 2008,
+    "rating": 7.6,
+    "genre": "Drama",
+    "director": "Stephen Daldry",
+    "description": "Post-WWII Germany: Nearly a decade after his affair with an older woman came to a mysterious end, law student Michael Berg re-encounters her as she defends herself in a war-crime trial.",
+    "poster_filename": "the_reader.jpg"
+  },
+  {
+    "id": 26,
+    "title": "Million Dollar Baby",
+    "year": 2004,
+    "rating": 8.1,
+    "genre": "Drama",
+    "director": "Clint Eastwood",
+    "description": "A determined woman works with a hardened boxing trainer to become a professional.",
+    "poster_filename": "million_dollar_baby.jpg"
+  },
+  {
+    "id": 27,
+    "title": "Joker",
+    "year": 2019,
+    "rating": 8.4,
+    "genre": "Crime",
+    "director": "Todd Phillips",
+    "description": "A mentally troubled stand-up comedian embarks on a downward spiral that leads to the creation of an iconic villain.",
+    "poster_filename": "joker.jpg"
+  },
+  {
+    "id": 28,
+    "title": "Eternal Sunshine of the Spotless Mind",
+    "year": 2004,
+    "rating": 8.3,
+    "genre": "Sci-Fi",
+    "director": "Michel Gondry",
+    "description": "When their relationship turns sour, a couple undergoes a medical procedure to have each other erased from their memories.",
+    "poster_filename": "eternal_sunshine_of_the_spotless_mind.jpg"
+  },
+  {
+    "id": 29,
+    "title": "Marriage Story",
+    "year": 2019,
+    "rating": 7.9,
+    "genre": "Romance",
+    "director": "Noah Baumbach",
+    "description": "Noah Baumbach's incisive and compassionate look at a marriage breaking up and a family staying together.",
+    "poster_filename": "marriage_story.jpg"
+  },
+  {
+    "id": 30,
+    "title": "The Irishman",
+    "year": 2019,
+    "rating": 7.8,
+    "genre": "Biography",
+    "director": "Martin Scorsese",
+    "description": "An illustration of Frank Sheeran's life, from W.W.II veteran to hitman for the Bufalino crime family.",
+    "poster_filename": "the_irishman.jpg"
+  },
+  {
+    "id": 31,
+    "title": "The Godfather",
+    "year": 1972,
+    "rating": 9.2,
+    "genre": "Crime",
+    "director": "Francis Ford Coppola",
+    "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+    "poster_filename": "the_godfather.jpg"
+  },
+  {
+    "id": 32,
+    "title": "The Godfather Part II",
+    "year": 1974,
+    "rating": 9.0,
+    "genre": "Crime",
+    "director": "Francis Ford Coppola",
+    "description": "The early life and career of Vito Corleone in 1920s New York City is portrayed, while his son, Michael, expands and tightens his grip on the family crime syndicate.",
+    "poster_filename": "the_godfather_part_ii.jpg"
+  },
+  {
+    "id": 33,
+    "title": "Goodfellas",
+    "year": 1990,
+    "rating": 8.7,
+    "genre": "Biography",
+    "director": "Martin Scorsese",
+    "description": "The story of Henry Hill and his life in the mob, covering his relationship with his wife Karen Hill and his mob partners Jimmy Conway and Tommy DeVito.",
+    "poster_filename": "goodfellas.jpg"
+  },
+  {
+    "id": 34,
+    "title": "Pulp Fiction",
+    "year": 1994,
+    "rating": 8.9,
+    "genre": "Crime",
+    "director": "Quentin Tarantino",
+    "description": "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
+    "poster_filename": "pulp_fiction.jpg"
+  },
+  {
+    "id": 35,
+    "title": "The Departed",
+    "year": 2006,
+    "rating": 8.5,
+    "genre": "Crime",
+    "director": "Martin Scorsese",
+    "description": "An undercover cop and a mole in the police attempt to identify each other while infiltrating an Irish gang in South Boston.",
+    "poster_filename": "the_departed.jpg"
+  },
+  {
+    "id": 36,
+    "title": "Scarface",
+    "year": 1983,
+    "rating": 8.3,
+    "genre": "Crime",
+    "director": "Brian De Palma",
+    "description": "In 1980 Miami, a determined Cuban immigrant takes over a drug cartel and succumbs to greed.",
+    "poster_filename": "scarface.jpg"
+  },
+  {
+    "id": 37,
+    "title": "Heat",
+    "year": 1995,
+    "rating": 8.3,
+    "genre": "Crime",
+    "director": "Michael Mann",
+    "description": "A group of high-end professional thieves start to feel the heat from the LAPD when they unknowingly leave a clue at their latest heist.",
+    "poster_filename": "heat.jpg"
+  },
+  {
+    "id": 38,
+    "title": "Casino",
+    "year": 1995,
+    "rating": 8.2,
+    "genre": "Crime",
+    "director": "Martin Scorsese",
+    "description": "A tale of greed, deception, money, power, and murder occur between two best friends: a casino executive and a hired killer.",
+    "poster_filename": "casino.jpg"
+  },
+  {
+    "id": 39,
+    "title": "Donnie Brasco",
+    "year": 1997,
+    "rating": 7.7,
+    "genre": "Biography",
+    "director": "Mike Newell",
+    "description": "An FBI undercover agent infiltrates the mob and finds himself identifying more with the mafia life than he should.",
+    "poster_filename": "donnie_brasco.jpg"
+  },
+  {
+    "id": 40,
+    "title": "The Usual Suspects",
+    "year": 1995,
+    "rating": 8.5,
+    "genre": "Crime",
+    "director": "Bryan Singer",
+    "description": "A sole survivor tells of the twisty events leading up to a horrific gun battle on a boat, which began when five criminals met at a seemingly random police lineup.",
+    "poster_filename": "the_usual_suspects.jpg"
+  },
+  {
+    "id": 41,
+    "title": "Se7en",
+    "year": 1995,
+    "rating": 8.6,
+    "genre": "Crime",
+    "director": "David Fincher",
+    "description": "Two detectives, a rookie and a veteran, hunt a serial killer who uses the seven deadly sins as his motives.",
+    "poster_filename": "se7en.jpg"
+  },
+  {
+    "id": 42,
+    "title": "American Gangster",
+    "year": 2007,
+    "rating": 7.8,
+    "genre": "Biography",
+    "director": "Ridley Scott",
+    "description": "In 1970s America, a detective works to bring down the drug empire of Frank Lucas, a heroin kingpin from Manhattan.",
+    "poster_filename": "american_gangster.jpg"
+  },
+  {
+    "id": 43,
+    "title": "The French Connection",
+    "year": 1971,
+    "rating": 7.7,
+    "genre": "Action",
+    "director": "William Friedkin",
+    "description": "A pair of NYC cops in the Narcotics Bureau stumble onto a drug shipment based in France.",
+    "poster_filename": "the_french_connection.jpg"
+  },
+  {
+    "id": 44,
+    "title": "Reservoir Dogs",
+    "year": 1992,
+    "rating": 8.3,
+    "genre": "Crime",
+    "director": "Quentin Tarantino",
+    "description": "When a simple jewelry hold-up goes horribly wrong, the surviving criminals begin to suspect that one of them is a police informant.",
+    "poster_filename": "reservoir_dogs.jpg"
+  },
+  {
+    "id": 45,
+    "title": "Carlito’s Way",
+    "year": 1993,
+    "rating": 7.9,
+    "genre": "Crime",
+    "director": "Brian De Palma",
+    "description": "A Puerto Rican former convict, just released from prison, pledges to stay away from drugs and violence despite the pressure around him.",
+    "poster_filename": "carlitos_way.jpg"
+  },
+  {
+    "id": 46,
+    "title": "Blow",
+    "year": 2001,
+    "rating": 7.5,
+    "genre": "Biography",
+    "director": "Ted Demme",
+    "description": "The story of how George Jung, along with the Medellín Cartel headed by Pablo Escobar, established the American cocaine market in the 1970s.",
+    "poster_filename": "blow.jpg"
+  },
+  {
+    "id": 47,
+    "title": "The Town",
+    "year": 2010,
+    "rating": 7.5,
+    "genre": "Crime",
+    "director": "Ben Affleck",
+    "description": "A proficient group of thieves rob a bank and hold an assistant manager hostage. Things begin to get complicated when one of the crew members falls in love with their victim.",
+    "poster_filename": "the_town.jpg"
+  },
+  {
+    "id": 48,
+    "title": "L.A. Confidential",
+    "year": 1997,
+    "rating": 8.2,
+    "genre": "Crime",
+    "director": "Curtis Hanson",
+    "description": "As corruption grows in 1950s Los Angeles, three policemen—one strait-laced, one brutal, and one sleazy—investigate a series of murders with their own brand of justice.",
+    "poster_filename": "la_confidential.jpg"
+  },
+  {
+    "id": 49,
+    "title": "Training Day",
+    "year": 2001,
+    "rating": 7.7,
+    "genre": "Crime",
+    "director": "Antoine Fuqua",
+    "description": "A rookie cop spends his first day as a Los Angeles narcotics officer with a rogue detective who isn't what he appears to be.",
+    "poster_filename": "training_day.jpg"
+  },
+  {
+    "id": 50,
+    "title": "Zodiac",
+    "year": 2007,
+    "rating": 7.7,
+    "genre": "Crime",
+    "director": "David Fincher",
+    "description": "Between 1968 and 1983, a San Francisco cartoonist becomes an amateur detective obsessed with tracking down the Zodiac Killer.",
+    "poster_filename": "zodiac.jpg"
+  },
+  {
+    "id": 51,
+    "title": "City of God",
+    "year": 2002,
+    "rating": 8.6,
+    "genre": "Crime",
+    "director": "Fernando Meirelles",
+    "description": "In the slums of Rio, two kids' paths diverge as one struggles to become a photographer and the other a kingpin.",
+    "poster_filename": "city_of_god.jpg"
+  },
+  {
+    "id": 52,
+    "title": "The Untouchables",
+    "year": 1987,
+    "rating": 7.8,
+    "genre": "Crime",
+    "director": "Brian De Palma",
+    "description": "During Prohibition, Federal Agent Eliot Ness sets out to stop ruthless Chicago gangster Al Capone.",
+    "poster_filename": "the_untouchables.jpg"
+  },
+  {
+    "id": 53,
+    "title": "Public Enemies",
+    "year": 2009,
+    "rating": 7.0,
+    "genre": "Biography",
+    "director": "Michael Mann",
+    "description": "The Feds try to take down notorious American gangsters John Dillinger, Baby Face Nelson and Pretty Boy Floyd during a booming crime wave in the 1930s.",
+    "poster_filename": "public_enemies.jpg"
+  },
+  {
+    "id": 54,
+    "title": "Eastern Promises",
+    "year": 2007,
+    "rating": 7.6,
+    "genre": "Crime",
+    "director": "David Cronenberg",
+    "description": "A teenager dies during childbirth in London, leaving clues in her journal that tie her child to a Russian mob family.",
+    "poster_filename": "eastern_promises.jpg"
+  },
+  {
+    "id": 55,
+    "title": "Snatch",
+    "year": 2000,
+    "rating": 8.3,
+    "genre": "Crime",
+    "director": "Guy Ritchie",
+    "description": "Unscrupulous boxing promoters, violent bookmakers, a Russian gangster, incompetent amateur robbers and supposedly Jewish jewelers fight to track down a priceless stolen diamond.",
+    "poster_filename": "snatch.jpg"
+  },
+  {
+    "id": 56,
+    "title": "The Dark Knight",
+    "year": 2008,
+    "rating": 9.0,
+    "genre": "Action",
+    "director": "Christopher Nolan",
+    "description": "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+    "poster_filename": "the_dark_knight.jpg"
+  },
+  {
+    "id": 57,
+    "title": "Gladiator",
+    "year": 2000,
+    "rating": 8.5,
+    "genre": "Action",
+    "director": "Ridley Scott",
+    "description": "A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family and sent him into slavery.",
+    "poster_filename": "gladiator.jpg"
+  },
+  {
+    "id": 58,
+    "title": "Mad Max: Fury Road",
+    "year": 2015,
+    "rating": 8.1,
+    "genre": "Action",
+    "director": "George Miller",
+    "description": "In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler in search for her homeland with the aid of a group of female prisoners, a psychotic worshiper, and a drifter named Max.",
+    "poster_filename": "mad_max_fury_road.jpg"
+  },
+  {
+    "id": 59,
+    "title": "Die Hard",
+    "year": 1988,
+    "rating": 8.2,
+    "genre": "Action",
+    "director": "John McTiernan",
+    "description": "An NYPD officer tries to save his wife and several others taken hostage by German terrorists during a Christmas party at the Nakatomi Plaza in Los Angeles.",
+    "poster_filename": "die_hard.jpg"
+  },
+  {
+    "id": 60,
+    "title": "John Wick",
+    "year": 2014,
+    "rating": 7.4,
+    "genre": "Action",
+    "director": "Chad Stahelski",
+    "description": "An ex-hitman comes out of retirement to track down the gangsters that killed his dog and took everything from him.",
+    "poster_filename": "john_wick.jpg"
+  },
+  {
+    "id": 61,
+    "title": "John Wick: Chapter 4",
+    "year": 2023,
+    "rating": 7.7,
+    "genre": "Action",
+    "director": "Chad Stahelski",
+    "description": "John Wick uncovers a path to defeating The High Table. But before he can earn his freedom, Wick must face off against a new enemy with powerful alliances across the globe.",
+    "poster_filename": "john_wick_chapter_4.jpg"
+  },
+  {
+    "id": 62,
+    "title": "The Matrix",
+    "year": 1999,
+    "rating": 8.7,
+    "genre": "Sci-Fi",
+    "director": "Lana Wachowski, Lilly Wachowski",
+    "description": "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
+    "poster_filename": "the_matrix.jpg"
+  },
+  {
+    "id": 63,
+    "title": "Terminator 2: Judgment Day",
+    "year": 1991,
+    "rating": 8.6,
+    "genre": "Sci-Fi",
+    "director": "James Cameron",
+    "description": "A cyborg, identical to the one who failed to kill Sarah Connor, must now protect her ten-year-old son John from a more advanced and powerful cyborg.",
+    "poster_filename": "terminator_2_judgment_day.jpg"
+  },
+  {
+    "id": 64,
+    "title": "Inception",
+    "year": 2010,
+    "rating": 8.8,
+    "genre": "Sci-Fi",
+    "director": "Christopher Nolan",
+    "description": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+    "poster_filename": "inception.jpg"
+  },
+  {
+    "id": 65,
+    "title": "The Bourne Identity",
+    "year": 2002,
+    "rating": 7.8,
+    "genre": "Action",
+    "director": "Doug Liman",
+    "description": "A man is picked up by a fishing boat, bullet-riddled and suffering from amnesia, before racing to elude assassins and regain his memory.",
+    "poster_filename": "the_bourne_identity.jpg"
+  },
+  {
+    "id": 66,
+    "title": "The Bourne Ultimatum",
+    "year": 2007,
+    "rating": 8.0,
+    "genre": "Action",
+    "director": "Paul Greengrass",
+    "description": "Jason Bourne dodges a ruthless C.I.A. official and his Agents from a new assassination program while searching for the origins of his life as a trained killer.",
+    "poster_filename": "the_bourne_ultimatum.jpg"
+  },
+  {
+    "id": 67,
+    "title": "Mission: Impossible – Fallout",
+    "year": 2018,
+    "rating": 7.7,
+    "genre": "Action",
+    "director": "Christopher McQuarrie",
+    "description": "Ethan Hunt and his IMF team, along with some familiar allies, race against time after a mission goes wrong.",
+    "poster_filename": "mission_impossible_fallout.jpg"
+  },
+  {
+    "id": 68,
+    "title": "Aliens",
+    "year": 1986,
+    "rating": 8.4,
+    "genre": "Sci-Fi",
+    "director": "James Cameron",
+    "description": "Ellen Ripley is rescued by a deep power salvage team after being in hypersleep for 57 years. The moon that the Nostromo visited has been colonized, but contact is lost.",
+    "poster_filename": "aliens.jpg"
+  },
+  {
+    "id": 69,
+    "title": "Predator",
+    "year": 1987,
+    "rating": 7.8,
+    "genre": "Action",
+    "director": "John McTiernan",
+    "description": "A team of commandos on a mission in a Central American jungle find themselves hunted by an extraterrestrial warrior.",
+    "poster_filename": "predator.jpg"
+  },
+  {
+    "id": 70,
+    "title": "Speed",
+    "year": 1994,
+    "rating": 7.3,
+    "genre": "Action",
+    "director": "Jan de Bont",
+    "description": "A young police officer must prevent a bomb exploding aboard a city bus by keeping its speed above 50 mph.",
+    "poster_filename": "speed.jpg"
+  },
+  {
+    "id": 71,
+    "title": "Lethal Weapon",
+    "year": 1987,
+    "rating": 7.6,
+    "genre": "Action",
+    "director": "Richard Donner",
+    "description": "Two newly paired cops who are complete opposites must put aside their differences in order to catch a gang of drug smugglers.",
+    "poster_filename": "lethal_weapon.jpg"
+  },
+  {
+    "id": 72,
+    "title": "The Raid",
+    "year": 2011,
+    "rating": 7.6,
+    "genre": "Action",
+    "director": "Gareth Evans",
+    "description": "A S.W.A.T. team becomes trapped in a tenement run by a ruthless mobster and his army of killers and thugs.",
+    "poster_filename": "the_raid.jpg"
+  },
+  {
+    "id": 73,
+    "title": "The Raid 2",
+    "year": 2014,
+    "rating": 7.9,
+    "genre": "Action",
+    "director": "Gareth Evans",
+    "description": "Only a short time after the first raid, Rama goes undercover with the thugs of Jakarta and plans to bring down the syndicate and uncover the corruption within his own police force.",
+    "poster_filename": "the_raid_2.jpg"
+  },
+  {
+    "id": 74,
+    "title": "Edge of Tomorrow",
+    "year": 2014,
+    "rating": 7.9,
+    "genre": "Action",
+    "director": "Doug Liman",
+    "description": "A soldier fighting aliens gets to relive the same day over and over again, the day restarting every time he dies.",
+    "poster_filename": "edge_of_tomorrow.jpg"
+  },
+  {
+    "id": 75,
+    "title": "Top Gun: Maverick",
+    "year": 2022,
+    "rating": 8.2,
+    "genre": "Action",
+    "director": "Joseph Kosinski",
+    "description": "After thirty years, Maverick is still pushing the envelope as a top naval aviator, but must confront ghosts of his past when he leads TOP GUN's elite graduates on a mission.",
+    "poster_filename": "top_gun_maverick.jpg"
+  },
+  {
+    "id": 76,
+    "title": "Casino Royale",
+    "year": 2006,
+    "rating": 8.0,
+    "genre": "Action",
+    "director": "Martin Campbell",
+    "description": "After earning 00 status and a licence to kill, Secret Agent James Bond sets out on his first mission as 007.",
+    "poster_filename": "casino_royale.jpg"
+  },
+  {
+    "id": 77,
+    "title": "Skyfall",
+    "year": 2012,
+    "rating": 7.8,
+    "genre": "Action",
+    "director": "Sam Mendes",
+    "description": "James Bond's loyalty to M is tested when her past comes back to haunt her. When MI6 comes under attack, 007 must track down and destroy the threat.",
+    "poster_filename": "skyfall.jpg"
+  },
+  {
+    "id": 78,
+    "title": "Black Hawk Down",
+    "year": 2001,
+    "rating": 7.7,
+    "genre": "War",
+    "director": "Ridley Scott",
+    "description": "160 elite U.S. soldiers drop into Somalia to capture two top lieutenants of a renegade warlord and find themselves in a desperate battle with a large force of heavily-armed Somalis.",
+    "poster_filename": "black_hawk_down.jpg"
+  },
+  {
+    "id": 79,
+    "title": "Dredd",
+    "year": 2012,
+    "rating": 7.1,
+    "genre": "Action",
+    "director": "Pete Travis",
+    "description": "In a violent, futuristic city where the police have the authority to act as judge, jury and executioner, a cop teams with a trainee to take down a gang that deals the reality-altering drug, SLO-MO.",
+    "poster_filename": "dredd.jpg"
+  },
+  {
+    "id": 80,
+    "title": "300",
+    "year": 2006,
+    "rating": 7.6,
+    "genre": "Action",
+    "director": "Zack Snyder",
+    "description": "King Leonidas of Sparta and a force of 300 men fight the Persians at Thermopylae in 480 B.C.",
+    "poster_filename": "300.jpg"
+  },
+  {
+    "id": 81,
+    "title": "Avatar",
+    "year": 2009,
+    "rating": 7.9,
+    "genre": "Sci-Fi",
+    "director": "James Cameron",
+    "description": "A paraplegic Marine dispatched to the moon Pandora on a unique mission becomes torn between following his orders and protecting the world he feels is his home.",
+    "poster_filename": "avatar.jpg"
+  },
+  {
+    "id": 82,
+    "title": "Taken",
+    "year": 2008,
+    "rating": 7.7,
+    "genre": "Action",
+    "director": "Pierre Morel",
+    "description": "A retired CIA agent travels across Europe and relies on his old skills to save his estranged daughter, who has been kidnapped while on a trip to Paris.",
+    "poster_filename": "taken.jpg"
+  },
+  {
+    "id": 83,
+    "title": "Rambo: First Blood",
+    "year": 1982,
+    "rating": 7.7,
+    "genre": "Action",
+    "director": "Ted Kotcheff",
+    "description": "A volatile Vietnam War veteran and former Green Beret uses his survival skills in the mountains of Washington after a local sheriff and his deputies abuse him.",
+    "poster_filename": "rambo_first_blood.jpg"
+  },
+  {
+    "id": 84,
+    "title": "Rocky",
+    "year": 1976,
+    "rating": 8.1,
+    "genre": "Drama",
+    "director": "John G. Avildsen",
+    "description": "A small-time Philadelphia boxer gets a supremely rare chance to fight the world heavy-weight champion in a bout in which he strives to go the distance for his self-respect.",
+    "poster_filename": "rocky.jpg"
+  },
+  {
+    "id": 85,
+    "title": "The Equalizer",
+    "year": 2014,
+    "rating": 7.2,
+    "genre": "Action",
+    "director": "Antoine Fuqua",
+    "description": "A man who believes he has put his past behind him cannot stand idly by when he meets a young girl under the control of ultra-violent Russian gangsters.",
+    "poster_filename": "the_equalizer.jpg"
+  },
+  {
+    "id": 86,
+    "title": "Interstellar",
+    "year": 2014,
+    "rating": 8.7,
+    "genre": "Sci-Fi",
+    "director": "Christopher Nolan",
+    "description": "When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, to find a new planet for humans.",
+    "poster_filename": "interstellar.jpg"
+  },
+  {
+    "id": 87,
+    "title": "Blade Runner",
+    "year": 1982,
+    "rating": 8.1,
+    "genre": "Sci-Fi",
+    "director": "Ridley Scott",
+    "description": "A blade runner must pursue and terminate four replicants who stole a ship in space and have returned to Earth to find their creator.",
+    "poster_filename": "blade_runner.jpg"
+  },
+  {
+    "id": 88,
+    "title": "Blade Runner 2049",
+    "year": 2017,
+    "rating": 8.0,
+    "genre": "Sci-Fi",
+    "director": "Denis Villeneuve",
+    "description": "Young Blade Runner K's discovery of a long-buried secret leads him to track down former Blade Runner Rick Deckard, who's been missing for thirty years.",
+    "poster_filename": "blade_runner_2049.jpg"
+  },
+  {
+    "id": 89,
+    "title": "Star Wars: Episode IV",
+    "year": 1977,
+    "rating": 8.6,
+    "genre": "Sci-Fi",
+    "director": "George Lucas",
+    "description": "Luke Skywalker joins forces with a Jedi Knight, a cocky pilot, a Wookiee and two droids to save the galaxy from the Empire's world-destroying battle station.",
+    "poster_filename": "star_wars_episode_iv.jpg"
+  },
+  {
+    "id": 90,
+    "title": "Star Wars: Episode V",
+    "year": 1980,
+    "rating": 8.7,
+    "genre": "Sci-Fi",
+    "director": "Irvin Kershner",
+    "description": "After the Rebels are brutally overpowered by the Empire on the ice planet Hoth, Luke Skywalker begins Jedi training with Yoda.",
+    "poster_filename": "star_wars_episode_v.jpg"
+  },
+  {
+    "id": 91,
+    "title": "Arrival",
+    "year": 2016,
+    "rating": 7.9,
+    "genre": "Sci-Fi",
+    "director": "Denis Villeneuve",
+    "description": "A linguist works with the military to communicate with alien lifeforms after twelve mysterious spacecraft appear around the world.",
+    "poster_filename": "arrival.jpg"
+  },
+  {
+    "id": 92,
+    "title": "Dune (2021)",
+    "year": 2021,
+    "rating": 8.0,
+    "genre": "Sci-Fi",
+    "director": "Denis Villeneuve",
+    "description": "A noble family becomes embroiled in a war for control over the galaxy's most valuable asset while its heir becomes troubled by visions of a dark future.",
+    "poster_filename": "dune_2021.jpg"
+  },
+  {
+    "id": 93,
+    "title": "Ex Machina",
+    "year": 2014,
+    "rating": 7.7,
+    "genre": "Sci-Fi",
+    "director": "Alex Garland",
+    "description": "A young programmer is selected to participate in a ground-breaking experiment in synthetic intelligence by evaluating the human qualities of a highly advanced humanoid A.I.",
+    "poster_filename": "ex_machina.jpg"
+  },
+  {
+    "id": 94,
+    "title": "The Fifth Element",
+    "year": 1997,
+    "rating": 7.6,
+    "genre": "Sci-Fi",
+    "director": "Luc Besson",
+    "description": "In the colorful future, a cab driver unwittingly becomes the central figure in the search for a legendary cosmic weapon to keep Evil and Mr. Zorg at bay.",
+    "poster_filename": "the_fifth_element.jpg"
+  },
+  {
+    "id": 95,
+    "title": "Minority Report",
+    "year": 2002,
+    "rating": 7.6,
+    "genre": "Sci-Fi",
+    "director": "Steven Spielberg",
+    "description": "In a future where a special police unit is able to arrest murderers before they commit their crimes, an officer from that unit is himself accused of a future murder.",
+    "poster_filename": "minority_report.jpg"
+  },
+  {
+    "id": 96,
+    "title": "District 9",
+    "year": 2009,
+    "rating": 7.9,
+    "genre": "Sci-Fi",
+    "director": "Neill Blomkamp",
+    "description": "Violence ensues after an extraterrestrial race forced to live in slum-like conditions on Earth finds a kindred spirit in a government agent exposed to their biotechnology.",
+    "poster_filename": "district_9.jpg"
+  },
+  {
+    "id": 97,
+    "title": "Children of Men",
+    "year": 2006,
+    "rating": 7.9,
+    "genre": "Sci-Fi",
+    "director": "Alfonso Cuarón",
+    "description": "In 2027, in a chaotic world in which women have become infertile, a former activist agrees to help transport a miraculously pregnant woman to a sanctuary at sea.",
+    "poster_filename": "children_of_men.jpg"
+  },
+  {
+    "id": 98,
+    "title": "Alien",
+    "year": 1979,
+    "rating": 8.5,
+    "genre": "Sci-Fi",
+    "director": "Ridley Scott",
+    "description": "The crew of a commercial spacecraft encounter a deadly lifeform after investigating an unknown transmission.",
+    "poster_filename": "alien.jpg"
+  },
+  {
+    "id": 99,
+    "title": "Gravity",
+    "year": 2013,
+    "rating": 7.7,
+    "genre": "Sci-Fi",
+    "director": "Alfonso Cuarón",
+    "description": "Two astronauts work together to survive after an accident leaves them stranded in space.",
+    "poster_filename": "gravity.jpg"
+  },
+  {
+    "id": 100,
+    "title": "Tenet",
+    "year": 2020,
+    "rating": 7.3,
+    "genre": "Sci-Fi",
+    "director": "Christopher Nolan",
+    "description": "Armed with only one word, Tenet, and fighting for the survival of the entire world, a Protagonist journeys through a twilight world of international espionage on a mission that will unfold in something beyond real time.",
+    "poster_filename": "tenet.jpg"
+  },
+  {
+    "id": 101,
+    "title": "Moon",
+    "year": 2009,
+    "rating": 7.8,
+    "genre": "Sci-Fi",
+    "director": "Duncan Jones",
+    "description": "Astronaut Sam Bell has a quintessentially personal encounter toward the end of his three-year stint on the Moon, where he, working alongside his computer, GERTY, sends back to Earth parcels of a resource that has helped solve our planet's energy crisis.",
+    "poster_filename": "moon.jpg"
+  },
+  {
+    "id": 102,
+    "title": "Her",
+    "year": 2013,
+    "rating": 8.0,
+    "genre": "Sci-Fi",
+    "director": "Spike Jonze",
+    "description": "In a near future, a lonely writer develops an unlikely relationship with an operating system designed to meet his every need.",
+    "poster_filename": "her.jpg"
+  },
+  {
+    "id": 103,
+    "title": "War of the Worlds",
+    "year": 2005,
+    "rating": 6.5,
+    "genre": "Sci-Fi",
+    "director": "Steven Spielberg",
+    "description": "An alien invasion threatens the future of humanity. The catastrophic nightmare is depicted through the eyes of one American family fighting for survival.",
+    "poster_filename": "war_of_the_worlds.jpg"
+  },
+  {
+    "id": 104,
+    "title": "A Clockwork Orange",
+    "year": 1971,
+    "rating": 8.3,
+    "genre": "Sci-Fi",
+    "director": "Stanley Kubrick",
+    "description": "In the future, a sadistic gang leader is imprisoned and volunteers for a conduct-aversion therapy, but it doesn't go as planned.",
+    "poster_filename": "a_clockwork_orange.jpg"
+  },
+  {
+    "id": 105,
+    "title": "Ready Player One",
+    "year": 2018,
+    "rating": 7.4,
+    "genre": "Sci-Fi",
+    "director": "Steven Spielberg",
+    "description": "When the creator of a virtual reality world called the OASIS dies, he releases a video in which he challenges all OASIS users to find his Easter Egg.",
+    "poster_filename": "ready_player_one.jpg"
+  },
+  {
+    "id": 106,
+    "title": "Total Recall",
+    "year": 1990,
+    "rating": 7.5,
+    "genre": "Sci-Fi",
+    "director": "Paul Verhoeven",
+    "description": "When a man goes for virtual vacation memories of the planet Mars, an unexpected and harrowing series of events forces him to go to the planet for real.",
+    "poster_filename": "total_recall.jpg"
+  },
+  {
+    "id": 107,
+    "title": "Elysium",
+    "year": 2013,
+    "rating": 6.6,
+    "genre": "Sci-Fi",
+    "director": "Neill Blomkamp",
+    "description": "In the year 2154, the very wealthy live on a man-made space station while the rest of the population resides on a ruined Earth.",
+    "poster_filename": "elysium.jpg"
+  },
+  {
+    "id": 108,
+    "title": "The Silence of the Lambs",
+    "year": 1991,
+    "rating": 8.6,
+    "genre": "Crime",
+    "director": "Jonathan Demme",
+    "description": "A young F.B.I. cadet must receive the help of an incarcerated and manipulative cannibal killer to help catch another serial killer.",
+    "poster_filename": "silence_lambs.jpg"
+  },
+  {
+    "id": 109,
+    "title": "Gone Girl",
+    "year": 2014,
+    "rating": 8.1,
+    "genre": "Drama",
+    "director": "David Fincher",
+    "description": "With his wife's disappearance having become the focus of an intense media circus, a man sees the spotlight turned on him when it's suspected that he may not be innocent.",
+    "poster_filename": "gone_girl.jpg"
+  },
+  {
+    "id": 110,
+    "title": "Shutter Island",
+    "year": 2010,
+    "rating": 8.2,
+    "genre": "Mystery",
+    "director": "Martin Scorsese",
+    "description": "In 1954, a U.S. Marshal investigates the disappearance of a murderer who escaped from a hospital for the criminally insane.",
+    "poster_filename": "shutter_island.jpg"
+  },
+  {
+    "id": 111,
+    "title": "Prisoners",
+    "year": 2013,
+    "rating": 8.1,
+    "genre": "Crime",
+    "director": "Denis Villeneuve",
+    "description": "When Keller Dover's daughter and her friend go missing, he takes matters into his own hands as the police pursue multiple leads and the pressure mounts.",
+    "poster_filename": "prisoners.jpg"
+  },
+  {
+    "id": 112,
+    "title": "Black Swan",
+    "year": 2010,
+    "rating": 8.0,
+    "genre": "Drama",
+    "director": "Darren Aronofsky",
+    "description": "A committed dancer struggles to maintain her sanity after winning the lead role in a production of Tchaikovsky's Swan Lake.",
+    "poster_filename": "black_swan.jpg"
+  },
+  {
+    "id": 113,
+    "title": "The Sixth Sense",
+    "year": 1999,
+    "rating": 8.2,
+    "genre": "Mystery",
+    "director": "M. Night Shyamalan",
+    "description": "A boy who communicates with spirits seeks the help of a disheartened child psychologist.",
+    "poster_filename": "the_sixth_sense.jpg"
+  },
+  {
+    "id": 114,
+    "title": "Nightcrawler",
+    "year": 2014,
+    "rating": 7.8,
+    "genre": "Crime",
+    "director": "Dan Gilroy",
+    "description": "When Louis Bloom, a con man desperate for work, muscles into the world of L.A. crime journalism, he blurs the line between observer and participant to become the star of his own story.",
+    "poster_filename": "nightcrawler.jpg"
+  },
+  {
+    "id": 115,
+    "title": "Memento",
+    "year": 2000,
+    "rating": 8.4,
+    "genre": "Mystery",
+    "director": "Christopher Nolan",
+    "description": "A man with short-term memory loss attempts to track down his wife's murderer.",
+    "poster_filename": "memento.jpg"
+  },
+  {
+    "id": 116,
+    "title": "Oldboy",
+    "year": 2003,
+    "rating": 8.4,
+    "genre": "Action",
+    "director": "Park Chan-wook",
+    "description": "After being kidnapped and imprisoned for fifteen years, Oh Dae-Su is released, only to find that he must find his captor in five days.",
+    "poster_filename": "oldboy.jpg"
+  },
+  {
+    "id": 117,
+    "title": "The Girl with the Dragon Tattoo",
+    "year": 2011,
+    "rating": 7.8,
+    "genre": "Crime",
+    "director": "David Fincher",
+    "description": "Journalist Mikael Blomkvist is aided in his search for a woman who has been missing for forty years by young hacker Lisbeth Salander.",
+    "poster_filename": "the_girl_with_the_dragon_tattoo.jpg"
+  },
+  {
+    "id": 118,
+    "title": "The Game",
+    "year": 1997,
+    "rating": 7.7,
+    "genre": "Drama",
+    "director": "David Fincher",
+    "description": "After a wealthy San Francisco banker is given an opportunity to participate in a mysterious game, his life is turned upside down as he begins to question if it is really a game.",
+    "poster_filename": "the_game.jpg"
+  },
+  {
+    "id": 119,
+    "title": "Misery",
+    "year": 1990,
+    "rating": 7.8,
+    "genre": "Thriller",
+    "director": "Rob Reiner",
+    "description": "After a famous author is rescued from a car crash by a fan of his novels, he comes to realize that the care he is receiving is only the beginning of a nightmare of captivity and abuse.",
+    "poster_filename": "misery.jpg"
+  },
+  {
+    "id": 120,
+    "title": "Cape Fear",
+    "year": 1991,
+    "rating": 7.3,
+    "genre": "Crime",
+    "director": "Martin Scorsese",
+    "description": "A convicted rapist, released from prison after serving a fourteen-year sentence, stalks the family of the lawyer who originally defended him.",
+    "poster_filename": "cape_fear.jpg"
+  },
+  {
+    "id": 121,
+    "title": "Enemy",
+    "year": 2013,
+    "rating": 6.9,
+    "genre": "Drama",
+    "director": "Denis Villeneuve",
+    "description": "A man leaves his wife to meet his exact look-alike after spotting him in a movie.",
+    "poster_filename": "enemy.jpg"
+  },
+  {
+    "id": 122,
+    "title": "Don’t Look Now",
+    "year": 1973,
+    "rating": 7.1,
+    "genre": "Horror",
+    "director": "Nicolas Roeg",
+    "description": "A married couple grieving the recent death of their young daughter are in Venice when they encounter two elderly sisters, one of whom is psychic and brings a warning from beyond.",
+    "poster_filename": "dont_look_now.jpg"
+  },
+  {
+    "id": 123,
+    "title": "Get Out",
+    "year": 2017,
+    "rating": 7.8,
+    "genre": "Horror",
+    "director": "Jordan Peele",
+    "description": "A young African-American visits his white girlfriend's parents for the weekend, where his confusion about their over-friendliness eventually reaches a boiling point.",
+    "poster_filename": "get_out.jpg"
+  },
+  {
+    "id": 124,
+    "title": "Us",
+    "year": 2019,
+    "rating": 6.8,
+    "genre": "Horror",
+    "director": "Jordan Peele",
+    "description": "A family's serene beach vacation turns to chaos when their doppelgängers begin to terrorize them.",
+    "poster_filename": "us.jpg"
+  },
+  {
+    "id": 125,
+    "title": "The Prestige",
+    "year": 2006,
+    "rating": 8.5,
+    "genre": "Drama",
+    "director": "Christopher Nolan",
+    "description": "After a tragic accident, two stage magicians in 1890s London engage in a battle to create the ultimate illusion while sacrificing everything they have to outwit each other.",
+    "poster_filename": "the_prestige.jpg"
+  },
+  {
+    "id": 126,
+    "title": "Arlington Road",
+    "year": 1999,
+    "rating": 7.2,
+    "genre": "Crime",
+    "director": "Mark Pellington",
+    "description": "A widowed college professor becomes suspicious of his new neighbors' activities.",
+    "poster_filename": "arlington_road.jpg"
+  },
+  {
+    "id": 127,
+    "title": "Nocturnal Animals",
+    "year": 2016,
+    "rating": 7.5,
+    "genre": "Drama",
+    "director": "Tom Ford",
+    "description": "A wealthy art gallery owner is haunted by her ex-husband's novel, a violent thriller she interprets as a symbolic revenge story.",
+    "poster_filename": "nocturnal_animals.jpg"
+  },
+  {
+    "id": 128,
+    "title": "Basic Instinct",
+    "year": 1992,
+    "rating": 7.1,
+    "genre": "Drama",
+    "director": "Paul Verhoeven",
+    "description": "A police detective is in charge of the investigation of a brutal murder, in which a beautiful and seductive woman could be involved.",
+    "poster_filename": "basic_instinct.jpg"
+  },
+  {
+    "id": 129,
+    "title": "The Others",
+    "year": 2001,
+    "rating": 7.6,
+    "genre": "Horror",
+    "director": "Alejandro Amenábar",
+    "description": "A woman who lives in her darkened old family house with her two photosensitive children becomes convinced that the home is haunted.",
+    "poster_filename": "the_others.jpg"
+  },
+  {
+    "id": 130,
+    "title": "Saving Private Ryan",
+    "year": 1998,
+    "rating": 8.6,
+    "genre": "Drama",
+    "director": "Steven Spielberg",
+    "description": "Following the Normandy Landings, a group of U.S. soldiers go behind enemy lines to retrieve a paratrooper whose brothers have been killed in action.",
+    "poster_filename": "saving_private_ryan.jpg"
+  },
+  {
+    "id": 131,
+    "title": "Apocalypse Now",
+    "year": 1979,
+    "rating": 8.4,
+    "genre": "War",
+    "director": "Francis Ford Coppola",
+    "description": "A U.S. Army officer serving in Vietnam is tasked with assassinating a renegade Special Forces Colonel who sees himself as a god.",
+    "poster_filename": "apocalypse_now.jpg"
+  },
+  {
+    "id": 132,
+    "title": "Full Metal Jacket",
+    "year": 1987,
+    "rating": 8.3,
+    "genre": "War",
+    "director": "Stanley Kubrick",
+    "description": "A pragmatic U.S. Marine observes the dehumanizing effects the Vietnam War has on his fellow recruits from their brutal boot camp training to the bloody street fighting in Hue.",
+    "poster_filename": "full_metal_jacket.jpg"
+  },
+  {
+    "id": 133,
+    "title": "1917",
+    "year": 2019,
+    "rating": 8.2,
+    "genre": "War",
+    "director": "Sam Mendes",
+    "description": "April 6th, 1917. As a regiment assembles to wage war deep in enemy territory, two soldiers are assigned to race against time and deliver a message that will stop 1,600 men from walking straight into a deadly trap.",
+    "poster_filename": "1917.jpg"
+  },
+  {
+    "id": 134,
+    "title": "Dunkirk",
+    "year": 2017,
+    "rating": 7.8,
+    "genre": "Action",
+    "director": "Christopher Nolan",
+    "description": "Allied soldiers from Belgium, the British Empire and France are surrounded by the German Army, and evacuated during a fierce battle in World War II.",
+    "poster_filename": "dunkirk.jpg"
+  },
+  {
+    "id": 135,
+    "title": "Hacksaw Ridge",
+    "year": 2016,
+    "rating": 8.1,
+    "genre": "Biography",
+    "director": "Mel Gibson",
+    "description": "World War II American Army Medic Desmond T. Doss, who served during the Battle of Okinawa, refuses to kill people, and becomes the first man in American history to receive the Medal of Honor without firing a shot.",
+    "poster_filename": "hacksaw_ridge.jpg"
+  },
+  {
+    "id": 136,
+    "title": "Platoon",
+    "year": 1986,
+    "rating": 8.1,
+    "genre": "War",
+    "director": "Oliver Stone",
+    "description": "A young recruit in Vietnam faces a moral crisis when confronted with the horrors of war and the dualism of man.",
+    "poster_filename": "platoon.jpg"
+  },
+  {
+    "id": 137,
+    "title": "Letters from Iwo Jima",
+    "year": 2006,
+    "rating": 7.9,
+    "genre": "War",
+    "director": "Clint Eastwood",
+    "description": "The story of the battle of Iwo Jima between the United States and Imperial Japan during World War II, as told from the perspective of the Japanese who fought it.",
+    "poster_filename": "letters_from_iwo_jima.jpg"
+  },
+  {
+    "id": 138,
+    "title": "Flags of Our Fathers",
+    "year": 2006,
+    "rating": 7.1,
+    "genre": "War",
+    "director": "Clint Eastwood",
+    "description": "The life stories of the six men who raised the flag at the Battle of Iwo Jima, a turning point in World War II.",
+    "poster_filename": "flags_of_our_fathers.jpg"
+  },
+  {
+    "id": 139,
+    "title": "The Thin Red Line",
+    "year": 1998,
+    "rating": 7.6,
+    "genre": "War",
+    "director": "Terrence Malick",
+    "description": "An adaptation of James Jones' autobiographical 1962 novel, focusing on the conflict at Guadalcanal during the second World War.",
+    "poster_filename": "the_thin_red_line.jpg"
+  },
+  {
+    "id": 140,
+    "title": "Enemy at the Gates",
+    "year": 2001,
+    "rating": 7.6,
+    "genre": "War",
+    "director": "Jean-Jacques Annaud",
+    "description": "A Russian and a German sniper play a game of cat-and-mouse during the Battle of Stalingrad.",
+    "poster_filename": "enemy_at_the_gates.jpg"
+  },
+  {
+    "id": 141,
+    "title": "Fury",
+    "year": 2014,
+    "rating": 7.6,
+    "genre": "War",
+    "director": "David Ayer",
+    "description": "A grizzled tank commander makes tough decisions as he and his crew fight their way across Germany in April, 1945.",
+    "poster_filename": "fury.jpg"
+  },
+  {
+    "id": 142,
+    "title": "Lone Survivor",
+    "year": 2013,
+    "rating": 7.5,
+    "genre": "Biography",
+    "director": "Peter Berg",
+    "description": "Marcus Luttrell and his team set out on a mission to capture or kill notorious Taliban leader Ahmad Shah, in late June 2005.",
+    "poster_filename": "lone_survivor.jpg"
+  },
+  {
+    "id": 143,
+    "title": "American Sniper",
+    "year": 2014,
+    "rating": 7.3,
+    "genre": "Biography",
+    "director": "Clint Eastwood",
+    "description": "Navy SEAL sniper Chris Kyle's pinpoint accuracy saves countless lives on the battlefield and turns him into a legend.",
+    "poster_filename": "american_sniper.jpg"
+  },
+  {
+    "id": 144,
+    "title": "La La Land",
+    "year": 2016,
+    "rating": 8.0,
+    "genre": "Comedy",
+    "director": "Damien Chazelle",
+    "description": "While navigating their careers in Los Angeles, a pianist and an actress fall in love while attempting to reconcile their aspirations for the future.",
+    "poster_filename": "la_la_land.jpg"
+  },
+  {
+    "id": 145,
+    "title": "The Notebook",
+    "year": 2004,
+    "rating": 7.8,
+    "genre": "Romance",
+    "director": "Nick Cassavetes",
+    "description": "A young man falls in love with a rich woman, giving her a sense of freedom, but they are soon separated because of their social differences.",
+    "poster_filename": "the_notebook.jpg"
+  },
+  {
+    "id": 146,
+    "title": "Pride & Prejudice",
+    "year": 2005,
+    "rating": 7.8,
+    "genre": "Romance",
+    "director": "Joe Wright",
+    "description": "Sparks fly when spirited Elizabeth Bennet meets single, rich, and proud Mr. Darcy. But Mr. Darcy reluctantly finds himself falling in love with a woman beneath his class.",
+    "poster_filename": "pride_prejudice.jpg"
+  },
+  {
+    "id": 147,
+    "title": "Before Sunrise",
+    "year": 1995,
+    "rating": 8.1,
+    "genre": "Romance",
+    "director": "Richard Linklater",
+    "description": "A young man and woman meet on a train in Europe, and wind up spending one evening together in Vienna. Unfortunately, both know that this will probably be their only night together.",
+    "poster_filename": "before_sunrise.jpg"
+  },
+  {
+    "id": 148,
+    "title": "Before Sunset",
+    "year": 2004,
+    "rating": 8.1,
+    "genre": "Romance",
+    "director": "Richard Linklater",
+    "description": "Nine years after Jesse and Celine first met, they encounter each other again on the French leg of Jesse's book tour.",
+    "poster_filename": "before_sunset.jpg"
+  },
+  {
+    "id": 149,
+    "title": "Atonement",
+    "year": 2007,
+    "rating": 7.8,
+    "genre": "Drama",
+    "director": "Joe Wright",
+    "description": "Fledgling writer Briony Tallis, as a thirteen-year-old, irrevocably changes the course of several lives when she accuses her sister's lover of a crime he did not commit.",
+    "poster_filename": "atonement.jpg"
+  },
+  {
+    "id": 150,
+    "title": "Call Me by Your Name",
+    "year": 2017,
+    "rating": 7.8,
+    "genre": "Romance",
+    "director": "Luca Guadagnino",
+    "description": "In 1980s Italy, romance blossoms between a seventeen-year-old student and the older man hired as his father's research assistant.",
+    "poster_filename": "call_me_by_your_name.jpg"
+  },
+  {
+    "id": 151,
+    "title": "The Shape of Water",
+    "year": 2017,
+    "rating": 7.3,
+    "genre": "Drama",
+    "director": "Guillermo del Toro",
+    "description": "At a top secret research facility in the 1960s, a lonely janitor forms a unique relationship with an amphibious creature that is being held in captivity.",
+    "poster_filename": "the_shape_of_water.jpg"
+  },
+  {
+    "id": 152,
+    "title": "Notting Hill",
+    "year": 1999,
+    "rating": 7.2,
+    "genre": "Romance",
+    "director": "Roger Michell",
+    "description": "The life of a simple bookshop owner changes when he meets the most famous film star in the world.",
+    "poster_filename": "notting_hill.jpg"
+  },
+  {
+    "id": 153,
+    "title": "Romeo + Juliet",
+    "year": 1996,
+    "rating": 6.7,
+    "genre": "Romance",
+    "director": "Baz Luhrmann",
+    "description": "Shakespeare's famous play is updated to the hip modern suburb of Verona still retaining its original dialogue.",
+    "poster_filename": "romeo_juliet.jpg"
+  },
+  {
+    "id": 154,
+    "title": "Casablanca",
+    "year": 1942,
+    "rating": 8.5,
+    "genre": "Romance",
+    "director": "Michael Curtiz",
+    "description": "A cynical American expatriate struggles to decide whether or not he should help his former lover and her fugitive husband escape French Morocco.",
+    "poster_filename": "casablanca.jpg"
+  },
+  {
+    "id": 155,
+    "title": "The Big Lebowski",
+    "year": 1998,
+    "rating": 8.1,
+    "genre": "Comedy",
+    "director": "Joel Coen, Ethan Coen",
+    "description": "Jeff 'The Dude' Lebowski, mistaken for a millionaire of the same name, seeks restitution for his ruined rug and enlists his bowling buddies to help get it.",
+    "poster_filename": "the_big_lebowski.jpg"
+  },
+  {
+    "id": 156,
+    "title": "Superbad",
+    "year": 2007,
+    "rating": 7.6,
+    "genre": "Comedy",
+    "director": "Greg Mottola",
+    "description": "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
+    "poster_filename": "superbad.jpg"
+  },
+  {
+    "id": 157,
+    "title": "Groundhog Day",
+    "year": 1993,
+    "rating": 8.0,
+    "genre": "Comedy",
+    "director": "Harold Ramis",
+    "description": "A narcissistic, self-centered weatherman finds himself inexplicably living the same day over and over again.",
+    "poster_filename": "groundhog_day.jpg"
+  },
+  {
+    "id": 158,
+    "title": "The Grand Budapest Hotel",
+    "year": 2014,
+    "rating": 8.1,
+    "genre": "Comedy",
+    "director": "Wes Anderson",
+    "description": "A writer encounters the owner of an aging high-class hotel, who tells him of his early years serving as a lobby boy in the hotel's glorious years under an exceptional concierge.",
+    "poster_filename": "the_grand_budapest_hotel.jpg"
+  },
+  {
+    "id": 159,
+    "title": "Borat",
+    "year": 2006,
+    "rating": 7.4,
+    "genre": "Comedy",
+    "director": "Larry Charles",
+    "description": "Kazakh TV talking head Borat is dispatched to the United States to report on the greatest country in the world.",
+    "poster_filename": "borat.jpg"
+  },
+  {
+    "id": 160,
+    "title": "Dumb and Dumber",
+    "year": 1994,
+    "rating": 7.3,
+    "genre": "Comedy",
+    "director": "Peter Farrelly, Bobby Farrelly",
+    "description": "After a gentlewoman leaves a briefcase at the airport terminal, two unintelligent friends go on a road trip to Aspen to return it.",
+    "poster_filename": "dumb_and_dumber.jpg"
+  },
+  {
+    "id": 161,
+    "title": "Home Alone",
+    "year": 1990,
+    "rating": 7.7,
+    "genre": "Comedy",
+    "director": "Chris Columbus",
+    "description": "An eight-year-old troublemaker must protect his house from a pair of burglars when he is accidentally left home alone by his family during Christmas vacation.",
+    "poster_filename": "home_alone.jpg"
+  },
+  {
+    "id": 162,
+    "title": "Ghostbusters",
+    "year": 1984,
+    "rating": 7.8,
+    "genre": "Comedy",
+    "director": "Ivan Reitman",
+    "description": "Three former parapsychology professors set up shop as a unique ghost removal service.",
+    "poster_filename": "ghostbusters.jpg"
+  },
+  {
+    "id": 163,
+    "title": "The Hangover",
+    "year": 2009,
+    "rating": 7.7,
+    "genre": "Comedy",
+    "director": "Todd Phillips",
+    "description": "Three buddies wake up from a bachelor party in Las Vegas, with no memory of the previous night and the bachelor missing.",
+    "poster_filename": "the_hangover.jpg"
+  },
+  {
+    "id": 164,
+    "title": "Shaun of the Dead",
+    "year": 2004,
+    "rating": 7.9,
+    "genre": "Comedy",
+    "director": "Edgar Wright",
+    "description": "A man's uneventful life is disrupted by the zombie apocalypse.",
+    "poster_filename": "shaun_of_the_dead.jpg"
+  },
+  {
+    "id": 165,
+    "title": "Hot Fuzz",
+    "year": 2007,
+    "rating": 7.8,
+    "genre": "Comedy",
+    "director": "Edgar Wright",
+    "description": "A skilled London police officer is transferred to a small town with a suspiciously low crime rate.",
+    "poster_filename": "hot_fuzz.jpg"
+  },
+  {
+    "id": 166,
+    "title": "Monty Python and the Holy Grail",
+    "year": 1975,
+    "rating": 8.2,
+    "genre": "Comedy",
+    "director": "Terry Gilliam, Terry Jones",
+    "description": "King Arthur and his Knights of the Round Table embark on a surreal search for the Holy Grail, encountering many very silly obstacles.",
+    "poster_filename": "monty_python_and_the_holy_grail.jpg"
+  },
+  {
+    "id": 167,
+    "title": "The Truman Show",
+    "year": 1998,
+    "rating": 8.2,
+    "genre": "Comedy",
+    "director": "Peter Weir",
+    "description": "An insurance salesman discovers his whole life is actually a reality TV show.",
+    "poster_filename": "the_truman_show.jpg"
+  },
+  {
+    "id": 168,
+    "title": "Jojo Rabbit",
+    "year": 2019,
+    "rating": 7.9,
+    "genre": "Comedy",
+    "director": "Taika Waititi",
+    "description": "A young boy in Hitler's army finds out his mother is hiding a Jewish girl in their home.",
+    "poster_filename": "jojo_rabbit.jpg"
+  },
+  {
+    "id": 169,
+    "title": "Step Brothers",
+    "year": 2008,
+    "rating": 6.9,
+    "genre": "Comedy",
+    "director": "Adam McKay",
+    "description": "Two middle-aged, unemployed men who still live with their parents are forced to live together as step-brothers when their parents marry.",
+    "poster_filename": "step_brothers.jpg"
+  },
+  {
+    "id": 170,
+    "title": "Anchorman",
+    "year": 2004,
+    "rating": 7.1,
+    "genre": "Comedy",
+    "director": "Adam McKay",
+    "description": "Ron Burgundy is San Diego's top-rated newsman in the male-dominated broadcasting of the 1970s, but that's all about to change when a new female employee arrives.",
+    "poster_filename": "anchorman.jpg"
+  },
+  {
+    "id": 171,
+    "title": "Office Space",
+    "year": 1999,
+    "rating": 7.7,
+    "genre": "Comedy",
+    "director": "Mike Judge",
+    "description": "Three company workers who hate their jobs decide to rebel against their greedy boss.",
+    "poster_filename": "office_space.jpg"
+  },
+  {
+    "id": 172,
+    "title": "Airplane!",
+    "year": 1980,
+    "rating": 7.7,
+    "genre": "Comedy",
+    "director": "Jim Abrahams",
+    "description": "A man afraid to fly must ensure that a plane lands safely after the pilots become sick.",
+    "poster_filename": "airplane.jpg"
+  },
+  {
+    "id": 173,
+    "title": "Tropic Thunder",
+    "year": 2008,
+    "rating": 7.1,
+    "genre": "Comedy",
+    "director": "Ben Stiller",
+    "description": "Through a series of freak occurrences, a group of actors shooting a big-budget war movie are forced to become the soldiers they are portraying.",
+    "poster_filename": "tropic_thunder.jpg"
+  },
+  {
+    "id": 174,
+    "title": "The Lord of the Rings: The Fellowship of the Ring",
+    "year": 2001,
+    "rating": 8.9,
+    "genre": "Fantasy",
+    "director": "Peter Jackson",
+    "description": "A meek Hobbit from the Shire and eight companions set out on a journey to destroy the powerful One Ring and save Middle-earth from the Dark Lord Sauron.",
+    "poster_filename": "the_lord_of_the_rings_the_fellowship_of_the_ring.jpg"
+  },
+  {
+    "id": 175,
+    "title": "The Two Towers",
+    "year": 2002,
+    "rating": 8.8,
+    "genre": "Fantasy",
+    "director": "Peter Jackson",
+    "description": "While Frodo and Sam edge closer to Mordor with the help of the shifty Gollum, the divided fellowship makes a stand against Sauron's new ally, Saruman, and his hordes of Isengard.",
+    "poster_filename": "the_two_towers.jpg"
+  },
+  {
+    "id": 176,
+    "title": "The Return of the King",
+    "year": 2003,
+    "rating": 9.0,
+    "genre": "Fantasy",
+    "director": "Peter Jackson",
+    "description": "Gandalf and Aragorn lead the World of Men against Sauron's army to draw his gaze from Frodo and Sam as they approach Mount Doom with the One Ring.",
+    "poster_filename": "lotr_return.jpg"
+  },
+  {
+    "id": 177,
+    "title": "Harry Potter and the Philosopher’s Stone",
+    "year": 2001,
+    "rating": 7.6,
+    "genre": "Fantasy",
+    "director": "Chris Columbus",
+    "description": "An orphaned boy enrolls in a school of wizardry, where he learns the truth about himself, his family and the terrible evil that haunts the magical world.",
+    "poster_filename": "harry_potter_and_the_philosophers_stone.jpg"
+  },
+  {
+    "id": 178,
+    "title": "Harry Potter and the Prisoner of Azkaban",
+    "year": 2004,
+    "rating": 7.9,
+    "genre": "Fantasy",
+    "director": "Alfonso Cuarón",
+    "description": "Harry Potter, Ron and Hermione return to Hogwarts School of Witchcraft and Wizardry for their third year of study, where they delve into the mystery surrounding an escaped prisoner who poses a dangerous threat to the young wizard.",
+    "poster_filename": "harry_potter_and_the_prisoner_of_azkaban.jpg"
+  },
+  {
+    "id": 179,
+    "title": "Pan’s Labyrinth",
+    "year": 2006,
+    "rating": 8.2,
+    "genre": "Fantasy",
+    "director": "Guillermo del Toro",
+    "description": "In the Falangist Spain of 1944, the young stepdaughter of a tyrannical army officer escapes into an eerie but captivating fantasy world.",
+    "poster_filename": "pans_labyrinth.jpg"
+  },
+  {
+    "id": 180,
+    "title": "The Hobbit: An Unexpected Journey",
+    "year": 2012,
+    "rating": 7.8,
+    "genre": "Fantasy",
+    "director": "Peter Jackson",
+    "description": "A reluctant Hobbit, Bilbo Baggins, sets out to the Lonely Mountain with a spirited group of dwarves to reclaim their mountain home, and the gold within it from the dragon Smaug.",
+    "poster_filename": "the_hobbit_an_unexpected_journey.jpg"
+  },
+  {
+    "id": 181,
+    "title": "The Chronicles of Narnia",
+    "year": 2005,
+    "rating": 6.9,
+    "genre": "Fantasy",
+    "director": "Andrew Adamson",
+    "description": "Four kids travel through a wardrobe to the land of Narnia and learn of their destiny to free it with the guidance of a mystical lion.",
+    "poster_filename": "the_chronicles_of_narnia.jpg"
+  },
+  {
+    "id": 182,
+    "title": "Stardust",
+    "year": 2007,
+    "rating": 7.6,
+    "genre": "Fantasy",
+    "director": "Matthew Vaughn",
+    "description": "In a countryside town bordering on a magical land, a young man makes a promise to his beloved that he'll retrieve a fallen star by venturing into the magical realm.",
+    "poster_filename": "stardust.jpg"
+  },
+  {
+    "id": 183,
+    "title": "Big Fish",
+    "year": 2003,
+    "rating": 8.0,
+    "genre": "Fantasy",
+    "director": "Tim Burton",
+    "description": "A frustrated son tries to distinguish fact from fiction in his dying father's life.",
+    "poster_filename": "big_fish.jpg"
+  },
+  {
+    "id": 184,
+    "title": "Willow",
+    "year": 1988,
+    "rating": 7.2,
+    "genre": "Fantasy",
+    "director": "Ron Howard",
+    "description": "A young farmer is chosen to undertake a perilous journey in order to protect a special baby from an evil queen.",
+    "poster_filename": "willow.jpg"
+  },
+  {
+    "id": 185,
+    "title": "Excalibur",
+    "year": 1981,
+    "rating": 7.3,
+    "genre": "Fantasy",
+    "director": "John Boorman",
+    "description": "The magician Merlin helps Arthur Pendragon unite the Britons around the Round Table of Camelot, even as dark forces conspire to tear it apart.",
+    "poster_filename": "excalibur.jpg"
+  },
+  {
+    "id": 186,
+    "title": "Legend",
+    "year": 1985,
+    "rating": 6.3,
+    "genre": "Fantasy",
+    "director": "Ridley Scott",
+    "description": "A young man must stop the Lord of Darkness from destroying daylight and marrying the woman he loves.",
+    "poster_filename": "legend.jpg"
+  },
+  {
+    "id": 187,
+    "title": "Fantastic Beasts and Where to Find Them",
+    "year": 2016,
+    "rating": 7.2,
+    "genre": "Fantasy",
+    "director": "David Yates",
+    "description": "The adventures of writer Newt Scamander in New York's secret community of witches and wizards seventy years before Harry Potter reads his book in school.",
+    "poster_filename": "fantastic_beasts_and_where_to_find_them.jpg"
+  },
+  {
+    "id": 188,
+    "title": "Indiana Jones: Raiders of the Lost Ark",
+    "year": 1981,
+    "rating": 8.4,
+    "genre": "Action",
+    "director": "Steven Spielberg",
+    "description": "In 1936, archaeologist and adventurer Indiana Jones is hired by the U.S. government to find the Ark of the Covenant before Adolf Hitler's Nazis can obtain its awesome powers.",
+    "poster_filename": "indiana_jones_raiders_of_the_lost_ark.jpg"
+  },
+  {
+    "id": 189,
+    "title": "Indiana Jones: The Last Crusade",
+    "year": 1989,
+    "rating": 8.2,
+    "genre": "Action",
+    "director": "Steven Spielberg",
+    "description": "In 1938, after his father Professor Henry Jones, Sr. goes missing while pursuing the Holy Grail, Professor Henry 'Indiana' Jones, Jr. finds himself up against Adolf Hitler's Nazis again to stop them from obtaining its powers.",
+    "poster_filename": "indiana_jones_the_last_crusade.jpg"
+  },
+  {
+    "id": 190,
+    "title": "Star Wars: A New Hope",
+    "year": 1977,
+    "rating": 8.6,
+    "genre": "Sci-Fi",
+    "director": "George Lucas",
+    "description": "Luke Skywalker joins forces with a Jedi Knight, a cocky pilot, a Wookiee and two droids to save the galaxy from the Empire's world-destroying battle station.",
+    "poster_filename": "star_wars_a_new_hope.jpg"
+  },
+  {
+    "id": 191,
+    "title": "The Lord of the Rings",
+    "year": 1978,
+    "rating": 6.2,
+    "genre": "Animation",
+    "director": "Ralph Bakshi",
+    "description": "The Fellowship of the Ring embark on a journey to destroy the One Ring and end Sauron's reign over Middle-earth.",
+    "poster_filename": "the_lord_of_the_rings.jpg"
+  },
+  {
+    "id": 192,
+    "title": "Pirates of the Caribbean: The Curse of the Black Pearl",
+    "year": 2003,
+    "rating": 8.1,
+    "genre": "Adventure",
+    "director": "Gore Verbinski",
+    "description": "Blacksmith Will Turner teams up with eccentric pirate 'Captain' Jack Sparrow to save his love, the governor's daughter, from Jack's former pirate allies, who are now undead.",
+    "poster_filename": "pirates_of_the_caribbean_the_curse_of_the_black_pearl.jpg"
+  },
+  {
+    "id": 193,
+    "title": "Jurassic Park",
+    "year": 1993,
+    "rating": 8.2,
+    "genre": "Adventure",
+    "director": "Steven Spielberg",
+    "description": "A pragmatic paleontologist visiting an almost-complete theme park is tasked with protecting a couple of kids after a power failure causes the park's cloned dinosaurs to run loose.",
+    "poster_filename": "jurassic_park.jpg"
+  },
+  {
+    "id": 194,
+    "title": "The Mummy",
+    "year": 1999,
+    "rating": 7.1,
+    "genre": "Adventure",
+    "director": "Stephen Sommers",
+    "description": "At an archaeological dig in the ancient city of Hamunaptra, an American serving in the French Foreign Legion accidentally awakens a mummy who begins to wreak havoc as he searches for the reincarnation of his long-lost love.",
+    "poster_filename": "the_mummy.jpg"
+  },
+  {
+    "id": 195,
+    "title": "Life of Pi",
+    "year": 2012,
+    "rating": 7.9,
+    "genre": "Adventure",
+    "director": "Ang Lee",
+    "description": "A young man who survives a disaster at sea is hurtled into an epic journey of adventure and discovery. While cast away, he forms an unexpected connection with another survivor: a fearsome Bengal tiger.",
+    "poster_filename": "life_of_pi.jpg"
+  },
+  {
+    "id": 196,
+    "title": "King Kong",
+    "year": 2005,
+    "rating": 7.2,
+    "genre": "Adventure",
+    "director": "Peter Jackson",
+    "description": "A greedy film producer assembles a team of moviemakers and sets out for the infamous Skull Island, where they find more than just cannibalistic natives.",
+    "poster_filename": "king_kong.jpg"
+  },
+  {
+    "id": 197,
+    "title": "Jumanji",
+    "year": 1995,
+    "rating": 7.1,
+    "genre": "Adventure",
+    "director": "Joe Johnston",
+    "description": "When two kids find and play a magical board game, they release a man trapped in it for decades - and a host of dangers that can only be stopped by finishing the game.",
+    "poster_filename": "jumanji.jpg"
+  },
+  {
+    "id": 198,
+    "title": "The Goonies",
+    "year": 1985,
+    "rating": 7.7,
+    "genre": "Adventure",
+    "director": "Richard Donner",
+    "description": "A group of young misfits called The Goonies discover an ancient map and set out on an adventure to find a legendary pirate's long-lost treasure.",
+    "poster_filename": "the_goonies.jpg"
+  },
+  {
+    "id": 199,
+    "title": "Back to the Future",
+    "year": 1985,
+    "rating": 8.5,
+    "genre": "Sci-Fi",
+    "director": "Robert Zemeckis",
+    "description": "Marty McFly, a 17-year-old high school student, is accidentally sent thirty years into the past in a time-traveling DeLorean invented by his close friend, the eccentric scientist Doc Brown.",
+    "poster_filename": "back_to_the_future.jpg"
+  },
+  {
+    "id": 200,
+    "title": "Back to the Future Part II",
+    "year": 1989,
+    "rating": 7.8,
+    "genre": "Sci-Fi",
+    "director": "Robert Zemeckis",
+    "description": "After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.",
+    "poster_filename": "back_to_the_future_part_ii.jpg"
+  },
+  {
+    "id": 201,
+    "title": "National Treasure",
+    "year": 2004,
+    "rating": 6.9,
+    "genre": "Adventure",
+    "director": "Jon Turteltaub",
+    "description": "A historian races to find the legendary Templar Treasure before a team of mercenaries.",
+    "poster_filename": "national_treasure.jpg"
+  },
+  {
+    "id": 202,
+    "title": "The Hobbit",
+    "year": 1977,
+    "rating": 6.7,
+    "genre": "Animation",
+    "director": "Jules Bass, Arthur Rankin Jr.",
+    "description": "A homebody hobbit travels with a band of dwarves to reclaim their treasure from a dragon.",
+    "poster_filename": "the_hobbit.jpg"
+  },
+  {
+    "id": 203,
+    "title": "Treasure Planet",
+    "year": 2002,
+    "rating": 7.2,
+    "genre": "Animation",
+    "director": "Ron Clements, John Musker",
+    "description": "A Disney animated space opera adaptation of Robert Louis Stevenson's Treasure Island.",
+    "poster_filename": "treasure_planet.jpg"
+  },
+  {
+    "id": 204,
+    "title": "The Princess Bride",
+    "year": 1987,
+    "rating": 8.0,
+    "genre": "Adventure",
+    "director": "Rob Reiner",
+    "description": "While home sick in bed, a young boy's grandfather reads him the story of a farmboy-turned-pirate who encounters numerous obstacles, enemies and friends in his quest to be reunited with his true love.",
+    "poster_filename": "the_princess_bride.jpg"
+  },
+  {
+    "id": 205,
+    "title": "Journey to the Center of the Earth",
+    "year": 2008,
+    "rating": 5.8,
+    "genre": "Adventure",
+    "director": "Eric Brevig",
+    "description": "On a quest to find out what happened to his missing brother, a scientist, his nephew and their mountain guide discover a fantastic and dangerous lost world in the center of the earth.",
+    "poster_filename": "journey_to_the_center_of_the_earth.jpg"
+  }
+]

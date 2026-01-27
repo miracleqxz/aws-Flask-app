@@ -187,3 +187,39 @@ output "connection_info" {
     }
   }
 }
+
+output "POSTGRES_HOST" {
+  description = "PostgreSQL host for external tooling"
+  value       = local.POSTGRES_HOST
+}
+
+output "POSTGRES_PORT" {
+  description = "PostgreSQL port for external tooling"
+  value       = local.POSTGRES_PORT
+}
+
+output "POSTGRES_DB" {
+  description = "PostgreSQL database name for external tooling"
+  value       = local.POSTGRES_DB
+}
+
+output "POSTGRES_USER" {
+  description = "PostgreSQL user for external tooling"
+  value       = local.POSTGRES_USER
+}
+
+output "POSTGRES_PASSWORD" {
+  description = "PostgreSQL password for external tooling"
+  value       = local.POSTGRES_PASSWORD
+  sensitive   = true
+}
+
+output "MEILISEARCH_HOST" {
+  description = "Meilisearch host for external tooling"
+  value       = local.MEILISEARCH_HOST
+}
+
+output "MEILISEARCH_PORT" {
+  description = "Meilisearch port for external tooling"
+  value       = local.MEILISEARCH_PORT
+}

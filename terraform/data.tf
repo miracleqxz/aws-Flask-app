@@ -93,7 +93,16 @@ resource "aws_db_instance" "postgres" {
 
 
 locals {
-  s3_bucket_name = var.s3_bucket_name != "" ? var.s3_bucket_name : "${var.project_name}-posters-${random_id.suffix.hex}"
+  s3_bucket_name    = var.s3_bucket_name != "" ? var.s3_bucket_name : "${var.project_name}-posters-${random_id.suffix.hex}"
+
+  POSTGRES_HOST     = aws_db_instance.postgres.address
+  POSTGRES_PORT     = aws_db_instance.postgres.port
+  POSTGRES_DB       = var.db_name
+  POSTGRES_USER     = var.db_username
+  POSTGRES_PASSWORD = var.db_password
+
+  MEILISEARCH_HOST  = aws_instance.backend.private_ip
+  MEILISEARCH_PORT  = 7700
 }
 
 resource "aws_s3_bucket" "posters" {
