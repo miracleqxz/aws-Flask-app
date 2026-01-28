@@ -16,6 +16,7 @@ from services.grafana_check import check_grafana
 from services.sqs_check import check_sqs  
 from services.s3_check import check_s3
 
+from database.postgres import get_movies_paginated
 from database.movies_db import get_all_movies, get_movie_by_id, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
 from database.movie_cache import get_cached_movie, set_cached_movie, clear_movie_cache
@@ -195,8 +196,22 @@ def get_poster(filename):
 @app.route('/movies')
 @track_request
 def movies_list():
-    movies = get_all_movies()
-    return render_template('movies.html', movies=movies)
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    if page < 1:
+        page = 1
+    
+    result = get_movies_paginated(page, per_page)
+    
+    return render_template(
+        'movies.html',
+        movies=result['movies'],
+        page=result['page'],
+        pages=result['pages'],
+        total=result['total'],
+        per_page=per_page
+    )
 
 
 @app.route('/movie/<int:movie_id>')
@@ -451,7 +466,50 @@ def backend_heartbeat():
     except Exception as e:
         logging.error(f"Heartbeat error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+    
+@app.route('/api/data/sync', methods=['POST'])
+def data_sync():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_DATA_PIPELINE,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'sync'})
+        )
+        
+        result = json.loads(response['Payload'].read().decode())
+        
+        if 'body' in result:
+            return jsonify(json.loads(result['body']))
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Data sync error: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
+@app.route('/api/data/status')
+def data_status():
+    try:
+        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        
+        response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_DATA_PIPELINE,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'status'})
+        )
+        
+        result = json.loads(response['Payload'].read().decode())
+        
+        if 'body' in result:
+            return jsonify(json.loads(result['body']))
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Data status error: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(

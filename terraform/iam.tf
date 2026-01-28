@@ -1,6 +1,4 @@
-# =============================================================================
 # 1. ECS Task Role (for containers: flask-app, analytics-worker)
-# =============================================================================
 
 resource "aws_iam_role" "ecs_task_role" {
   name = "${var.project_name}-ecs-task-role"
@@ -89,15 +87,16 @@ resource "aws_iam_role_policy" "ecs_task_lambda" {
         Action = [
           "lambda:InvokeFunction"
         ]
-        Resource = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}"
+        Resource = [
+          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}",
+          aws_lambda_function.data_pipeline.arn
+        ]
       }
     ]
   })
 }
 
-# =============================================================================
 # 2. ECS Task Execution Role (for ECS agent)
-# =============================================================================
 
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = "${var.project_name}-ecs-execution-role"
@@ -149,9 +148,7 @@ resource "aws_iam_role_policy" "ecs_execution_logs" {
   })
 }
 
-# =============================================================================
 # 3. ECS Instance Role (for EC2 instances running ECS agent)
-# =============================================================================
 
 resource "aws_iam_role" "ecs_instance_role" {
   name = "${var.project_name}-ecs-instance-role"
@@ -196,9 +193,7 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
   }
 }
 
-# =============================================================================
-# 4. Lambda Role (for backend control - start/stop EC2)
-# =============================================================================
+# 4. Lambda Roles
 
 resource "aws_iam_role" "lambda_backend_control" {
   name = "${var.project_name}-lambda-backend-control-role"
@@ -219,6 +214,63 @@ resource "aws_iam_role" "lambda_backend_control" {
   tags = {
     Name = "${var.project_name}-lambda-backend-control-role"
   }
+}
+
+
+resource "aws_iam_role" "lambda_data_pipeline" {
+  name = "${var.project_name}-lambda-data-pipeline"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.project_name}-lambda-data-pipeline-role"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_data_pipeline_basic" {
+  role       = aws_iam_role.lambda_data_pipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_data_pipeline_vpc" {
+  role       = aws_iam_role.lambda_data_pipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_iam_role_policy" "lambda_data_pipeline_s3" {
+  name = "${var.project_name}-lambda-data-pipeline-s3"
+  role = aws_iam_role.lambda_data_pipeline.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:HeadObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.posters.arn,
+          "${aws_s3_bucket.posters.arn}/*"
+        ]
+      }
+    ]
+  })
 }
 
 # EC2 Control Policy - Start/Stop backend instance
@@ -304,9 +356,7 @@ resource "aws_iam_role_policy" "lambda_logs" {
   })
 }
 
-# =============================================================================
 # Local Values
-# =============================================================================
 
 
 # Random suffix for S3 bucket (only if name not provided)

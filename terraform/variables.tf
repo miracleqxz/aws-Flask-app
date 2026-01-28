@@ -51,6 +51,7 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.10.0/24", "10.0.11.0/24"]
 }
 
+
 variable "availability_zones" {
   type    = list(string)
   default = ["us-east-1a", "us-east-1b"]
@@ -59,7 +60,7 @@ variable "availability_zones" {
 variable "frontend_instance_type" {
   description = "EC2 instance type for frontend (flask-app + nginx)"
   type        = string
-  default     = "t2.micro" # Free Tier eligible
+  default     = "t2.micro"
 }
 
 #variable "frontend_key_name" {
@@ -335,6 +336,18 @@ variable "meilisearch_master_key" {
   type        = string
   default     = ""
   sensitive   = true
+}
+
+variable "meilisearch_port" {
+  description = "Meilisearch port"
+  type        = string
+  default     = "7700"
+}
+
+variable "lambda_data_pipeline_name" {
+  description = "Lambda function name for data pipeline"
+  type        = string
+  default     = "data-pipeline"
 }
 
 

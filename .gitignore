@@ -47,6 +47,10 @@ terraform/lambda_backend_control.zip
 terraform/main.tf
 terraform/plan.txt
 terraform/security_groups.tf
+terraform/response.json
+terraform/data_pipeline/layer
+terraform/lambda_data_pipeline.zip
+terraform/data_pipeline/psycopg2_layer.zip
 
 # SSH keys (на всякий случай)
 *.pem
@@ -59,3 +63,7 @@ awscliv2.zip
 
 .dockerignore
 posters
+response.json
+
+
+

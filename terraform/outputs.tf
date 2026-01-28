@@ -223,3 +223,24 @@ output "MEILISEARCH_PORT" {
   description = "Meilisearch port for external tooling"
   value       = local.MEILISEARCH_PORT
 }
+
+output "data_pipeline_lambda_arn" {
+  description = "ARN of the data pipeline Lambda function"
+  value       = aws_lambda_function.data_pipeline.arn
+}
+
+output "data_pipeline_lambda_name" {
+  description = "Name of the data pipeline Lambda function"
+  value       = aws_lambda_function.data_pipeline.function_name
+}
+
+
+output "s3_movies_upload_path" {
+  description = "S3 path for uploading movies.json"
+  value       = "s3://${aws_s3_bucket.posters.id}/data/movies.json"
+}
+
+output "s3_posters_upload_path" {
+  description = "S3 path for uploading posters"
+  value       = "s3://${aws_s3_bucket.posters.id}/posters/"
+}

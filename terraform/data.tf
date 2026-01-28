@@ -93,7 +93,7 @@ resource "aws_db_instance" "postgres" {
 
 
 locals {
-  s3_bucket_name    = var.s3_bucket_name != "" ? var.s3_bucket_name : "${var.project_name}-posters-${random_id.suffix.hex}"
+  s3_bucket_name = var.s3_bucket_name != "" ? var.s3_bucket_name : "${var.project_name}-posters-${random_id.suffix.hex}"
 
   POSTGRES_HOST     = aws_db_instance.postgres.address
   POSTGRES_PORT     = aws_db_instance.postgres.port
@@ -101,8 +101,8 @@ locals {
   POSTGRES_USER     = var.db_username
   POSTGRES_PASSWORD = var.db_password
 
-  MEILISEARCH_HOST  = aws_instance.backend.private_ip
-  MEILISEARCH_PORT  = 7700
+  MEILISEARCH_HOST = aws_instance.backend.private_ip
+  MEILISEARCH_PORT = 7700
 }
 
 resource "aws_s3_bucket" "posters" {
@@ -252,6 +252,19 @@ resource "aws_dynamodb_table" "backend_state" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "lambda_data_pipeline" {
+  name              = "/aws/lambda/${var.project_name}-data-pipeline"
+  retention_in_days = var.log_retention_days
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "${var.project_name}-data-pipeline-logs"
+      Project     = var.project_name
+      Environment = var.environment
+    }
+  )
+}
 
 resource "aws_cloudwatch_log_group" "ecs_frontend" {
   name              = "/ecs/${var.project_name}-frontend"
@@ -284,4 +297,28 @@ resource "aws_cloudwatch_log_group" "lambda" {
     Project     = var.project_name
     Environment = var.environment
   }
+}
+
+# S3 Event Notification
+
+resource "aws_lambda_permission" "s3_data_pipeline" {
+  statement_id   = "AllowS3Invoke"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.data_pipeline.function_name
+  principal      = "s3.amazonaws.com"
+  source_arn     = aws_s3_bucket.posters.arn
+  source_account = data.aws_caller_identity.current.account_id
+}
+
+resource "aws_s3_bucket_notification" "movies_upload" {
+  bucket = aws_s3_bucket.posters.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.data_pipeline.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "data/"
+    filter_suffix       = ".json"
+  }
+
+  depends_on = [aws_lambda_permission.s3_data_pipeline]
 }
