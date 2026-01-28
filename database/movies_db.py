@@ -122,3 +122,35 @@ def log_search_query(query, results_count):
     
     cursor.close()
     conn.close()
+
+
+def get_movies_paginated(page=1, per_page=20):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    offset = (page - 1) * per_page
+    
+    cursor.execute("SELECT COUNT(*) FROM movies")
+    total = cursor.fetchone()['count']
+    
+    cursor.execute("""
+        SELECT id, title, year, rating, genre, director, description, poster_filename
+        FROM movies
+        ORDER BY rating DESC
+        LIMIT %s OFFSET %s
+    """, (per_page, offset))
+    
+    movies = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    total_pages = (total + per_page - 1) // per_page  # ceiling division
+    
+    return {
+        'movies': movies,
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'pages': total_pages
+    }

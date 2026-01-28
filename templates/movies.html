@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Movies</title>
+    <title>All Movies - Page {{ page }}</title>
     <style>
         * {
             margin: 0;
@@ -116,8 +117,70 @@
             color: #6b7280;
             font-size: 0.85em;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .pagination a {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pagination a:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        .pagination .current {
+            background: #f97316;
+            color: white;
+            border: 1px solid #f97316;
+        }
+
+        .pagination .disabled {
+            background: #f9fafb;
+            color: #9ca3af;
+            border: 1px solid #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        .pagination .ellipsis {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+        }
+
+        .pagination-info {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 15px;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -127,17 +190,14 @@
         </div>
 
         <div class="stats">
-            <h3>Total Movies: {{ movies|length }}</h3>
+            <h3>Total Movies: {{ total }} | Page {{ page }} of {{ pages }}</h3>
         </div>
 
         <div class="movies-grid">
             {% for movie in movies %}
             <a href="/movie/{{ movie.id }}" class="movie-card">
-                <img 
-                    src="/api/poster/{{ movie.poster_filename }}" 
-                    alt="{{ movie.title }}"
-                    class="movie-poster"
-                >
+                <img src="/api/poster/{{ movie.poster_filename }}" alt="{{ movie.title }}" class="movie-poster"
+                    loading="lazy">
                 <div class="movie-info">
                     <div class="movie-title">{{ movie.title }}</div>
                     <div class="movie-rating">{{ movie.rating }}/10</div>
@@ -146,6 +206,51 @@
             </a>
             {% endfor %}
         </div>
+
+        <nav class="pagination">
+            {% if page > 1 %}
+            <a href="/movies?page=1" title="First page">«</a>
+            <a href="/movies?page={{ page - 1 }}" title="Previous page">‹</a>
+            {% else %}
+            <span class="disabled">«</span>
+            <span class="disabled">‹</span>
+            {% endif %}
+
+            {% set start_page = [page - 2, 1] | max %}
+            {% set end_page = [page + 2, pages] | min %}
+
+            {% if start_page > 1 %}
+            <a href="/movies?page=1">1</a>
+            {% if start_page > 2 %}
+            <span class="ellipsis">...</span>
+            {% endif %}
+            {% endif %}
+
+            {% for p in range(start_page, end_page + 1) %}
+            {% if p == page %}
+            <span class="current">{{ p }}</span>
+            {% else %}
+            <a href="/movies?page={{ p }}">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if end_page < pages %} {% if end_page < pages - 1 %} <span class="ellipsis">...</span>
+                {% endif %}
+                <a href="/movies?page={{ pages }}">{{ pages }}</a>
+                {% endif %}
+
+                {% if page < pages %} <a href="/movies?page={{ page + 1 }}" title="Next page">›</a>
+                    <a href="/movies?page={{ pages }}" title="Last page">»</a>
+                    {% else %}
+                    <span class="disabled">›</span>
+                    <span class="disabled">»</span>
+                    {% endif %}
+        </nav>
+
+        <div class="pagination-info">
+            Showing {{ ((page - 1) * per_page) + 1 }} - {{ [page * per_page, total] | min }} of {{ total }} movies
+        </div>
     </div>
 </body>
+
 </html>
