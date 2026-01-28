@@ -16,7 +16,7 @@ from services.grafana_check import check_grafana
 from services.sqs_check import check_sqs  
 from services.s3_check import check_s3
 
-from database.postgres import get_movies_paginated
+from database.movies_db import get_movies_paginated
 from database.movies_db import get_all_movies, get_movie_by_id, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
 from database.movie_cache import get_cached_movie, set_cached_movie, clear_movie_cache
