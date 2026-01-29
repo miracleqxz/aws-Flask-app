@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -172,10 +173,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="/movies" class="back-link">← Back to All Movies</a>
-        
+
         {% if from_cache %}
         <div class="cache-badge from-cache">
             DATA FROM CACHE
@@ -188,21 +190,17 @@
 
         <div class="movie-container">
             <div class="movie-hero">
-                <img 
-                    src="/api/poster/{{ movie.poster_filename }}" 
-                    alt="{{ movie.title }}"
-                    class="movie-poster"
-                >
-                
+                <img src="/api/poster/{{ movie.poster_filename }}" alt="{{ movie.title }}" class="movie-poster">
+
                 <div class="movie-info">
                     <h1 class="movie-title">{{ movie.title }}</h1>
-                    
+
                     <div class="movie-meta">
                         <div class="meta-item">
                             <span>{{ movie.year }}</span>
                         </div>
                         <div class="meta-item">
-                            <span>{{ movie.genre }}</span>
+                            <span>{{ movie.genres | join(', ') if movie.genres else 'Unknown' }}</span>
                         </div>
                         <div class="meta-item">
                             <span>{{ movie.director }}</span>
@@ -241,4 +239,5 @@
         </div>
     </div>
 </body>
+
 </html>

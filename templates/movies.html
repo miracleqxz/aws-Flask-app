@@ -201,7 +201,8 @@
                 <div class="movie-info">
                     <div class="movie-title">{{ movie.title }}</div>
                     <div class="movie-rating">{{ movie.rating }}/10</div>
-                    <div class="movie-meta">{{ movie.year }} • {{ movie.genre }}</div>
+                    <div class="movie-meta">{{ movie.year }} • {{ movie.genres | join(', ') if movie.genres else
+                        'Unknown' }}</div>
                 </div>
             </a>
             {% endfor %}

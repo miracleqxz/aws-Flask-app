@@ -16,8 +16,7 @@ from services.grafana_check import check_grafana
 from services.sqs_check import check_sqs  
 from services.s3_check import check_s3
 
-from database.movies_db import get_movies_paginated
-from database.movies_db import get_all_movies, get_movie_by_id, log_search_query
+from database.movies_db import get_movies_paginated, get_all_genres, get_movies_by_genre, get_similar_movies, get_movie_by_id, get_all_movies, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
 from database.movie_cache import get_cached_movie, set_cached_movie, clear_movie_cache
 from database.meilisearch_sync import search_movies_meili  
@@ -510,6 +509,79 @@ def data_status():
     except Exception as e:
         logging.error(f"Data status error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+@app.route('/api/ai/search')
+def ai_search():
+    query = request.args.get('q', '')
+    limit = request.args.get('limit', 5, type=int)
+    
+    if not query:
+        return jsonify({'error': 'Query parameter "q" is required'}), 400
+    
+    results = search_movies_meili(query, limit)
+    return jsonify({'movies': results, 'count': len(results)})
+
+
+@app.route('/api/ai/genres')
+def ai_genres():
+    genres = get_all_genres()
+    return jsonify({'genres': genres, 'count': len(genres)})
+
+
+@app.route('/api/ai/by-genre')
+def ai_by_genre():
+    genre = request.args.get('genre', '')
+    limit = request.args.get('limit', 5, type=int)
+    
+    if not genre:
+        return jsonify({'error': 'Query parameter "genre" is required'}), 400
+    
+    results = get_movies_by_genre(genre, limit)
+    return jsonify({'movies': results, 'count': len(results)})
+
+
+@app.route('/api/ai/similar/<int:movie_id>')
+def ai_similar(movie_id):
+    limit = request.args.get('limit', 5, type=int)
+    
+    results = get_similar_movies(movie_id, limit)
+    return jsonify({'movies': results, 'count': len(results)})
+
+
+@app.route('/api/ai/movie/<int:movie_id>')
+def ai_movie_detail(movie_id):
+    movie = get_movie_by_id(movie_id)
+    
+    if not movie:
+        return jsonify({'error': 'Movie not found'}), 404
+    
+    return jsonify({'movie': dict(movie)})
+
+@app.route('/api/ai/by-mood')
+def ai_by_mood():
+    mood = request.args.get('mood', '')
+    limit = request.args.get('limit', 5, type=int)
+    
+    if not mood:
+        return jsonify({'error': 'Query parameter "mood" is required'}), 400
+    
+    MOOD_TO_GENRES = {
+        "uplifting": ["Comedy", "Romance", "Adventure"],
+        "dark": ["Thriller", "Crime", "Drama"],
+        "intense": ["Action", "Thriller", "War"],
+        "romantic": ["Romance", "Drama"],
+        "funny": ["Comedy"],
+        "thought-provoking": ["Sci-Fi", "Drama", "Mystery"],
+        "scary": ["Horror", "Thriller"],
+        "epic": ["Action", "Adventure", "Fantasy"],
+        "emotional": ["Drama", "Romance"],
+        "nostalgic": ["Adventure", "Fantasy", "Family"],
+    }
+    
+    genres = MOOD_TO_GENRES.get(mood.lower(), ["Drama"])
+    results = get_movies_by_genres(genres, limit)
+    
+    return jsonify({'movies': results, 'count': len(results), 'mood': mood})
 
 if __name__ == '__main__':
     app.run(

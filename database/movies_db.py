@@ -154,3 +154,71 @@ def get_movies_paginated(page=1, per_page=20):
         'per_page': per_page,
         'pages': total_pages
     }
+
+def get_all_genres():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("""
+        SELECT DISTINCT genre 
+        FROM movies 
+        WHERE genre IS NOT NULL 
+        ORDER BY genre
+    """)
+    
+    genres = [row[0] for row in cursor.fetchall()]
+    
+    cursor.close()
+    conn.close()
+    
+    return genres
+
+
+def get_movies_by_genre(genre, limit=10):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cursor.execute("""
+        SELECT id, title, year, rating, genre, director, description, poster_filename
+        FROM movies
+        WHERE LOWER(genre) = LOWER(%s)
+        ORDER BY rating DESC
+        LIMIT %s
+    """, (genre, limit))
+    
+    movies = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return movies
+
+
+def get_similar_movies(movie_id, limit=5):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cursor.execute("SELECT genre FROM movies WHERE id = %s", (movie_id,))
+    result = cursor.fetchone()
+    
+    if not result:
+        cursor.close()
+        conn.close()
+        return []
+    
+    genre = result['genre']
+    
+    cursor.execute("""
+        SELECT id, title, year, rating, genre, director, description, poster_filename
+        FROM movies
+        WHERE genre = %s AND id != %s
+        ORDER BY rating DESC
+        LIMIT %s
+    """, (genre, movie_id, limit))
+    
+    movies = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return movies

@@ -62,19 +62,37 @@ def get_db_connection():
 
 
 def ensure_tables(cursor):
+    # Check if old 'genre' column exists and migrate
+    cursor.execute("""
+        SELECT column_name FROM information_schema.columns 
+        WHERE table_name = 'movies' AND column_name = 'genre'
+    """)
+    has_old_genre = cursor.fetchone() is not None
+    
+    if has_old_genre:
+        logger.info("Migrating from 'genre' to 'genres'...")
+        cursor.execute("ALTER TABLE movies ADD COLUMN IF NOT EXISTS genres TEXT[]")
+        cursor.execute("UPDATE movies SET genres = ARRAY[genre] WHERE genre IS NOT NULL AND genres IS NULL")
+        cursor.execute("ALTER TABLE movies DROP COLUMN IF EXISTS genre")
+        logger.info("Migration complete")
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movies (
             id SERIAL PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             year INTEGER NOT NULL,
             rating DECIMAL(3, 1) NOT NULL,
-            genre VARCHAR(255) NOT NULL,
+            genres TEXT[],
             director VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
             poster_filename VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    
+    # Ensure genres column exists (for existing tables)
+    cursor.execute("ALTER TABLE movies ADD COLUMN IF NOT EXISTS genres TEXT[]")
+    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS search_queries (
             id SERIAL PRIMARY KEY,
@@ -93,27 +111,29 @@ def sync_movies_to_postgres(movies):
     
     try:
         ensure_tables(cursor)
+        conn.commit()
         
-        values = [
-            (
+        for m in movies:
+            # Support both 'genres' array and legacy 'genre' string
+            genres = m.get('genres')
+            if genres is None and 'genre' in m:
+                genres = [m['genre']]
+            
+            cursor.execute("""
+                INSERT INTO movies (id, title, year, rating, genres, director, description, poster_filename)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (id) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    year = EXCLUDED.year,
+                    rating = EXCLUDED.rating,
+                    genres = EXCLUDED.genres,
+                    director = EXCLUDED.director,
+                    description = EXCLUDED.description,
+                    poster_filename = EXCLUDED.poster_filename;
+            """, (
                 m['id'], m['title'], m['year'], m['rating'],
-                m['genre'], m['director'], m['description'], m['poster_filename']
-            )
-            for m in movies
-        ]
-        
-        cursor.executemany("""
-            INSERT INTO movies (id, title, year, rating, genre, director, description, poster_filename)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (id) DO UPDATE SET
-                title = EXCLUDED.title,
-                year = EXCLUDED.year,
-                rating = EXCLUDED.rating,
-                genre = EXCLUDED.genre,
-                director = EXCLUDED.director,
-                description = EXCLUDED.description,
-                poster_filename = EXCLUDED.poster_filename;
-        """, values)
+                genres, m['director'], m['description'], m['poster_filename']
+            ))
         
         conn.commit()
         
@@ -134,7 +154,7 @@ def get_movies_from_postgres():
     
     try:
         cursor.execute("""
-            SELECT id, title, description, poster_filename, year, rating, genre, director
+            SELECT id, title, description, poster_filename, year, rating, genres, director
             FROM movies ORDER BY id;
         """)
         
@@ -147,7 +167,7 @@ def get_movies_from_postgres():
                 'poster_filename': row[3],
                 'year': row[4],
                 'rating': float(row[5]),
-                'genre': row[6],
+                'genres': row[6] if row[6] else [],
                 'director': row[7]
             })
         
@@ -206,13 +226,55 @@ def check_meilisearch_health():
     return result is not None and result.get('status') == 'available'
 
 
-def get_indexed_movie_ids():
-    existing_ids = set()
+def reindex_meilisearch(movies, force=False):
+    if not MEILI_HOST:
+        logger.info("Meilisearch not configured, skipping")
+        return {'status': 'skipped', 'reason': 'not_configured'}
     
+    if not check_meilisearch_health():
+        logger.warning("Meilisearch not accessible")
+        return {'status': 'skipped', 'reason': 'not_accessible'}
+    
+    logger.info("Reindexing Meilisearch...")
+    
+    # Check if index exists
     stats = meili_request('GET', '/indexes/movies/stats')
-    if stats is None:
-        return existing_ids, False
+    index_exists = stats is not None
     
+    if not index_exists:
+        logger.info("Creating movies index...")
+        meili_request('POST', '/indexes', {'uid': 'movies', 'primaryKey': 'id'})
+        
+        # Configure searchable attributes with genres
+        meili_request('PUT', '/indexes/movies/settings/searchable-attributes',
+                      ['title', 'description', 'director', 'genres'])
+        
+        # Configure filterable attributes
+        meili_request('PUT', '/indexes/movies/settings/filterable-attributes',
+                      ['genres', 'year', 'rating', 'director'])
+        
+        # Configure sortable attributes
+        meili_request('PUT', '/indexes/movies/settings/sortable-attributes',
+                      ['year', 'rating', 'title'])
+        
+        force = True  # Force full reindex for new index
+    
+    if force:
+        # Delete all documents and reindex
+        logger.info(f"Full reindex: {len(movies)} movies")
+        meili_request('DELETE', '/indexes/movies/documents')
+        
+        # Wait a bit for deletion
+        import time
+        time.sleep(1)
+        
+        result = meili_request('POST', '/indexes/movies/documents', movies, timeout=60)
+        if result:
+            return {'status': 'ok', 'indexed': len(movies), 'task': result.get('taskUid')}
+        return {'status': 'error', 'message': 'indexing_failed'}
+    
+    # Incremental update - get existing IDs
+    existing_ids = set()
     limit = 1000
     offset = 0
     
@@ -232,27 +294,6 @@ def get_indexed_movie_ids():
         if len(docs) < limit:
             break
         offset += limit
-    
-    return existing_ids, True
-
-
-def reindex_meilisearch(movies):
-    if not MEILI_HOST:
-        logger.info("Meilisearch not configured, skipping")
-        return {'status': 'skipped', 'reason': 'not_configured'}
-    
-    if not check_meilisearch_health():
-        logger.warning("Meilisearch not accessible")
-        return {'status': 'skipped', 'reason': 'not_accessible'}
-    
-    logger.info("Reindexing Meilisearch...")
-    
-    existing_ids, index_exists = get_indexed_movie_ids()
-    
-    if not index_exists:
-        meili_request('POST', '/indexes', {'uid': 'movies', 'primaryKey': 'id'})
-        meili_request('PUT', '/indexes/movies/settings/searchable-attributes',
-                      ['title', 'description', 'director', 'genre'])
     
     missing_movies = [m for m in movies if m['id'] not in existing_ids]
     
@@ -297,7 +338,7 @@ def run_full_sync(force=False):
     # Step 3: Reindex Meilisearch (get fresh data from DB)
     try:
         db_movies = get_movies_from_postgres()
-        results['meilisearch'] = reindex_meilisearch(db_movies)
+        results['meilisearch'] = reindex_meilisearch(db_movies, force=force)
     except Exception as e:
         logger.error(f"Meilisearch reindex failed: {e}")
         results['meilisearch'] = {'status': 'error', 'message': str(e)}
@@ -360,6 +401,7 @@ def handler(event, context):
     
     action = 'sync'
     source = 'unknown'
+    force = False
     
     # Determine action from event source
     if 'Records' in event:
@@ -372,6 +414,7 @@ def handler(event, context):
             
             if key == MOVIES_KEY or key.endswith('movies.json'):
                 action = 'sync'
+                force = True  # Force full reindex on S3 upload
             else:
                 logger.info(f"Ignoring S3 event for {key}")
                 return {'statusCode': 200, 'body': json.dumps({'status': 'ignored', 'key': key})}
@@ -398,12 +441,13 @@ def handler(event, context):
         # Direct invocation (from Flask via boto3)
         source = 'direct'
         action = event.get('action', 'sync')
+        force = event.get('force', False)
     
-    logger.info(f"Action: {action}, Source: {source}")
+    logger.info(f"Action: {action}, Source: {source}, Force: {force}")
     
     try:
         if action == 'sync':
-            result = run_full_sync()
+            result = run_full_sync(force=force)
         elif action == 'status':
             result = get_pipeline_status()
         else:

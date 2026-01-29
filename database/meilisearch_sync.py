@@ -18,7 +18,7 @@ def search_movies_meili(query, limit=20):
         
         results = index.search(query, {
             'limit': limit,
-            'matchingStrategy': 'all'  # Require ALL words to match
+            'matchingStrategy': 'all'
         })
         
         movies = []
@@ -30,7 +30,7 @@ def search_movies_meili(query, limit=20):
                 'poster_filename': hit.get('poster_filename'),  
                 'year': hit.get('year'),
                 'rating': hit.get('rating'),
-                'genre': hit.get('genre'),
+                'genres': hit.get('genres', []),
                 'director': hit.get('director')
             })
         
@@ -41,8 +41,39 @@ def search_movies_meili(query, limit=20):
         return []
 
 
+def search_movies_by_genre(genre, limit=20):
+    try:
+        client = get_meili_client()
+        index = client.get_index('movies')
+        
+        results = index.search('', {
+            'limit': limit,
+            'filter': f'genres = "{genre}"',
+            'sort': ['rating:desc']
+        })
+        
+        movies = []
+        for hit in results.get('hits', []):
+            movies.append({
+                'id': hit.get('id'),
+                'title': hit.get('title'),
+                'description': hit.get('description'),
+                'poster_filename': hit.get('poster_filename'),  
+                'year': hit.get('year'),
+                'rating': hit.get('rating'),
+                'genres': hit.get('genres', []),
+                'director': hit.get('director')
+            })
+        
+        return movies
+        
+    except Exception as e:
+        print(f"Meilisearch genre search error: {e}")
+        return []
+
+
 def index_all_movies():
-    from database.movies_db import get_all_movies
+    from database.postgres import get_all_movies
     
     try:
         client = get_meili_client()
@@ -58,10 +89,10 @@ def index_all_movies():
                 'title',
                 'director',
                 'description',
-                'genre'
+                'genres'
             ],
             
-            'filterableAttributes': ['genre', 'year', 'rating'],
+            'filterableAttributes': ['genres', 'year', 'rating', 'director'],
             'sortableAttributes': ['year', 'rating', 'title'],
             
             'rankingRules': [
@@ -76,12 +107,11 @@ def index_all_movies():
             'typoTolerance': {
                 'enabled': True,
                 'minWordSizeForTypos': {
-                    'oneTypo': 4,   # More strict - 1 typo for 4+ chars
-                    'twoTypos': 8  # 2 typos only for 8+ chars
+                    'oneTypo': 4,
+                    'twoTypos': 8
                 }
             },
             
-            # Fewer stop words - keep important ones
             'stopWords': [
                 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to',
                 'for', 'of', 'with', 'by', 'from', 'as', 'is', 'was',

@@ -22,7 +22,6 @@ def init_postgres():
         )
         
         cursor = conn.cursor()
-        
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS movies (
@@ -30,7 +29,7 @@ def init_postgres():
                 title VARCHAR(255) NOT NULL,
                 year INTEGER NOT NULL,
                 rating DECIMAL(3, 1) NOT NULL,
-                genre VARCHAR(255) NOT NULL,
+                genres TEXT[],
                 director VARCHAR(255) NOT NULL,
                 description TEXT NOT NULL,
                 poster_filename VARCHAR(255) NOT NULL,
@@ -38,6 +37,32 @@ def init_postgres():
             );
             """
         )
+
+        # Migration: if old 'genre' column exists, migrate data and drop it
+        cursor.execute("""
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name = 'movies' AND column_name = 'genre'
+        """)
+        if cursor.fetchone():
+            print("Migrating from 'genre' to 'genres'...")
+        
+            cursor.execute("""
+                ALTER TABLE movies 
+                ADD COLUMN IF NOT EXISTS genres TEXT[]
+            """)
+            
+            cursor.execute("""
+                UPDATE movies 
+                SET genres = ARRAY[genre]
+                WHERE genre IS NOT NULL AND genres IS NULL
+            """)
+
+            cursor.execute("""
+                ALTER TABLE movies 
+                DROP COLUMN genre
+            """)
+            conn.commit()
+            print("Migration complete")
 
         cursor.execute(
             """
@@ -64,7 +89,7 @@ def init_postgres():
                 m["title"],
                 m["year"],
                 m["rating"],
-                m["genre"],
+                m.get("genres", [m["genre"]] if "genre" in m else []),  
                 m["director"],
                 m["description"],
                 m["poster_filename"],
@@ -74,13 +99,13 @@ def init_postgres():
 
         cursor.executemany(
             """
-            INSERT INTO movies (id, title, year, rating, genre, director, description, poster_filename)
+            INSERT INTO movies (id, title, year, rating, genres, director, description, poster_filename)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (id) DO UPDATE SET
                 title = EXCLUDED.title,
                 year = EXCLUDED.year,
                 rating = EXCLUDED.rating,
-                genre = EXCLUDED.genre,
+                genres = EXCLUDED.genres,
                 director = EXCLUDED.director,
                 description = EXCLUDED.description,
                 poster_filename = EXCLUDED.poster_filename;
@@ -239,7 +264,7 @@ def init_meilisearch():
         cursor = conn.cursor()
         cursor.execute(
             """
-            SELECT id, title, description, poster_filename, year, rating, genre, director
+            SELECT id, title, description, poster_filename, year, rating, genres, director
             FROM movies
             ORDER BY id;
             """
@@ -257,7 +282,7 @@ def init_meilisearch():
                     "poster_filename": row[3],
                     "year": row[4],
                     "rating": float(row[5]),
-                    "genre": row[6],
+                    "genres": row[6] if row[6] else [],
                     "director": row[7],
                 }
             )
@@ -280,7 +305,13 @@ def init_meilisearch():
 
             requests.put(
                 f"{base_url}/indexes/movies/settings/searchable-attributes",
-                json=["title", "description", "director", "genre"],
+                json=["title", "description", "director", "genres"],
+                timeout=10,
+            )
+            
+            requests.put(
+                f"{base_url}/indexes/movies/settings/filterable-attributes",
+                json=["genres", "year", "rating"],
                 timeout=10,
             )
 
