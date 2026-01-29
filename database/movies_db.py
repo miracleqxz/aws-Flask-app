@@ -1,4 +1,3 @@
-
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from config import Config
@@ -19,10 +18,8 @@ def init_database():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    
     with open('database/schema.sql', 'r', encoding='utf-8') as f:
         schema = f.read()
-    
     
     cursor.execute(schema)
     conn.commit()
@@ -38,14 +35,14 @@ def insert_movie(movie_data):
     cursor = conn.cursor()
     
     cursor.execute("""
-        INSERT INTO movies (title, year, rating, genre, director, description, poster_filename)
+        INSERT INTO movies (title, year, rating, genres, director, description, poster_filename)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
         movie_data['title'],
         movie_data['year'],
         movie_data['rating'],
-        movie_data['genre'],
+        movie_data.get('genres', []),
         movie_data['director'],
         movie_data['description'],
         movie_data['poster_filename']
@@ -65,7 +62,7 @@ def get_all_movies():
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("""
-        SELECT id, title, year, rating, genre, director, description, poster_filename
+        SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         ORDER BY rating DESC
     """)
@@ -83,7 +80,7 @@ def get_movie_by_id(movie_id):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("""
-        SELECT id, title, year, rating, genre, director, description, poster_filename
+        SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         WHERE id = %s
     """, (movie_id,))
@@ -134,7 +131,7 @@ def get_movies_paginated(page=1, per_page=20):
     total = cursor.fetchone()['count']
     
     cursor.execute("""
-        SELECT id, title, year, rating, genre, director, description, poster_filename
+        SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         ORDER BY rating DESC
         LIMIT %s OFFSET %s
@@ -145,7 +142,7 @@ def get_movies_paginated(page=1, per_page=20):
     cursor.close()
     conn.close()
     
-    total_pages = (total + per_page - 1) // per_page  # ceiling division
+    total_pages = (total + per_page - 1) // per_page
     
     return {
         'movies': movies,
@@ -155,14 +152,15 @@ def get_movies_paginated(page=1, per_page=20):
         'pages': total_pages
     }
 
+
 def get_all_genres():
     conn = get_db_connection()
     cursor = conn.cursor()
     
     cursor.execute("""
-        SELECT DISTINCT genre 
-        FROM movies 
-        WHERE genre IS NOT NULL 
+        SELECT DISTINCT UNNEST(genres) as genre
+        FROM movies
+        WHERE genres IS NOT NULL
         ORDER BY genre
     """)
     
@@ -179,9 +177,9 @@ def get_movies_by_genre(genre, limit=10):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
     cursor.execute("""
-        SELECT id, title, year, rating, genre, director, description, poster_filename
+        SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
-        WHERE LOWER(genre) = LOWER(%s)
+        WHERE %s = ANY(genres)
         ORDER BY rating DESC
         LIMIT %s
     """, (genre, limit))
@@ -198,23 +196,26 @@ def get_similar_movies(movie_id, limit=5):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     
-    cursor.execute("SELECT genre FROM movies WHERE id = %s", (movie_id,))
+    
+    cursor.execute("SELECT genres FROM movies WHERE id = %s", (movie_id,))
     result = cursor.fetchone()
     
-    if not result:
+    if not result or not result['genres']:
         cursor.close()
         conn.close()
         return []
     
-    genre = result['genre']
+    genres = result['genres']
+    
     
     cursor.execute("""
-        SELECT id, title, year, rating, genre, director, description, poster_filename
+        SELECT id, title, year, rating, genres, director, description, poster_filename,
+               (SELECT COUNT(*) FROM UNNEST(genres) g WHERE g = ANY(%s)) as overlap
         FROM movies
-        WHERE genre = %s AND id != %s
-        ORDER BY rating DESC
+        WHERE id != %s AND genres && %s
+        ORDER BY overlap DESC, rating DESC
         LIMIT %s
-    """, (genre, movie_id, limit))
+    """, (genres, movie_id, genres, limit))
     
     movies = cursor.fetchall()
     
