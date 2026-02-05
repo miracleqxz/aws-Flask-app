@@ -319,6 +319,33 @@ def api_featured_movies():
     
     return jsonify({'movies': result})
 
+@app.route('/api/movies/genres')
+def api_movies_genres():
+    try:
+        movies = get_all_movies()
+        
+        genre_counts = {}
+        for movie in movies:
+            genre = movie.get('genre', 'Unknown')
+            genre_counts[genre] = genre_counts.get(genre, 0) + 1
+        
+        sorted_genres = sorted(
+            genre_counts.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+        
+        return jsonify({
+            'total_genres': len(genre_counts),
+            'genres': [
+                {'name': genre, 'count': count}
+                for genre, count in sorted_genres
+            ]
+        })
+    except Exception as e:
+        logging.error(f"Genres error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/sqs/stats')  
 def api_sqs_stats():

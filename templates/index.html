@@ -917,393 +917,374 @@
                 </div>
             </div>
 
-            <!-- System Load Indicator -->
+
             <div class="stat-card">
                 <div class="stat-card-header">
-                    <div class="stat-card-title">System Load</div>
+                    <div class="stat-card-title">GENRES</div>
                 </div>
-                <div class="stat-card-value" id="systemLoadValue">-</div>
-                <div class="load-indicator">
-                    <div class="load-bar">
-                        <div class="load-bar-fill" id="loadBarFill" style="width: 0%"></div>
-                    </div>
-                    <div class="load-value" id="loadValue">0%</div>
+                <div class="stat-card-value" id="totalGenresCount">5</div>
+                <div style="font-size: 0.9em; color: #6b7280; margin-top: -8px; margin-bottom: 12px;">Total Categories
                 </div>
-                <div class="stat-card-details">
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">Redis OPS</div>
-                        <div class="stat-card-detail-value" id="redisOps">-</div>
-                    </div>
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">DB Cache Hit</div>
-                        <div class="stat-card-detail-value" id="dbCacheHit">-</div>
-                    </div>
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">Status</div>
-                        <div class="stat-card-detail-value" id="systemStatus">-</div>
-                    </div>
+
+                <div id="genresList" style="margin-top: 12px;">
                 </div>
-                <div
-                    style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f3f4f6; font-size: 0.75em; color: #9ca3af; line-height: 1.4;">
-                    Based on Redis memory usage, activity (OPS), and database connection usage
+            </div>
+
+
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="Search movies by title, director, or description..." autofocus>
+                    <button class="search-btn" onclick="searchMovies()">Search</button>
                 </div>
+                <div class="search-meta" id="searchMeta"></div>
+            </div>
+
+            <div class="results" id="results"></div>
+
+            <!-- Featured Movies Section -->
+            <div class="featured-movies" id="featuredMovies">
+                <h3>Top Rated Movies</h3>
+                <div class="featured-grid" id="featuredGrid">
+                    <div class="loading">Loading featured movies...</div>
+                </div>
+            </div>
+
+            <div class="analytics">
+                <h3>Popular Searches (Last 7 Days)</h3>
+                <div id="popularSearches">Loading...</div>
             </div>
         </div>
 
-        <div class="search-box">
-            <div class="search-input-wrapper">
-                <input type="text" id="searchInput" class="search-input"
-                    placeholder="Search movies by title, director, or description..." autofocus>
-                <button class="search-btn" onclick="searchMovies()">Search</button>
-            </div>
-            <div class="search-meta" id="searchMeta"></div>
-        </div>
+        <script>
+            // Backend state
+            let backendState = 'unknown';
+            let heartbeatInterval = null;
+            let statusCheckInterval = null;
 
-        <div class="results" id="results"></div>
+            // Services that run on backend
+            const backendServices = ['redis', 'meilisearch', 'consul', 'prometheus', 'grafana'];
+            let isLoadingServices = false;  // Prevent duplicate calls
+            const frontendServices = ['postgres', 'nginx'];
 
-        <!-- Featured Movies Section -->
-        <div class="featured-movies" id="featuredMovies">
-            <h3>Top Rated Movies</h3>
-            <div class="featured-grid" id="featuredGrid">
-                <div class="loading">Loading featured movies...</div>
-            </div>
-        </div>
+            // Search on Enter key
+            document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchMovies();
+            });
 
-        <div class="analytics">
-            <h3>Popular Searches (Last 7 Days)</h3>
-            <div id="popularSearches">Loading...</div>
-        </div>
-    </div>
+            // =====================================================================
+            // Backend Control Functions
+            // =====================================================================
 
-    <script>
-        // Backend state
-        let backendState = 'unknown';
-        let heartbeatInterval = null;
-        let statusCheckInterval = null;
+            async function checkBackendStatus() {
+                try {
+                    const res = await fetch('/api/backend/status');
+                    const data = await res.json();
 
-        // Services that run on backend
-        const backendServices = ['redis', 'meilisearch', 'consul', 'prometheus', 'grafana'];
-        let isLoadingServices = false;  // Prevent duplicate calls
-        const frontendServices = ['postgres', 'nginx'];
-
-        // Search on Enter key
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') searchMovies();
-        });
-
-        // =====================================================================
-        // Backend Control Functions
-        // =====================================================================
-
-        async function checkBackendStatus() {
-            try {
-                const res = await fetch('/api/backend/status');
-                const data = await res.json();
-
-                updateBackendUI(data);
-                return data;
-            } catch (e) {
-                console.error('Backend status check failed:', e);
-                updateBackendUI({ state: 'unknown', message: e.message });
-                return null;
+                    updateBackendUI(data);
+                    return data;
+                } catch (e) {
+                    console.error('Backend status check failed:', e);
+                    updateBackendUI({ state: 'unknown', message: e.message });
+                    return null;
+                }
             }
-        }
 
-        function updateBackendUI(data) {
-            const badge = document.getElementById('backendStatusBadge');
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            const btnStart = document.getElementById('btnStart');
-            const btnStop = document.getElementById('btnStop');
-            const info = document.getElementById('backendInfo');
-            const heartbeat = document.getElementById('heartbeatIndicator');
+            function updateBackendUI(data) {
+                const badge = document.getElementById('backendStatusBadge');
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+                const btnStart = document.getElementById('btnStart');
+                const btnStop = document.getElementById('btnStop');
+                const info = document.getElementById('backendInfo');
+                const heartbeat = document.getElementById('heartbeatIndicator');
 
-            const state = data.state || 'unknown';
-            backendState = state;
+                const state = data.state || 'unknown';
+                backendState = state;
 
-            // Update badge
-            badge.className = 'status-indicator ' + getStateClass(state);
-            dot.className = 'status-dot ' + getStateClass(state);
-            text.textContent = getStateText(state);
+                // Update badge
+                badge.className = 'status-indicator ' + getStateClass(state);
+                dot.className = 'status-dot ' + getStateClass(state);
+                text.textContent = getStateText(state);
 
-            // Update buttons
-            btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
-            btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
+                // Update buttons
+                btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
+                btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
 
-            // Update info panel
-            if (state === 'running') {
-                info.style.display = 'grid';
-                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
-                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
+                // Update info panel
+                if (state === 'running') {
+                    info.style.display = 'grid';
+                    document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
+                    document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
 
-                if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
-                    document.getElementById('infoShutdownTimer').textContent =
-                        data.heartbeat.will_stop_in + ' minutes';
+                    if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
+                        document.getElementById('infoShutdownTimer').textContent =
+                            data.heartbeat.will_stop_in + ' minutes';
+                    }
+
+                    // Start heartbeat if not already running
+                    if (!heartbeatInterval) {
+                        startHeartbeat();
+                    }
+                    heartbeat.style.display = 'flex';
+                } else {
+                    info.style.display = 'none';
+                    heartbeat.style.display = 'none';
+                    stopHeartbeat();
                 }
 
-                // Start heartbeat if not already running
-                if (!heartbeatInterval) {
-                    startHeartbeat();
+                // Refresh services status
+                loadServicesStatus();
+            }
+
+            function getStateClass(state) {
+                switch (state) {
+                    case 'running': return 'running';
+                    case 'stopped': return 'stopped';
+                    case 'pending':
+                    case 'starting':
+                    case 'stopping': return 'pending';
+                    default: return 'stopped';
                 }
-                heartbeat.style.display = 'flex';
-            } else {
-                info.style.display = 'none';
-                heartbeat.style.display = 'none';
-                stopHeartbeat();
             }
 
-            // Refresh services status
-            loadServicesStatus();
-        }
-
-        function getStateClass(state) {
-            switch (state) {
-                case 'running': return 'running';
-                case 'stopped': return 'stopped';
-                case 'pending':
-                case 'starting':
-                case 'stopping': return 'pending';
-                default: return 'stopped';
-            }
-        }
-
-        function getStateText(state) {
-            switch (state) {
-                case 'running': return 'Running';
-                case 'stopped': return 'Stopped';
-                case 'pending': return 'Pending...';
-                case 'starting': return 'Starting...';
-                case 'stopping': return 'Stopping...';
-                default: return 'Unknown';
-            }
-        }
-
-        async function startBackend() {
-            const btn = document.getElementById('btnStart');
-            btn.disabled = true;
-            btn.innerHTML = 'Starting...';
-
-            try {
-                const res = await fetch('/api/backend/start', { method: 'POST' });
-                const data = await res.json();
-
-                console.log('Start response:', data);
-
-                // Poll for status until running
-                pollUntilState('running', 60000); // 60 sec timeout
-
-            } catch (e) {
-                console.error('Start failed:', e);
-                alert('Failed to start backend: ' + e.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Start Monitoring';
-            }
-        }
-
-        async function stopBackend() {
-            if (!confirm('Are you sure you want to stop the backend services?')) {
-                return;
+            function getStateText(state) {
+                switch (state) {
+                    case 'running': return 'Running';
+                    case 'stopped': return 'Stopped';
+                    case 'pending': return 'Pending...';
+                    case 'starting': return 'Starting...';
+                    case 'stopping': return 'Stopping...';
+                    default: return 'Unknown';
+                }
             }
 
-            const btn = document.getElementById('btnStop');
-            btn.disabled = true;
-            btn.innerHTML = 'Stopping...';
+            async function startBackend() {
+                const btn = document.getElementById('btnStart');
+                btn.disabled = true;
+                btn.innerHTML = 'Starting...';
 
-            try {
-                const res = await fetch('/api/backend/stop', { method: 'POST' });
-                const data = await res.json();
+                try {
+                    const res = await fetch('/api/backend/start', { method: 'POST' });
+                    const data = await res.json();
 
-                console.log('Stop response:', data);
-                stopHeartbeat();
+                    console.log('Start response:', data);
 
-                // Poll for status until stopped
-                pollUntilState('stopped', 60000);
+                    // Poll for status until running
+                    pollUntilState('running', 60000); // 60 sec timeout
 
-            } catch (e) {
-                console.error('Stop failed:', e);
-                alert('Failed to stop backend: ' + e.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Stop Backend';
+                } catch (e) {
+                    console.error('Start failed:', e);
+                    alert('Failed to start backend: ' + e.message);
+                    btn.disabled = false;
+                    btn.innerHTML = 'Start Monitoring';
+                }
             }
-        }
 
-        async function pollUntilState(targetState, timeout) {
-            const startTime = Date.now();
-
-            const poll = async () => {
-                if (Date.now() - startTime > timeout) {
-                    console.log('Polling timeout');
-                    checkBackendStatus();
+            async function stopBackend() {
+                if (!confirm('Are you sure you want to stop the backend services?')) {
                     return;
                 }
 
-                const data = await checkBackendStatus();
+                const btn = document.getElementById('btnStop');
+                btn.disabled = true;
+                btn.innerHTML = 'Stopping...';
 
-                if (data && data.state === targetState) {
-                    console.log('Reached target state:', targetState);
-                    return;
+                try {
+                    const res = await fetch('/api/backend/stop', { method: 'POST' });
+                    const data = await res.json();
+
+                    console.log('Stop response:', data);
+                    stopHeartbeat();
+
+                    // Poll for status until stopped
+                    pollUntilState('stopped', 60000);
+
+                } catch (e) {
+                    console.error('Stop failed:', e);
+                    alert('Failed to stop backend: ' + e.message);
+                    btn.disabled = false;
+                    btn.innerHTML = 'Stop Backend';
+                }
+            }
+
+            async function pollUntilState(targetState, timeout) {
+                const startTime = Date.now();
+
+                const poll = async () => {
+                    if (Date.now() - startTime > timeout) {
+                        console.log('Polling timeout');
+                        checkBackendStatus();
+                        return;
+                    }
+
+                    const data = await checkBackendStatus();
+
+                    if (data && data.state === targetState) {
+                        console.log('Reached target state:', targetState);
+                        return;
+                    }
+
+                    setTimeout(poll, 3000); // Poll every 3 seconds
+                };
+
+                poll();
+            }
+
+            // =====================================================================
+            // Heartbeat Functions
+            // =====================================================================
+
+            function startHeartbeat() {
+                if (heartbeatInterval) return;
+
+                console.log('Starting heartbeat...');
+
+                // Send immediately
+                sendHeartbeat();
+
+                // Then every 30 seconds
+                heartbeatInterval = setInterval(sendHeartbeat, 30000);
+
+                // Update UI
+                const icon = document.querySelector('.heartbeat-icon');
+                if (icon) icon.classList.remove('inactive');
+            }
+
+            function stopHeartbeat() {
+                if (heartbeatInterval) {
+                    console.log('Stopping heartbeat...');
+                    clearInterval(heartbeatInterval);
+                    heartbeatInterval = null;
                 }
 
-                setTimeout(poll, 3000); // Poll every 3 seconds
-            };
-
-            poll();
-        }
-
-        // =====================================================================
-        // Heartbeat Functions
-        // =====================================================================
-
-        function startHeartbeat() {
-            if (heartbeatInterval) return;
-
-            console.log('Starting heartbeat...');
-
-            // Send immediately
-            sendHeartbeat();
-
-            // Then every 30 seconds
-            heartbeatInterval = setInterval(sendHeartbeat, 30000);
-
-            // Update UI
-            const icon = document.querySelector('.heartbeat-icon');
-            if (icon) icon.classList.remove('inactive');
-        }
-
-        function stopHeartbeat() {
-            if (heartbeatInterval) {
-                console.log('Stopping heartbeat...');
-                clearInterval(heartbeatInterval);
-                heartbeatInterval = null;
+                const icon = document.querySelector('.heartbeat-icon');
+                if (icon) icon.classList.add('inactive');
             }
 
-            const icon = document.querySelector('.heartbeat-icon');
-            if (icon) icon.classList.add('inactive');
-        }
-
-        async function sendHeartbeat() {
-            try {
-                await fetch('/api/backend/heartbeat', { method: 'POST' });
-                console.log('Heartbeat sent');
-            } catch (e) {
-                console.error('Heartbeat failed:', e);
+            async function sendHeartbeat() {
+                try {
+                    await fetch('/api/backend/heartbeat', { method: 'POST' });
+                    console.log('Heartbeat sent');
+                } catch (e) {
+                    console.error('Heartbeat failed:', e);
+                }
             }
-        }
 
-        // Stop heartbeat when leaving page
-        window.addEventListener('beforeunload', () => {
-            stopHeartbeat();
-        });
+            // Stop heartbeat when leaving page
+            window.addEventListener('beforeunload', () => {
+                stopHeartbeat();
+            });
 
-        // =====================================================================
-        // Services Status
-        // =====================================================================
+            // =====================================================================
+            // Services Status
+            // =====================================================================
 
 
-        async function loadServicesStatus() {
-            // Prevent concurrent calls
-            if (isLoadingServices) return;
-            isLoadingServices = true;
+            async function loadServicesStatus() {
+                // Prevent concurrent calls
+                if (isLoadingServices) return;
+                isLoadingServices = true;
 
-            const allServices = [...frontendServices, ...backendServices];
+                const allServices = [...frontendServices, ...backendServices];
 
-            const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = '';  // Clear before adding
+                const grid = document.getElementById('servicesGrid');
+                grid.innerHTML = '';  // Clear before adding
 
-            for (const service of allServices) {
-                const isBackendService = backendServices.includes(service);
+                for (const service of allServices) {
+                    const isBackendService = backendServices.includes(service);
 
-                // If backend is not running, show offline for backend services
-                if (isBackendService && backendState !== 'running') {
-                    const a = document.createElement('a');
-                    a.href = `/service/${service}`;
-                    a.className = 'service-item offline';
-                    a.innerHTML = `
+                    // If backend is not running, show offline for backend services
+                    if (isBackendService && backendState !== 'running') {
+                        const a = document.createElement('a');
+                        a.href = `/service/${service}`;
+                        a.className = 'service-item offline';
+                        a.innerHTML = `
                         <span class="service-status-dot offline"></span>
                         <span class="service-name">${service}</span>
                         <span class="service-location">backend</span>
                     `;
-                    grid.appendChild(a);
-                    continue;
-                }
+                        grid.appendChild(a);
+                        continue;
+                    }
 
-                try {
-                    const res = await fetch(`/check/${service}`);
-                    const data = await res.json();
+                    try {
+                        const res = await fetch(`/check/${service}`);
+                        const data = await res.json();
 
-                    const a = document.createElement('a');
-                    a.href = `/service/${service}`;
-                    a.className = `service-item ${data.status}`;
-                    a.innerHTML = `
+                        const a = document.createElement('a');
+                        a.href = `/service/${service}`;
+                        a.className = `service-item ${data.status}`;
+                        a.innerHTML = `
                         <span class="service-status-dot ${data.status}"></span>
                         <span class="service-name">${service}</span>
                         <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
                     `;
-                    grid.appendChild(a);
-                } catch (e) {
-                    console.error(`Error checking ${service}:`, e);
+                        grid.appendChild(a);
+                    } catch (e) {
+                        console.error(`Error checking ${service}:`, e);
 
-                    const a = document.createElement('a');
-                    a.href = `/service/${service}`;
-                    a.className = 'service-item unhealthy';
-                    a.innerHTML = `
+                        const a = document.createElement('a');
+                        a.href = `/service/${service}`;
+                        a.className = 'service-item unhealthy';
+                        a.innerHTML = `
                         <span class="service-status-dot unhealthy"></span>
                         <span class="service-name">${service}</span>
                         <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
                     `;
-                    grid.appendChild(a);
+                        grid.appendChild(a);
+                    }
                 }
+
+                isLoadingServices = false;  // Release lock
             }
 
-            isLoadingServices = false;  // Release lock
-        }
+            // =====================================================================
+            // Search Functions
+            // =====================================================================
 
-        // =====================================================================
-        // Search Functions
-        // =====================================================================
+            async function searchMovies() {
+                const query = document.getElementById('searchInput').value.trim();
+                if (!query) return;
 
-        async function searchMovies() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) return;
-
-            // Check if backend is running (needed for Meilisearch)
-            if (backendState !== 'running') {
-                document.getElementById('results').innerHTML = `
+                // Check if backend is running (needed for Meilisearch)
+                if (backendState !== 'running') {
+                    document.getElementById('results').innerHTML = `
                     <div class="empty-state">
                         <h2>Backend Offline</h2>
                         <p>Search requires Meilisearch. Please start the backend first.</p>
                     </div>
                 `;
-                return;
-            }
+                    return;
+                }
 
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
 
-            // Hide featured movies when searching
-            document.getElementById('featuredMovies').style.display = 'none';
+                // Hide featured movies when searching
+                document.getElementById('featuredMovies').style.display = 'none';
 
-            try {
-                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                const data = await res.json();
+                try {
+                    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
 
-                document.getElementById('searchMeta').innerHTML = `
+                    document.getElementById('searchMeta').innerHTML = `
                     Found ${data.count} results in ${data.cached ? 'cache' : 'Meilisearch'}
                 `;
 
-                if (data.count === 0) {
-                    resultsDiv.innerHTML = `
+                    if (data.count === 0) {
+                        resultsDiv.innerHTML = `
                         <div class="empty-state">
                             <h2>No results found</h2>
                             <p>Try different keywords</p>
                         </div>
                     `;
-                    // Show featured movies when no search results
-                    document.getElementById('featuredMovies').style.display = 'block';
-                    return;
-                }
+                        // Show featured movies when no search results
+                        document.getElementById('featuredMovies').style.display = 'block';
+                        return;
+                    }
 
-                resultsDiv.innerHTML = data.results.map(movie => `
+                    resultsDiv.innerHTML = data.results.map(movie => `
                     <div class="movie-card">
                         <img 
                             src="/api/poster/${movie.poster_filename}" 
@@ -1320,179 +1301,179 @@
                     </div>
                 `).join('');
 
-                // Hide featured movies when showing search results
-                document.getElementById('featuredMovies').style.display = 'none';
+                    // Hide featured movies when showing search results
+                    document.getElementById('featuredMovies').style.display = 'none';
 
-                loadPopularSearches();
+                    loadPopularSearches();
 
-            } catch (e) {
-                resultsDiv.innerHTML = `
+                } catch (e) {
+                    resultsDiv.innerHTML = `
                     <div class="empty-state">
                         <h2>Error</h2>
                         <p>${e.message}</p>
                     </div>
                 `;
-            }
-        }
-
-        // =====================================================================
-        // Cache Statistics
-        // =====================================================================
-
-        async function loadCacheStats() {
-            try {
-                const res = await fetch('/api/cache/stats');
-                const data = await res.json();
-
-                if (data.error) {
-                    console.error('Cache stats error:', data.error);
-                    return;
                 }
-
-                // Update hit rate
-                const hitRate = parseFloat(data.hit_rate.replace('%', ''));
-                document.getElementById('hitRateValue').textContent = data.hit_rate;
-                document.getElementById('cacheHits').textContent = data.hits.toLocaleString();
-                document.getElementById('cacheMisses').textContent = data.misses.toLocaleString();
-                document.getElementById('cachedKeys').textContent = data.cached_keys.toLocaleString();
-
-                // Update badge color based on hit rate
-                const badge = document.getElementById('hitRateBadge');
-                badge.textContent = data.hit_rate;
-                badge.className = 'hit-rate-badge ';
-                if (hitRate >= 80) {
-                    badge.className += 'excellent';
-                } else if (hitRate >= 60) {
-                    badge.className += 'good';
-                } else if (hitRate >= 40) {
-                    badge.className += 'fair';
-                } else {
-                    badge.className += 'poor';
-                }
-            } catch (e) {
-                console.error('Failed to load cache stats:', e);
-                document.getElementById('hitRateValue').textContent = 'Error';
             }
-        }
 
-        // =====================================================================
-        // System Load Indicator
-        // =====================================================================
+            // =====================================================================
+            // Cache Statistics
+            // =====================================================================
 
-        async function loadSystemLoad() {
-            try {
-                // Get Redis stats for system load
-                const redisRes = await fetch('/check/redis');
-                const redisData = await redisRes.json();
+            async function loadCacheStats() {
+                try {
+                    const res = await fetch('/api/cache/stats');
+                    const data = await res.json();
 
-                if (redisData.status === 'healthy' && redisData.details) {
-                    const perf = redisData.details.performance || {};
-                    const memory = redisData.details.memory || {};
-                    const ops = perf.instantaneous_ops_per_sec || 0;
-
-                    // Get Postgres stats for DB cache hit ratio
-                    const pgRes = await fetch('/check/postgres');
-                    const pgData = await pgRes.json();
-
-                    let dbCacheHit = '-';
-                    let dbConnectionsPercent = 0;
-                    let loadStatus = 'Normal';
-
-                    if (pgData.status === 'healthy' && pgData.details) {
-                        const pgPerf = pgData.details.performance || {};
-                        dbCacheHit = pgPerf.cache_hit_ratio ? `${pgPerf.cache_hit_ratio}%` : '-';
-
-                        const connections = pgData.details.connections || {};
-                        dbConnectionsPercent = connections.usage_percent || 0;
+                    if (data.error) {
+                        console.error('Cache stats error:', data.error);
+                        return;
                     }
 
-                    // Calculate system load based on:
-                    // 1. Redis memory usage (if we can parse it)
-                    // 2. Redis activity (OPS normalized)
-                    // 3. DB connection usage
+                    // Update hit rate
+                    const hitRate = parseFloat(data.hit_rate.replace('%', ''));
+                    document.getElementById('hitRateValue').textContent = data.hit_rate;
+                    document.getElementById('cacheHits').textContent = data.hits.toLocaleString();
+                    document.getElementById('cacheMisses').textContent = data.misses.toLocaleString();
+                    document.getElementById('cachedKeys').textContent = data.cached_keys.toLocaleString();
 
-                    // Parse Redis memory (format: "1.2M", "500K", etc.)
-                    let redisMemoryPercent = 0;
-                    const memoryUsed = memory.used || '0';
-                    if (memoryUsed !== 'N/A' && memoryUsed !== '-') {
-                        // Try to extract number from memory string
-                        const memoryMatch = memoryUsed.match(/([\d.]+)([KMGT]?)/i);
-                        if (memoryMatch) {
-                            let bytes = parseFloat(memoryMatch[1]);
-                            const unit = memoryMatch[2].toUpperCase();
-                            if (unit === 'K') bytes *= 1024;
-                            else if (unit === 'M') bytes *= 1024 * 1024;
-                            else if (unit === 'G') bytes *= 1024 * 1024 * 1024;
-
-                            // Assume 512MB max for Redis (typical small instance)
-                            // This is an approximation
-                            redisMemoryPercent = Math.min((bytes / (512 * 1024 * 1024)) * 100, 100);
-                        }
-                    }
-
-                    // Normalize Redis OPS (assuming 500 ops/sec is medium load, 1000 is high)
-                    const redisOpsPercent = Math.min((ops / 500) * 50, 50);
-
-                    // Combine metrics: memory (40%), OPS (30%), DB connections (30%)
-                    const overallLoad = Math.min(
-                        (redisMemoryPercent * 0.4) +
-                        (redisOpsPercent * 0.3) +
-                        (dbConnectionsPercent * 0.3),
-                        100
-                    );
-
-                    // Update UI
-                    document.getElementById('systemLoadValue').textContent = overallLoad.toFixed(1) + '%';
-                    document.getElementById('loadValue').textContent = overallLoad.toFixed(1) + '%';
-                    document.getElementById('redisOps').textContent = ops.toLocaleString() + '/s';
-                    document.getElementById('dbCacheHit').textContent = dbCacheHit;
-
-                    // Update load bar
-                    const loadBar = document.getElementById('loadBarFill');
-                    loadBar.style.width = overallLoad + '%';
-
-                    // Update bar color based on load
-                    loadBar.className = 'load-bar-fill';
-                    if (overallLoad >= 80) {
-                        loadBar.className += ' high';
-                        loadStatus = 'High';
-                    } else if (overallLoad >= 50) {
-                        loadBar.className += ' medium';
-                        loadStatus = 'Medium';
+                    // Update badge color based on hit rate
+                    const badge = document.getElementById('hitRateBadge');
+                    badge.textContent = data.hit_rate;
+                    badge.className = 'hit-rate-badge ';
+                    if (hitRate >= 80) {
+                        badge.className += 'excellent';
+                    } else if (hitRate >= 60) {
+                        badge.className += 'good';
+                    } else if (hitRate >= 40) {
+                        badge.className += 'fair';
                     } else {
-                        loadStatus = 'Normal';
+                        badge.className += 'poor';
                     }
-
-                    document.getElementById('systemStatus').textContent = loadStatus;
-                } else {
-                    // If Redis is not available, show error
-                    document.getElementById('systemLoadValue').textContent = 'N/A';
-                    document.getElementById('loadValue').textContent = 'N/A';
-                    document.getElementById('redisOps').textContent = '-';
-                    document.getElementById('dbCacheHit').textContent = '-';
-                    document.getElementById('systemStatus').textContent = 'Unavailable';
+                } catch (e) {
+                    console.error('Failed to load cache stats:', e);
+                    document.getElementById('hitRateValue').textContent = 'Error';
                 }
-            } catch (e) {
-                console.error('Failed to load system load:', e);
-                document.getElementById('systemLoadValue').textContent = 'Error';
-                document.getElementById('loadValue').textContent = 'Error';
             }
-        }
 
-        // =====================================================================
-        // Featured Movies
-        // =====================================================================
+            // =====================================================================
+            // System Load Indicator
+            // =====================================================================
 
-        async function loadFeaturedMovies() {
-            try {
-                const res = await fetch('/api/movies/featured');
-                const data = await res.json();
+            async function loadSystemLoad() {
+                try {
+                    // Get Redis stats for system load
+                    const redisRes = await fetch('/check/redis');
+                    const redisData = await redisRes.json();
 
-                if (data.movies && data.movies.length > 0) {
-                    const grid = document.getElementById('featuredGrid');
-                    const container = document.getElementById('featuredMovies');
+                    if (redisData.status === 'healthy' && redisData.details) {
+                        const perf = redisData.details.performance || {};
+                        const memory = redisData.details.memory || {};
+                        const ops = perf.instantaneous_ops_per_sec || 0;
 
-                    grid.innerHTML = data.movies.map(movie => `
+                        // Get Postgres stats for DB cache hit ratio
+                        const pgRes = await fetch('/check/postgres');
+                        const pgData = await pgRes.json();
+
+                        let dbCacheHit = '-';
+                        let dbConnectionsPercent = 0;
+                        let loadStatus = 'Normal';
+
+                        if (pgData.status === 'healthy' && pgData.details) {
+                            const pgPerf = pgData.details.performance || {};
+                            dbCacheHit = pgPerf.cache_hit_ratio ? `${pgPerf.cache_hit_ratio}%` : '-';
+
+                            const connections = pgData.details.connections || {};
+                            dbConnectionsPercent = connections.usage_percent || 0;
+                        }
+
+                        // Calculate system load based on:
+                        // 1. Redis memory usage (if we can parse it)
+                        // 2. Redis activity (OPS normalized)
+                        // 3. DB connection usage
+
+                        // Parse Redis memory (format: "1.2M", "500K", etc.)
+                        let redisMemoryPercent = 0;
+                        const memoryUsed = memory.used || '0';
+                        if (memoryUsed !== 'N/A' && memoryUsed !== '-') {
+                            // Try to extract number from memory string
+                            const memoryMatch = memoryUsed.match(/([\d.]+)([KMGT]?)/i);
+                            if (memoryMatch) {
+                                let bytes = parseFloat(memoryMatch[1]);
+                                const unit = memoryMatch[2].toUpperCase();
+                                if (unit === 'K') bytes *= 1024;
+                                else if (unit === 'M') bytes *= 1024 * 1024;
+                                else if (unit === 'G') bytes *= 1024 * 1024 * 1024;
+
+                                // Assume 512MB max for Redis (typical small instance)
+                                // This is an approximation
+                                redisMemoryPercent = Math.min((bytes / (512 * 1024 * 1024)) * 100, 100);
+                            }
+                        }
+
+                        // Normalize Redis OPS (assuming 500 ops/sec is medium load, 1000 is high)
+                        const redisOpsPercent = Math.min((ops / 500) * 50, 50);
+
+                        // Combine metrics: memory (40%), OPS (30%), DB connections (30%)
+                        const overallLoad = Math.min(
+                            (redisMemoryPercent * 0.4) +
+                            (redisOpsPercent * 0.3) +
+                            (dbConnectionsPercent * 0.3),
+                            100
+                        );
+
+                        // Update UI
+                        document.getElementById('systemLoadValue').textContent = overallLoad.toFixed(1) + '%';
+                        document.getElementById('loadValue').textContent = overallLoad.toFixed(1) + '%';
+                        document.getElementById('redisOps').textContent = ops.toLocaleString() + '/s';
+                        document.getElementById('dbCacheHit').textContent = dbCacheHit;
+
+                        // Update load bar
+                        const loadBar = document.getElementById('loadBarFill');
+                        loadBar.style.width = overallLoad + '%';
+
+                        // Update bar color based on load
+                        loadBar.className = 'load-bar-fill';
+                        if (overallLoad >= 80) {
+                            loadBar.className += ' high';
+                            loadStatus = 'High';
+                        } else if (overallLoad >= 50) {
+                            loadBar.className += ' medium';
+                            loadStatus = 'Medium';
+                        } else {
+                            loadStatus = 'Normal';
+                        }
+
+                        document.getElementById('systemStatus').textContent = loadStatus;
+                    } else {
+                        // If Redis is not available, show error
+                        document.getElementById('systemLoadValue').textContent = 'N/A';
+                        document.getElementById('loadValue').textContent = 'N/A';
+                        document.getElementById('redisOps').textContent = '-';
+                        document.getElementById('dbCacheHit').textContent = '-';
+                        document.getElementById('systemStatus').textContent = 'Unavailable';
+                    }
+                } catch (e) {
+                    console.error('Failed to load system load:', e);
+                    document.getElementById('systemLoadValue').textContent = 'Error';
+                    document.getElementById('loadValue').textContent = 'Error';
+                }
+            }
+
+            // =====================================================================
+            // Featured Movies
+            // =====================================================================
+
+            async function loadFeaturedMovies() {
+                try {
+                    const res = await fetch('/api/movies/featured');
+                    const data = await res.json();
+
+                    if (data.movies && data.movies.length > 0) {
+                        const grid = document.getElementById('featuredGrid');
+                        const container = document.getElementById('featuredMovies');
+
+                        grid.innerHTML = data.movies.map(movie => `
                         <a href="/movie/${movie.id}" class="featured-movie-card">
                             <img 
                                 src="/api/poster/${movie.poster_filename}" 
@@ -1507,75 +1488,99 @@
                         </a>
                     `).join('');
 
-                    container.style.display = 'block';
+                        container.style.display = 'block';
+                    }
+                } catch (e) {
+                    console.error('Failed to load featured movies:', e);
                 }
-            } catch (e) {
-                console.error('Failed to load featured movies:', e);
             }
-        }
 
-        // =====================================================================
-        // Analytics
-        // =====================================================================
+            async function loadGenresDistribution() {
+                try {
+                    const res = await fetch('/api/movies/genres');
+                    const data = await res.json();
 
-        async function loadPopularSearches() {
-            try {
-                const res = await fetch('/api/analytics/popular?limit=10');
-                const data = await res.json();
+                    if (data.error) {
+                        console.error('Genres error:', data.error);
+                        return;
+                    }
 
-                const div = document.getElementById('popularSearches');
+                    document.getElementById('totalGenresCount').textContent = data.total_genres;
 
-                if (data.popular_searches.length === 0) {
-                    div.innerHTML = 'No searches yet';
-                    return;
+                    const container = document.getElementById('genresList');
+                    container.innerHTML = data.genres.slice(0, 3).map(genre => `
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                <span style="font-size: 0.85em; color: #4b5563;">${genre.name}</span>
+                <span style="font-weight: 600; color: #1f2937;">${genre.count}</span>
+            </div>
+        `).join('');
+                } catch (e) {
+                    console.error('Failed to load genres:', e);
                 }
+            }
 
-                div.innerHTML = data.popular_searches.map(item => `
+            // =====================================================================
+            // Analytics
+            // =====================================================================
+
+            async function loadPopularSearches() {
+                try {
+                    const res = await fetch('/api/analytics/popular?limit=10');
+                    const data = await res.json();
+
+                    const div = document.getElementById('popularSearches');
+
+                    if (data.popular_searches.length === 0) {
+                        div.innerHTML = 'No searches yet';
+                        return;
+                    }
+
+                    div.innerHTML = data.popular_searches.map(item => `
                     <span class="popular-tag" onclick="document.getElementById('searchInput').value='${item.query}'; searchMovies();">
                         ${item.query} (${item.search_count})
                     </span>
                 `).join('');
-            } catch (e) {
-                document.getElementById('popularSearches').innerHTML = 'Error loading';
+                } catch (e) {
+                    document.getElementById('popularSearches').innerHTML = 'Error loading';
+                }
             }
-        }
 
-        // =====================================================================
-        // Initialization
-        // =====================================================================
+            // =====================================================================
+            // Initialization
+            // =====================================================================
 
-        async function init() {
-            // Check backend status first
-            await checkBackendStatus();
+            async function init() {
+                // Check backend status first
+                await checkBackendStatus();
 
-            // Load services
-            loadServicesStatus();
+                // Load services
+                loadServicesStatus();
 
-            // Load cache stats
-            loadCacheStats();
-
-            // Load system load
-            loadSystemLoad();
-
-            // Load featured movies
-            loadFeaturedMovies();
-
-            // Load analytics
-            loadPopularSearches();
-
-            // Periodic status check (every 30 seconds)
-            statusCheckInterval = setInterval(checkBackendStatus, 30000);
-
-            // Periodic stats refresh (every 10 seconds)
-            setInterval(() => {
+                // Load cache stats
                 loadCacheStats();
-                loadSystemLoad();
-            }, 10000);
-        }
 
-        // Start
-        init();
-    </script>
+                // Load system load
+                loadSystemLoad();
+
+                // Load featured movies
+                loadFeaturedMovies();
+
+                // Load analytics
+                loadPopularSearches();
+
+                // Periodic status check (every 30 seconds)
+                statusCheckInterval = setInterval(checkBackendStatus, 30000);
+
+                // Periodic stats refresh (every 10 seconds)
+                setInterval(() => {
+                    loadCacheStats();
+                    loadSystemLoad();
+                }, 10000);
+            }
+
+            // Start
+            init();
+        </script>
 </body>
 
 </html>
