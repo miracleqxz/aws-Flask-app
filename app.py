@@ -16,6 +16,7 @@ from services.grafana_check import check_grafana
 from services.sqs_check import check_sqs  
 from services.s3_check import check_s3
 
+from database.rate_limiter import check_rate_limit, get_rate_limit_status
 from database.movies_db import get_movies_paginated, get_all_genres, get_movies_by_genre, get_similar_movies, get_movie_by_id, get_all_movies, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
 from database.movie_cache import get_cached_movie, set_cached_movie, clear_movie_cache
@@ -496,24 +497,35 @@ def backend_heartbeat():
     
 @app.route('/api/data/sync', methods=['POST'])
 def data_sync():
+    rate_check = check_rate_limit('data_sync', cooldown_seconds=300)
+    
+    if not rate_check['allowed']:
+        return jsonify({
+            'status': 'rate_limited',
+            'message': rate_check['message'],
+            'retry_after': rate_check['retry_after']
+        }), 429
+    
     try:
         lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
-        
         response = lambda_client.invoke(
             FunctionName=Config.LAMBDA_DATA_PIPELINE,
             InvocationType='RequestResponse',
             Payload=json.dumps({'action': 'sync'})
         )
-        
         result = json.loads(response['Payload'].read().decode())
-        
         if 'body' in result:
             return jsonify(json.loads(result['body']))
         return jsonify(result)
-        
     except Exception as e:
         logging.error(f"Data sync error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/api/data/rate-limit-status')
+def data_rate_limit_status():
+    status = get_rate_limit_status('data_sync', cooldown_seconds=300)
+    return jsonify(status)
 
 
 @app.route('/api/data/status')

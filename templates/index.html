@@ -819,6 +819,29 @@
                 justify-content: flex-start;
             }
         }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -827,7 +850,7 @@
         <div class="header">
             <div class="header-text">
                 <h1>Movie Database</h1>
-                <p class="header-subtitle">Search across 20 popular movies with full-text search</p>
+                <p class="header-subtitle">Search across 200 popular movies with full-text search</p>
             </div>
             <div class="header-actions">
                 <a href="/movies" class="btn-secondary">
@@ -892,6 +915,15 @@
             </div>
         </div>
 
+        <div class="search-box">
+            <div class="search-input-wrapper">
+                <input type="text" id="searchInput" class="search-input"
+                    placeholder="Search movies by title, director, or description..." autofocus>
+                <button class="search-btn" onclick="searchMovies()">Search</button>
+            </div>
+            <div class="search-meta" id="searchMeta"></div>
+        </div>
+
         <!-- Statistics Cards -->
         <div class="stats-grid">
             <!-- Cache Statistics -->
@@ -920,25 +952,25 @@
 
             <div class="stat-card">
                 <div class="stat-card-header">
-                    <div class="stat-card-title">GENRES</div>
+                    <div class="stat-card-title">Quick Actions</div>
                 </div>
-                <div class="stat-card-value" id="totalGenresCount">5</div>
-                <div style="font-size: 0.9em; color: #6b7280; margin-top: -8px; margin-bottom: 12px;">Total Categories
-                </div>
-
-                <div id="genresList" style="margin-top: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                    <button class="action-btn" id="btnSyncData" onclick="syncData()">
+                        Sync Data
+                        <span id="syncStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                    </button>
+                    <button class="action-btn" id="btnClearCache" onclick="clearCache()">
+                        Clear Cache
+                        <span id="cacheActionStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                    </button>
+                    <button class="action-btn" id="btnPipelineStatus" onclick="checkPipelineStatus()">
+                        Pipeline Status
+                        <span id="pipelineStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                    </button>
                 </div>
             </div>
 
 
-            <div class="search-box">
-                <div class="search-input-wrapper">
-                    <input type="text" id="searchInput" class="search-input"
-                        placeholder="Search movies by title, director, or description..." autofocus>
-                    <button class="search-btn" onclick="searchMovies()">Search</button>
-                </div>
-                <div class="search-meta" id="searchMeta"></div>
-            </div>
 
             <div class="results" id="results"></div>
 
@@ -1495,27 +1527,65 @@
                 }
             }
 
-            async function loadGenresDistribution() {
+            // Quick Actions
+            async function syncData() {
+                const btn = document.getElementById('btnSyncData');
+                const status = document.getElementById('syncStatus');
+                btn.disabled = true;
+                status.textContent = 'Syncing...';
+
                 try {
-                    const res = await fetch('/api/movies/genres');
+                    const res = await fetch('/api/data/sync', { method: 'POST' });
                     const data = await res.json();
 
-                    if (data.error) {
-                        console.error('Genres error:', data.error);
+                    if (res.status === 429) {
+                        status.textContent = `Wait ${data.retry_after}s`;
+                        setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, data.retry_after * 1000);
                         return;
                     }
 
-                    document.getElementById('totalGenresCount').textContent = data.total_genres;
-
-                    const container = document.getElementById('genresList');
-                    container.innerHTML = data.genres.slice(0, 3).map(genre => `
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
-                <span style="font-size: 0.85em; color: #4b5563;">${genre.name}</span>
-                <span style="font-weight: 600; color: #1f2937;">${genre.count}</span>
-            </div>
-        `).join('');
+                    status.textContent = 'Done!';
+                    loadCacheStats();
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 300000); // 5 min cooldown
                 } catch (e) {
-                    console.error('Failed to load genres:', e);
+                    status.textContent = 'Error';
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
+                }
+            }
+
+            async function clearCache() {
+                const btn = document.getElementById('btnClearCache');
+                const status = document.getElementById('cacheActionStatus');
+                btn.disabled = true;
+                status.textContent = 'Clearing...';
+
+                try {
+                    await fetch('/api/cache/clear', { method: 'POST' });
+                    status.textContent = 'Cleared!';
+                    loadCacheStats();
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 60000);
+                } catch (e) {
+                    status.textContent = 'Error';
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
+                }
+            }
+
+            async function checkPipelineStatus() {
+                const btn = document.getElementById('btnPipelineStatus');
+                const status = document.getElementById('pipelineStatus');
+                btn.disabled = true;
+                status.textContent = 'Checking...';
+
+                try {
+                    const res = await fetch('/api/data/status');
+                    const data = await res.json();
+                    const pg = data.postgres?.status || '?';
+                    const meili = data.meilisearch?.status || '?';
+                    status.textContent = `PG:${pg} M:${meili}`;
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 5000);
+                } catch (e) {
+                    status.textContent = 'Error';
+                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
                 }
             }
 
