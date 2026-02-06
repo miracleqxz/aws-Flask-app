@@ -336,33 +336,32 @@ jobs:
             exit 1
           fi
           
-          PAYLOAD=$(python3 << 'ENDPYTHON'
-import json
-import os
-
-env_vars = {
-    "CURSOR_API_KEY": os.environ.get("CURSOR_API_KEY", ""),
-    "CURSOR_API_BASE_URL": "https://api.cursor.com/v1",
-    "CURSOR_MODEL": "gpt-4o-mini",
-    "POSTGRES_HOST": os.environ.get("POSTGRES_HOST", ""),
-    "POSTGRES_PORT": os.environ.get("POSTGRES_PORT", "5432"),
-    "POSTGRES_DB": os.environ.get("POSTGRES_DB", ""),
-    "POSTGRES_USER": os.environ.get("POSTGRES_USER", ""),
-    "POSTGRES_PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
-    "MEILISEARCH_HOST": os.environ.get("MEILISEARCH_HOST", ""),
-    "MEILISEARCH_PORT": os.environ.get("MEILISEARCH_PORT", "7700"),
-    "REDIS_HOST": os.environ.get("MEILISEARCH_HOST", ""),
-    "REDIS_PORT": "6379"
-}
-
-youtube_key = os.environ.get("YOUTUBE_API_KEY", "")
-if youtube_key:
-    env_vars["YOUTUBE_API_KEY"] = youtube_key
-
-payload = {"env_vars": env_vars}
-print(json.dumps(payload))
-ENDPYTHON
-)
+          PAYLOAD=$(jq -n \
+            --arg cursor_key "$CURSOR_API_KEY" \
+            --arg youtube_key "$YOUTUBE_API_KEY" \
+            --arg pg_host "$POSTGRES_HOST" \
+            --arg pg_port "${POSTGRES_PORT:-5432}" \
+            --arg pg_db "$POSTGRES_DB" \
+            --arg pg_user "$POSTGRES_USER" \
+            --arg pg_pass "$POSTGRES_PASSWORD" \
+            --arg meili_host "$MEILISEARCH_HOST" \
+            --arg meili_port "${MEILISEARCH_PORT:-7700}" \
+            '{
+              env_vars: {
+                CURSOR_API_KEY: $cursor_key,
+                CURSOR_API_BASE_URL: "https://api.cursor.com/v1",
+                CURSOR_MODEL: "gpt-4o-mini",
+                POSTGRES_HOST: $pg_host,
+                POSTGRES_PORT: $pg_port,
+                POSTGRES_DB: $pg_db,
+                POSTGRES_USER: $pg_user,
+                POSTGRES_PASSWORD: $pg_pass,
+                MEILISEARCH_HOST: $meili_host,
+                MEILISEARCH_PORT: $meili_port,
+                REDIS_HOST: $meili_host,
+                REDIS_PORT: "6379"
+              } + (if $youtube_key != "" then {YOUTUBE_API_KEY: $youtube_key} else {} end)
+            }')
           
           echo "Invoking Lambda function..."
           RESPONSE=$(aws lambda invoke \
