@@ -80,6 +80,12 @@ variable "backend_instance_type" {
   default     = "t3.small"
 }
 
+variable "ai_agent_instance_type" {
+  description = "EC2 instance type for AI agent"
+  type        = string
+  default     = "t3.small"
+}
+
 #variable "backend_key_name" {
 # description = "SSH key pair name for backend EC2 (can be same as frontend)"
 # type        = string
@@ -269,6 +275,43 @@ variable "lambda_function_name" {
   description = "Lambda function name for backend control"
   type        = string
   default     = "backend-control"
+}
+
+variable "lambda_ai_agent_function_name" {
+  description = "Lambda function name for AI agent control"
+  type        = string
+  default     = "ai-agent-control"
+}
+
+variable "lambda_ai_chat_proxy_function_name" {
+  description = "Lambda function name for AI chat proxy"
+  type        = string
+  default     = "ai-chat-proxy"
+}
+
+variable "ai_chat_api_key" {
+  description = "API key for AI chat endpoints"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "ai_chat_max_requests" {
+  description = "Maximum requests per user per window for AI chat"
+  type        = number
+  default     = 10
+}
+
+variable "ai_chat_window_seconds" {
+  description = "Time window in seconds for AI chat rate limiting"
+  type        = number
+  default     = 60
+}
+
+variable "ai_chat_idle_timeout_minutes" {
+  description = "Minutes of inactivity before shutting down AI agent instance"
+  type        = number
+  default     = 5
 }
 
 variable "heartbeat_timeout_minutes" {

@@ -23,7 +23,6 @@ resource "aws_iam_role" "ecs_task_role" {
 
 
 resource "aws_iam_role_policy" "ecs_task_s3" {
-  name = "${var.project_name}-ecs-task-s3-policy"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
@@ -51,7 +50,6 @@ resource "aws_iam_role_policy" "ecs_task_s3" {
 
 
 resource "aws_iam_role_policy" "ecs_task_sqs" {
-  name = "${var.project_name}-ecs-task-sqs-policy"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
@@ -75,7 +73,6 @@ resource "aws_iam_role_policy" "ecs_task_sqs" {
 
 
 resource "aws_iam_role_policy" "ecs_task_lambda" {
-  name = "${var.project_name}-ecs-task-lambda-policy"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
@@ -127,7 +124,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
 
 
 resource "aws_iam_role_policy" "ecs_execution_logs" {
-  name = "${var.project_name}-ecs-execution-logs-policy"
   role = aws_iam_role.ecs_task_execution_role.id
 
   policy = jsonencode({
@@ -193,6 +189,47 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
   }
 }
 
+resource "aws_iam_role" "ai_agent_instance_role" {
+  name = "${var.project_name}-ai-agent-instance-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-ai-agent-instance-role"
+    }
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "ai_agent_instance_ssm" {
+  role       = aws_iam_role.ai_agent_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "ai_agent" {
+  name = "${var.project_name}-ai-agent-instance-profile"
+  role = aws_iam_role.ai_agent_instance_role.name
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-ai-agent-instance-profile"
+    }
+  )
+}
+
 # 4. Lambda Roles
 
 resource "aws_iam_role" "lambda_backend_control" {
@@ -251,7 +288,6 @@ resource "aws_iam_role_policy_attachment" "lambda_data_pipeline_vpc" {
 }
 
 resource "aws_iam_role_policy" "lambda_data_pipeline_s3" {
-  name = "${var.project_name}-lambda-data-pipeline-s3"
   role = aws_iam_role.lambda_data_pipeline.id
 
   policy = jsonencode({
@@ -275,7 +311,6 @@ resource "aws_iam_role_policy" "lambda_data_pipeline_s3" {
 
 # EC2 Control Policy - Start/Stop backend instance
 resource "aws_iam_role_policy" "lambda_ec2_control" {
-  name = "${var.project_name}-lambda-ec2-control-policy"
   role = aws_iam_role.lambda_backend_control.id
 
   policy = jsonencode({
@@ -312,7 +347,6 @@ resource "aws_iam_role_policy" "lambda_ec2_control" {
 
 # DynamoDB Policy - Store backend state and heartbeat
 resource "aws_iam_role_policy" "lambda_dynamodb" {
-  name = "${var.project_name}-lambda-dynamodb-policy"
   role = aws_iam_role.lambda_backend_control.id
 
   policy = jsonencode({
@@ -336,7 +370,6 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
 
 # CloudWatch Logs Policy - Lambda logging
 resource "aws_iam_role_policy" "lambda_logs" {
-  name = "${var.project_name}-lambda-logs-policy"
   role = aws_iam_role.lambda_backend_control.id
 
   policy = jsonencode({

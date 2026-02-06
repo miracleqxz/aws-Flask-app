@@ -70,6 +70,9 @@ resource "aws_ecs_task_definition" "frontend" {
 
         { name = "LAMBDA_BACKEND_CONTROL", value = var.lambda_function_name },
 
+        { name = "AI_CHAT_API_URL", value = aws_apigatewayv2_api.ai_chat.api_endpoint },
+        { name = "AI_CHAT_API_KEY", value = var.ai_chat_api_key },
+
         { name = "FLASK_HOST", value = "0.0.0.0" },
         { name = "FLASK_PORT", value = "5000" },
         { name = "PYTHONUNBUFFERED", value = "1" }
@@ -216,42 +219,6 @@ resource "aws_ecs_task_definition" "backend" {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_backend.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "meilisearch"
-        }
-      }
-    },
-
-    {
-      name              = "consul"
-      image             = var.consul_image
-      essential         = false
-      cpu               = 128
-      memory            = 256
-      memoryReservation = 128
-
-      portMappings = [
-        {
-          containerPort = 8500
-          hostPort      = 8500
-          protocol      = "tcp"
-        }
-      ]
-
-      command = ["agent", "-dev", "-client=0.0.0.0"]
-
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:8500/v1/status/leader || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 30
-      }
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.ecs_backend.name
-          "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "consul"
         }
       }
     },

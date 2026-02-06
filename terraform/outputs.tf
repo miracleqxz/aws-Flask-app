@@ -244,3 +244,50 @@ output "s3_posters_upload_path" {
   description = "S3 path for uploading posters"
   value       = "s3://${aws_s3_bucket.posters.id}/posters/"
 }
+
+output "ai_agent_instance_id" {
+  description = "AI Agent EC2 instance ID"
+  value       = aws_instance.ai_agent.id
+}
+
+output "ai_agent_public_ip" {
+  description = "AI Agent EC2 instance public IP"
+  value       = aws_instance.ai_agent.public_ip
+}
+
+output "ai_agent_private_ip" {
+  description = "AI Agent EC2 instance private IP"
+  value       = aws_instance.ai_agent.private_ip
+}
+
+output "ai_agent_api_gateway_url" {
+  description = "AI Agent API Gateway URL"
+  value       = aws_apigatewayv2_api.ai_agent_control.api_endpoint
+}
+
+output "ai_agent_lambda_function_name" {
+  description = "AI Agent Lambda function name"
+  value       = aws_lambda_function.ai_agent_control.function_name
+}
+
+output "ai_chat_api_gateway_url" {
+  description = "AI Chat API Gateway URL"
+  value       = aws_apigatewayv2_api.ai_chat.api_endpoint
+  sensitive   = false
+}
+
+output "ai_chat_api_key" {
+  description = "AI Chat API Key"
+  value       = var.ai_chat_api_key
+  sensitive   = true
+}
+
+output "ai_agent_deploy_lambda_function_name" {
+  description = "AI Agent Deploy Lambda function name"
+  value       = aws_lambda_function.ai_agent_deploy.function_name
+}
+
+output "ai_agent_deploy_lambda_arn" {
+  description = "AI Agent Deploy Lambda function ARN"
+  value       = aws_lambda_function.ai_agent_deploy.arn
+}
