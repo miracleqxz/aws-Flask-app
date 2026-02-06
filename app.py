@@ -45,7 +45,11 @@ app.config.from_object(Config)
 @app.route('/')
 @track_request
 def home():
-    return render_template('index.html')
+    ai_chat_api_url = os.getenv('AI_CHAT_API_URL', '')
+    ai_chat_api_key = os.getenv('AI_CHAT_API_KEY', '')
+    return render_template('index.html',
+                          ai_chat_api_url=ai_chat_api_url,
+                          ai_chat_api_key=ai_chat_api_key)
 
 
 @app.route('/info')
@@ -303,10 +307,10 @@ def api_analytics_stats():
 
 @app.route('/api/movies/featured')
 def api_featured_movies():
+    limit = request.args.get('limit', 8, type=int)
     movies = get_all_movies()
-    featured = movies[:8]
+    featured = movies[:limit]
     
-    # Convert to dict format
     result = []
     for movie in featured:
         result.append({
@@ -314,7 +318,7 @@ def api_featured_movies():
             'title': movie['title'],
             'rating': float(movie['rating']),
             'year': movie['year'],
-            'genre': movie['genre'],
+            'genres': movie.get('genres', []),
             'poster_filename': movie['poster_filename']
         })
     
@@ -621,6 +625,14 @@ def ai_by_mood():
     results = get_movies_by_genres(genres, limit)
     
     return jsonify({'movies': results, 'count': len(results), 'mood': mood})
+
+@app.route('/ai-chat')
+def ai_chat():
+    ai_chat_api_url = os.getenv('AI_CHAT_API_URL', '')
+    ai_chat_api_key = os.getenv('AI_CHAT_API_KEY', '')
+    return render_template('ai_chat.html', 
+                          ai_chat_api_url=ai_chat_api_url,
+                          ai_chat_api_key=ai_chat_api_key)
 
 if __name__ == '__main__':
     app.run(
