@@ -73,11 +73,7 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          config-path: .gitleaks.toml
-          no-git: false
-          exit-code: 1
-          severity: critical
+          GITLEAKS_CONFIG: .gitleaks.toml
 
   sast-bandit:
     name: SAST - Bandit Security Scan
