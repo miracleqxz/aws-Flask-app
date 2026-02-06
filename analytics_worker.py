@@ -131,7 +131,7 @@ def start_worker():
                 if message_count % 10 == 0:
                     print(f"\nStats: processed={message_count}, errors={error_count}", flush=True)
 
-        except Exception as e:
+            except Exception as e:
                 print(f"\nWorker loop error: {e}", flush=True)
                 error_count += 1
                 import traceback
