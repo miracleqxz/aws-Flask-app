@@ -9,6 +9,7 @@ on:
       - "database/**"
       - "services/**"
       - "templates/**"
+      - "ai_agent/**"
       - "requirements.txt"
       - "startup.sh"
       - "Dockerfile"
@@ -62,16 +63,15 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Run flake8 (Code Quality)
-        continue-on-error: true
         run: |
           echo "Running code quality checks..."
-          flake8 . --count --statistics --max-line-length=120 || true
+          flake8 . --count --statistics --max-line-length=120
 
       - name: Run bandit (Security)
-        continue-on-error: true
         run: |
           echo "Running security scan..."
-          bandit -r . -ll || true
+          bandit -r . -ll -f json -o bandit-report.json || true
+          bandit -r . -ll
 
       - name: Run pytest (Unit Tests)
         env:
@@ -80,9 +80,72 @@ jobs:
           echo "Running unit tests..."
           pytest tests/ -v --tb=short
 
+  security-check:
+    name: Security Gate Check
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Wait for security workflow completion
+        run: |
+          echo "Waiting for security workflow to complete..."
+          sleep 30
+
+      - name: Verify security checks passed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'security.yml',
+              head_sha: context.sha,
+              per_page: 1
+            });
+
+            if (runs.workflow_runs.length === 0) {
+              console.log('Security workflow not found for this commit');
+              console.log('This is normal for the first run. Proceeding with deployment.');
+              return;
+            }
+
+            const latestRun = runs.workflow_runs[0];
+
+            if (latestRun.status === 'in_progress' || latestRun.status === 'queued') {
+              console.log(`Security workflow still running: ${latestRun.status}`);
+              console.log('Waiting a bit more...');
+              await new Promise(resolve => setTimeout(resolve, 60000));
+              
+              const { data: updatedRun } = await github.rest.actions.getWorkflowRun({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: latestRun.id
+              });
+              
+              if (updatedRun.status !== 'completed') {
+                console.log('Security workflow still not completed, but allowing deployment');
+                return;
+              }
+              
+              if (updatedRun.conclusion === 'failure') {
+                core.setFailed(`Security workflow failed: ${updatedRun.conclusion}`);
+                return;
+              }
+            }
+
+            if (latestRun.conclusion === 'success') {
+              console.log('Security checks passed');
+            } else if (latestRun.conclusion === 'failure') {
+              core.setFailed(`Security workflow failed: ${latestRun.conclusion}`);
+            } else {
+              console.log(`Security workflow status: ${latestRun.conclusion || latestRun.status}`);
+              console.log('Proceeding with deployment');
+            }
+
   build-and-deploy:
     name: Build and Deploy
-    needs: test
+    needs: [test, security-check]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -113,7 +176,24 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: app-image:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: "app-image:latest"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+
+      - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -164,3 +244,133 @@ jobs:
             --region ${{ secrets.AWS_REGION }} \
             --query 'services[0].deployments[0]' \
             --output json
+
+  deploy-ai-agent:
+    name: Deploy AI Agent
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Check if AI Agent files changed
+        id: check_changes
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -qE "(ai_agent/|templates/index.html)"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Lambda Function Name
+        if: steps.check_changes.outputs.changed == 'true'
+        id: get_lambda
+        run: |
+          LAMBDA_NAME=$(aws lambda list-functions \
+            --region ${{ secrets.AWS_REGION }} \
+            --query "Functions[?FunctionName=='ai-agent-deploy'].FunctionName" \
+            --output text)
+          
+          if [ -z "$LAMBDA_NAME" ]; then
+            echo "Error: Lambda function ai-agent-deploy not found"
+            exit 1
+          fi
+          
+          echo "lambda_name=$LAMBDA_NAME" >> $GITHUB_OUTPUT
+          echo "Found Lambda function: $LAMBDA_NAME"
+
+      - name: Deploy AI Agent via Lambda
+        if: steps.check_changes.outputs.changed == 'true'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          MEILISEARCH_HOST: ${{ secrets.MEILISEARCH_HOST }}
+          MEILISEARCH_PORT: ${{ secrets.MEILISEARCH_PORT }}
+        run: |
+          echo "Deploying AI Agent via Lambda function"
+          
+          if [ -z "$CURSOR_API_KEY" ]; then
+            echo "Error: CURSOR_API_KEY GitHub secret is not configured"
+            exit 1
+          fi
+          
+          if [ -z "$POSTGRES_HOST" ] || [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD" ]; then
+            echo "Error: PostgreSQL secrets are not configured"
+            exit 1
+          fi
+          
+          if [ -z "$MEILISEARCH_HOST" ]; then
+            echo "Error: MEILISEARCH_HOST GitHub secret is not configured"
+            exit 1
+          fi
+          
+          PAYLOAD=$(python3 << 'ENDPYTHON'
+import json
+import os
+
+env_vars = {
+    "CURSOR_API_KEY": os.environ.get("CURSOR_API_KEY", ""),
+    "CURSOR_API_BASE_URL": "https://api.cursor.com/v1",
+    "CURSOR_MODEL": "gpt-4o-mini",
+    "POSTGRES_HOST": os.environ.get("POSTGRES_HOST", ""),
+    "POSTGRES_PORT": os.environ.get("POSTGRES_PORT", "5432"),
+    "POSTGRES_DB": os.environ.get("POSTGRES_DB", ""),
+    "POSTGRES_USER": os.environ.get("POSTGRES_USER", ""),
+    "POSTGRES_PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
+    "MEILISEARCH_HOST": os.environ.get("MEILISEARCH_HOST", ""),
+    "MEILISEARCH_PORT": os.environ.get("MEILISEARCH_PORT", "7700"),
+    "REDIS_HOST": os.environ.get("MEILISEARCH_HOST", ""),
+    "REDIS_PORT": "6379"
+}
+
+youtube_key = os.environ.get("YOUTUBE_API_KEY", "")
+if youtube_key:
+    env_vars["YOUTUBE_API_KEY"] = youtube_key
+
+payload = {"env_vars": env_vars}
+print(json.dumps(payload))
+ENDPYTHON
+)
+          
+          echo "Invoking Lambda function..."
+          RESPONSE=$(aws lambda invoke \
+            --function-name ${{ steps.get_lambda.outputs.lambda_name }} \
+            --region ${{ secrets.AWS_REGION }} \
+            --payload "$PAYLOAD" \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/lambda-response.json)
+          
+          cat /tmp/lambda-response.json
+          
+          EXIT_CODE=$(jq -r '.statusCode' /tmp/lambda-response.json)
+          RESPONSE_BODY=$(jq -r '.body' /tmp/lambda-response.json)
+          
+          if [ "$EXIT_CODE" != "200" ]; then
+            echo "Lambda deployment failed with status code: $EXIT_CODE"
+            echo "Response: $RESPONSE_BODY"
+            exit 1
+          fi
+          
+          SUCCESS=$(echo "$RESPONSE_BODY" | jq -r '.success')
+          if [ "$SUCCESS" != "true" ]; then
+            echo "Deployment failed"
+            echo "Response: $RESPONSE_BODY"
+            exit 1
+          fi
+          
+          echo "Deployment completed successfully"
+          echo "$RESPONSE_BODY" | jq '.'

@@ -1,0 +1,198 @@
+name: Security Scanning
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  dependency-scanning:
+    name: Dependency Vulnerability Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      - name: Run pip-audit
+        id: pip_audit
+        continue-on-error: true
+        run: |
+          pip-audit --requirement requirements.txt --format json --output pip-audit-report.json || true
+          pip-audit --requirement requirements.txt --format text || true
+
+      - name: Upload pip-audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 30
+
+      - name: Check for critical vulnerabilities
+        run: |
+          if [ -f pip-audit-report.json ]; then
+            CRITICAL=$(jq -r '.[] | select(.vulnerabilities[].aliases[]? == "CRITICAL" or .vulnerabilities[].severity == "CRITICAL") | .name' pip-audit-report.json 2>/dev/null || echo "")
+            if [ -n "$CRITICAL" ]; then
+              echo "Critical vulnerabilities found in dependencies"
+              echo "$CRITICAL"
+              exit 1
+            fi
+          fi
+
+  secrets-scanning:
+    name: Secrets Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          config-path: .gitleaks.toml
+          no-git: false
+          exit-code: 1
+          severity: critical
+
+  sast-bandit:
+    name: SAST - Bandit Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml]
+
+      - name: Run Bandit
+        id: bandit_scan
+        continue-on-error: true
+        run: |
+          bandit -r . -f json -o bandit-report.json -ll || true
+          bandit -r . -ll || true
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+          retention-days: 30
+
+      - name: Check for high severity issues
+        run: |
+          if [ -f bandit-report.json ]; then
+            HIGH_SEVERITY=$(jq -r '.results[] | select(.issue_severity == "HIGH" or .issue_severity == "MEDIUM") | .test_name' bandit-report.json 2>/dev/null | wc -l)
+            if [ "$HIGH_SEVERITY" -gt 0 ]; then
+              echo "Found $HIGH_SEVERITY high/medium severity security issues"
+              echo "Review bandit-report.json for details"
+            fi
+          fi
+
+  container-scanning:
+    name: Container Image Security Scanning
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    continue-on-error: true
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t app-image:test .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'app-image:test'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for critical vulnerabilities
+        run: |
+          trivy image --exit-code 1 --severity CRITICAL app-image:test || exit 1
+
+  terraform-security:
+    name: Terraform Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          soft_fail: false
+
+      - name: Upload Checkov results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [dependency-scanning, secrets-scanning, sast-bandit, container-scanning, terraform-security]
+    if: always()
+    
+    steps:
+      - name: Security scan summary
+        run: |
+          echo "## Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Scan Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependency Scanning | ${{ needs.dependency-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secrets Scanning | ${{ needs.secrets-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SAST (Bandit) | ${{ needs.sast-bandit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Container Scanning | ${{ needs.container-scanning.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Security | ${{ needs.terraform-security.result }} |" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,20 @@
+title = "Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''terraform/.*\.tfvars\.example''',
+  '''\.env\.example''',
+  '''requirements.*\.txt''',
+]
+
+[[allowlist.regexes]]
+regex = '''(?i)(api[_-]?key|secret|password|token)\s*=\s*["']?(your_|example_|placeholder|test_|dummy_)[^"']*["']?'''
+
+[[allowlist.regexes]]
+regex = '''(?i)(api[_-]?key|secret|password|token)\s*=\s*["']?[^"']*["']?\s*#\s*(example|test|placeholder|dummy)'''
+
+[detectors]
+maxTargetMegaBytes = 1
