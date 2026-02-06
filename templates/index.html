@@ -1365,9 +1365,7 @@
             </div>
         </div>
 
-        <!-- Main Grid: Backend Control and Services Status -->
         <div class="main-grid">
-            <!-- Backend Control Panel -->
             <div class="backend-control">
                 <div class="backend-header">
                     <h3>Backend Services</h3>
@@ -1412,7 +1410,6 @@
                 </div>
             </div>
 
-            <!-- Services Status -->
             <div class="services-status">
                 <h3>All Services</h3>
                 <div class="services-grid" id="servicesGrid">
@@ -1430,9 +1427,7 @@
             <div class="search-meta" id="searchMeta"></div>
         </div>
 
-        <!-- Statistics Cards -->
         <div class="stats-grid">
-            <!-- Cache Statistics -->
             <div class="stat-card">
                 <div class="stat-card-header">
                     <div class="stat-card-title">Cache Performance</div>
@@ -1480,7 +1475,6 @@
 
             <div class="results" id="results"></div>
 
-            <!-- Featured Movies Section -->
             <div class="featured-movies" id="featuredMovies">
                 <h3>Top Rated Movies</h3>
                 <div class="featured-grid" id="featuredGrid">
@@ -1494,12 +1488,11 @@
             </div>
         </div>
 
-        <!-- AI Chat Panel -->
         <div class="ai-chat-panel" id="aiChatPanel">
             <div class="ai-chat-container">
                 <div class="ai-chat-results" id="aiChatResults">
                     <div class="ai-chat-welcome" id="aiChatWelcome">
-                        <h2>Hello! 👋</h2>
+                        <h2>Hello!</h2>
                         <p>I'll help you find the perfect movie to watch. Just describe what you'd like to see, and I'll find suitable options!</p>
                     </div>
                     <div id="aiChatResultsContent"></div>
@@ -2264,9 +2257,9 @@
                     card.innerHTML = `
                         <h4>${movie.title}</h4>
                         <div class="ai-movie-result-meta">
-                            <span class="rating">⭐ ${movie.rating}</span>
-                            <span>📅 ${movie.year}</span>
-                            ${movie.director ? `<span>🎬 ${movie.director}</span>` : ''}
+                            <span class="rating">${movie.rating}</span>
+                            <span>${movie.year}</span>
+                            ${movie.director ? `<span>${movie.director}</span>` : ''}
                         </div>
                         ${genres.length > 0 ? `
                             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
@@ -2315,7 +2308,7 @@
                                             ${genres.map(g => `<span>${g}</span>`).join('')}
                                             <span>${movie.director}</span>
                                         </div>
-                                        <div class="ai-movie-detail-rating">⭐ ${movie.rating}/10</div>
+                                        <div class="ai-movie-detail-rating">${movie.rating}/10</div>
                                         <p class="ai-movie-detail-description">${movie.description || 'No description available'}</p>
                                     </div>
                                 </div>
@@ -2368,7 +2361,7 @@
                                         <img src="/api/poster/${movie.poster_filename}" alt="${movie.title}" class="ai-movie-grid-poster">
                                         <div class="ai-movie-grid-info">
                                             <div class="ai-movie-grid-title">${movie.title}</div>
-                                            <div class="ai-movie-grid-rating">⭐ ${movie.rating}</div>
+                                            <div class="ai-movie-grid-rating">${movie.rating}</div>
                                             <div class="ai-movie-grid-meta">${movie.year} • ${genres.join(', ') || 'Unknown'}</div>
                                         </div>
                                     </div>
