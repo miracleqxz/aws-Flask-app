@@ -20,17 +20,6 @@ def get_redis_client():
 
 
 def check_ai_chat_rate_limit(user_id: str, max_requests: int = 10, window_seconds: int = 60) -> dict:
-    """
-    Rate limit для AI chat по пользователю (IP или session ID)
-
-    Args:
-        user_id: Уникальный идентификатор пользователя (IP адрес или session ID)
-        max_requests: Максимальное количество запросов в окне
-        window_seconds: Временное окно в секундах
-
-    Returns:
-        dict с ключами: allowed, remaining, reset_at, message
-    """
     r = get_redis_client()
     if not r:
         logger.warning("Rate limiter: Redis unavailable, allowing action")
@@ -89,13 +78,6 @@ def check_ai_chat_rate_limit(user_id: str, max_requests: int = 10, window_second
 
 
 def update_ai_chat_activity(user_id: str, activity_ttl: int = 300):
-    """
-    Обновляет время последней активности пользователя для отслеживания бездействия
-
-    Args:
-        user_id: Уникальный идентификатор пользователя
-        activity_ttl: TTL для ключа активности в секундах (по умолчанию 5 минут)
-    """
     r = get_redis_client()
     if not r:
         return
@@ -109,12 +91,6 @@ def update_ai_chat_activity(user_id: str, activity_ttl: int = 300):
 
 
 def get_last_ai_chat_activity() -> float:
-    """
-    Получает время последней активности любого пользователя в AI chat
-
-    Returns:
-        Timestamp последней активности или 0 если активности нет
-    """
     r = get_redis_client()
     if not r:
         return 0
