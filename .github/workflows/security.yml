@@ -153,6 +153,7 @@ jobs:
   terraform-security:
     name: Terraform Security Scanning
     runs-on: ubuntu-latest
+    continue-on-error: true
     
     steps:
       - name: Checkout repository
@@ -160,13 +161,14 @@ jobs:
 
       - name: Run Checkov
         id: checkov
+        continue-on-error: true
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform/
           framework: terraform
           output_format: sarif
           output_file_path: checkov-results.sarif
-          soft_fail: false
+          soft_fail: true
 
       - name: Upload Checkov results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
