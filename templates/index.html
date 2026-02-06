@@ -791,6 +791,509 @@
             margin-top: 6px;
         }
 
+        .ai-chat-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .ai-chat-panel.visible {
+            display: flex;
+        }
+
+        .ai-chat-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #1a1a1a;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .ai-chat-results {
+            width: 50%;
+            overflow-y: auto;
+            padding: 2rem;
+            background: #1a1a1a;
+            border-right: 1px solid #333333;
+        }
+
+        .ai-chat-results::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .ai-chat-results::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .ai-chat-results::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
+
+        .ai-chat-results::-webkit-scrollbar-thumb:hover {
+            background: #505050;
+        }
+
+        .ai-chat-results.hidden {
+            display: none;
+        }
+
+        .ai-chat-welcome {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .ai-chat-welcome.hidden {
+            display: none;
+        }
+
+        .ai-chat-welcome h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .ai-chat-welcome p {
+            font-size: 1.1rem;
+            max-width: 500px;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 768px) {
+            .ai-movie-detail-hero {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ai-trailer-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .ai-trailer-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .ai-trailer-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .ai-movie-detail-view {
+            display: none;
+        }
+
+        .ai-movie-detail-view.visible {
+            display: block;
+        }
+
+        .ai-movie-detail-container {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #333333;
+        }
+
+        .ai-movie-detail-hero {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-movie-detail-poster {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-movie-detail-info h2 {
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-movie-detail-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .ai-movie-detail-meta span {
+            background: #404040;
+            color: #d1d5db;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .ai-movie-detail-rating {
+            display: inline-block;
+            background: #fbbf24;
+            color: #1f2937;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-movie-detail-description {
+            color: #9ca3af;
+            line-height: 1.6;
+            margin-top: 1rem;
+        }
+
+        .ai-movie-detail-close {
+            background: #404040;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .ai-movie-detail-close:hover {
+            background: #505050;
+        }
+
+        .ai-movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .ai-movie-grid-card {
+            background: #2d2d2d;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333333;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .ai-movie-grid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-movie-grid-poster {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+        }
+
+        .ai-movie-grid-info {
+            padding: 1rem;
+        }
+
+        .ai-movie-grid-title {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-movie-grid-rating {
+            display: inline-block;
+            background: #fbbf24;
+            color: #1f2937;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-movie-grid-meta {
+            color: #9ca3af;
+            font-size: 0.85rem;
+        }
+
+        .ai-chat-messages {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+        }
+
+        .ai-chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #333333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1f1f1f;
+        }
+
+        .ai-chat-header h3 {
+            font-size: 1.25rem;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .ai-browse-movies-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-browse-movies-header h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .ai-browse-movies-close {
+            background: #404040;
+            color: #ffffff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .ai-browse-movies-close:hover {
+            background: #505050;
+        }
+
+        .ai-chat-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .ai-chat-close:hover {
+            color: #ef4444;
+        }
+
+        .ai-chat-messages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: #1a1a1a;
+        }
+
+        .ai-chat-messages-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .ai-chat-messages-list::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .ai-chat-messages-list::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
+
+        .ai-chat-messages-list::-webkit-scrollbar-thumb:hover {
+            background: #505050;
+        }
+
+        .ai-chat-message {
+            max-width: 80%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s;
+        }
+
+        .ai-chat-message.user {
+            align-self: flex-end;
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-chat-message.assistant {
+            align-self: flex-start;
+            background: #2d2d2d;
+            color: #e5e7eb;
+            border-bottom-left-radius: 4px;
+        }
+
+        .ai-chat-input-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #333333;
+            display: flex;
+            gap: 0.75rem;
+            background: #1f1f1f;
+        }
+
+        .ai-chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #333333;
+            border-radius: 24px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #2d2d2d;
+            color: #ffffff;
+        }
+
+        .ai-chat-input::placeholder {
+            color: #6b7280;
+        }
+
+        .ai-chat-input-container {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #333333;
+            display: flex;
+            gap: 0.75rem;
+            background: #1f1f1f;
+        }
+
+        .ai-chat-input:focus {
+            border-color: #667eea;
+            background: #333333;
+        }
+
+        .ai-chat-send {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .ai-chat-send:hover:not(:disabled) {
+            background: #5568d3;
+        }
+
+        .ai-chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ai-movie-result-card {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid #333333;
+        }
+
+        .ai-movie-result-card h4 {
+            color: #ffffff;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-movie-result-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .ai-movie-result-meta span {
+            background: #404040;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #d1d5db;
+        }
+
+        .ai-movie-result-meta .rating {
+            background: #fbbf24;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .ai-movie-result-description {
+            color: #9ca3af;
+            line-height: 1.6;
+            margin-top: 0.75rem;
+        }
+
+        .ai-youtube-trailer {
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ai-youtube-trailer iframe {
+            width: 100%;
+            height: 315px;
+            border: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .ai-chat-container {
+                flex-direction: column;
+            }
+
+            .ai-chat-results {
+                width: 100%;
+                max-height: 40%;
+            }
+
+            .ai-chat-messages {
+                width: 100%;
+                flex: 1;
+            }
+        }
+
         @media (max-width: 768px) {
             .services-grid {
                 grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -853,6 +1356,9 @@
                 <p class="header-subtitle">Search across 200 popular movies with full-text search</p>
             </div>
             <div class="header-actions">
+                <button class="btn-secondary" onclick="toggleAIChat()" style="margin-right: 12px;" id="aiChatToggleBtn">
+                    AI Movie Assistant
+                </button>
                 <a href="/movies" class="btn-secondary">
                     Browse all movies
                 </a>
@@ -901,7 +1407,7 @@
                     </div>
                     <div class="info-item">
                         <div class="info-label">Services</div>
-                        <div class="info-value">Redis, Meilisearch, Consul, Prometheus, Grafana</div>
+                        <div class="info-value">Redis, Meilisearch, Prometheus, Grafana</div>
                     </div>
                 </div>
             </div>
@@ -988,6 +1494,38 @@
             </div>
         </div>
 
+        <!-- AI Chat Panel -->
+        <div class="ai-chat-panel" id="aiChatPanel">
+            <div class="ai-chat-container">
+                <div class="ai-chat-results" id="aiChatResults">
+                    <div class="ai-chat-welcome" id="aiChatWelcome">
+                        <h2>Hello! 👋</h2>
+                        <p>I'll help you find the perfect movie to watch. Just describe what you'd like to see, and I'll find suitable options!</p>
+                    </div>
+                    <div id="aiChatResultsContent"></div>
+                    <div class="ai-movie-detail-view" id="aiMovieDetailView"></div>
+                    <div class="ai-movies-grid" id="aiMoviesGrid" style="display: none;"></div>
+                </div>
+                <div class="ai-chat-messages">
+                    <div class="ai-chat-header">
+                        <h3>AI Movie Assistant</h3>
+                        <button class="ai-chat-close" onclick="toggleAIChat()">×</button>
+                    </div>
+                    <div class="ai-chat-messages-list" id="aiChatMessages"></div>
+                    <div class="ai-chat-input-container">
+                        <input 
+                            type="text" 
+                            class="ai-chat-input" 
+                            id="aiChatInput" 
+                            placeholder="e.g., I want to watch something sad..."
+                            autocomplete="off"
+                        >
+                        <button class="ai-chat-send" id="aiChatSend" onclick="sendAIMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <script>
             // Backend state
             let backendState = 'unknown';
@@ -995,7 +1533,7 @@
             let statusCheckInterval = null;
 
             // Services that run on backend
-            const backendServices = ['redis', 'meilisearch', 'consul', 'prometheus', 'grafana'];
+            const backendServices = ['redis', 'meilisearch', 'prometheus', 'grafana'];
             let isLoadingServices = false;  // Prevent duplicate calls
             const frontendServices = ['postgres', 'nginx'];
 
@@ -1612,6 +2150,352 @@
                 `).join('');
                 } catch (e) {
                     document.getElementById('popularSearches').innerHTML = 'Error loading';
+                }
+            }
+
+            // =====================================================================
+            // AI Chat
+            // =====================================================================
+
+            const AI_CHAT_API_URL = '{{ ai_chat_api_url }}' || '';
+            const AI_CHAT_API_KEY = '{{ ai_chat_api_key }}' || '';
+            let aiChatHistory = [];
+            let previousState = null;
+            let currentMovieDetailId = null;
+
+            function toggleAIChat() {
+                const chatPanel = document.getElementById('aiChatPanel');
+                const isVisible = chatPanel.classList.contains('visible');
+                
+                if (isVisible) {
+                    chatPanel.classList.remove('visible');
+                } else {
+                    chatPanel.classList.add('visible');
+                    document.getElementById('aiChatInput').focus();
+                }
+            }
+
+            document.getElementById('aiChatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAIMessage();
+                }
+            });
+
+            function addAIMessage(content, role) {
+                const messagesList = document.getElementById('aiChatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `ai-chat-message ${role}`;
+                messageDiv.textContent = content;
+                messagesList.appendChild(messageDiv);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+
+            function saveCurrentState() {
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+                
+                if (detailView.classList.contains('visible')) {
+                    previousState = {
+                        type: 'detail',
+                        movieId: currentMovieDetailId
+                    };
+                } else if (moviesGrid.style.display !== 'none') {
+                    previousState = {
+                        type: 'browse'
+                    };
+                } else if (resultsContent.innerHTML.trim() !== '') {
+                    previousState = {
+                        type: 'results',
+                        html: resultsContent.innerHTML
+                    };
+                }
+            }
+
+            function restorePreviousState() {
+                if (!previousState) {
+                    const welcome = document.getElementById('aiChatWelcome');
+                    welcome.classList.remove('hidden');
+                    return;
+                }
+
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+                const welcome = document.getElementById('aiChatWelcome');
+
+                welcome.classList.add('hidden');
+                detailView.classList.remove('visible');
+                moviesGrid.style.display = 'none';
+                resultsContent.style.display = 'block';
+
+                if (previousState.type === 'detail') {
+                    showMovieDetail(previousState.movieId);
+                } else if (previousState.type === 'browse') {
+                    showBrowseAllMovies();
+                } else if (previousState.type === 'results') {
+                    resultsContent.innerHTML = previousState.html;
+                }
+
+                previousState = null;
+            }
+
+            function showAIMovieResults(movies) {
+                if (movies.length === 0) return;
+
+                const welcome = document.getElementById('aiChatWelcome');
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+                
+                welcome.classList.add('hidden');
+                detailView.classList.remove('visible');
+                moviesGrid.style.display = 'none';
+                resultsContent.style.display = 'block';
+                resultsContent.innerHTML = '';
+
+                movies.forEach(movie => {
+                    const genres = Array.isArray(movie.genres) ? movie.genres : [];
+                    const card = document.createElement('div');
+                    card.className = 'ai-movie-result-card';
+                    card.style.cursor = 'pointer';
+                    
+                    card.innerHTML = `
+                        <h4>${movie.title}</h4>
+                        <div class="ai-movie-result-meta">
+                            <span class="rating">⭐ ${movie.rating}</span>
+                            <span>📅 ${movie.year}</span>
+                            ${movie.director ? `<span>🎬 ${movie.director}</span>` : ''}
+                        </div>
+                        ${genres.length > 0 ? `
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                                ${genres.map(genre => `<span style="background: #404040; color: #93c5fd; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">${genre}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        ${movie.description ? `<p class="ai-movie-result-description">${movie.description}</p>` : ''}
+                        <button onclick="showMovieDetail(${movie.id})" style="margin-top: 1rem; background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">View Details</button>
+                    `;
+                    
+                    card.onclick = () => showMovieDetail(movie.id);
+                    resultsContent.appendChild(card);
+                });
+            }
+
+            async function showMovieDetail(movieId) {
+                saveCurrentState();
+                currentMovieDetailId = movieId;
+
+                const welcome = document.getElementById('aiChatWelcome');
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+
+                welcome.classList.add('hidden');
+                resultsContent.style.display = 'none';
+                moviesGrid.style.display = 'none';
+                detailView.classList.add('visible');
+
+                try {
+                    const response = await fetch(`/api/ai/movie/${movieId}`);
+                    const data = await response.json();
+
+                    if (data.movie) {
+                        const movie = data.movie;
+                        const genres = Array.isArray(movie.genres) ? movie.genres : [];
+
+                        detailView.innerHTML = `
+                            <div class="ai-movie-detail-container">
+                                <div class="ai-movie-detail-hero">
+                                    <img src="/api/poster/${movie.poster_filename}" alt="${movie.title}" class="ai-movie-detail-poster">
+                                    <div class="ai-movie-detail-info">
+                                        <h2>${movie.title}</h2>
+                                        <div class="ai-movie-detail-meta">
+                                            <span>${movie.year}</span>
+                                            ${genres.map(g => `<span>${g}</span>`).join('')}
+                                            <span>${movie.director}</span>
+                                        </div>
+                                        <div class="ai-movie-detail-rating">⭐ ${movie.rating}/10</div>
+                                        <p class="ai-movie-detail-description">${movie.description || 'No description available'}</p>
+                                    </div>
+                                </div>
+                                <button class="ai-movie-detail-close" onclick="closeMovieDetail()">Close Details</button>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading movie details:', error);
+                    detailView.innerHTML = '<div class="ai-movie-result-card"><p>Error loading movie details</p></div>';
+                }
+            }
+
+            function closeMovieDetail() {
+                const detailView = document.getElementById('aiMovieDetailView');
+                detailView.classList.remove('visible');
+                currentMovieDetailId = null;
+                showBrowseAllMovies();
+            }
+
+            async function showBrowseAllMovies() {
+                saveCurrentState();
+
+                const welcome = document.getElementById('aiChatWelcome');
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+
+                welcome.classList.add('hidden');
+                resultsContent.style.display = 'none';
+                detailView.classList.remove('visible');
+                moviesGrid.style.display = 'grid';
+
+                try {
+                    const response = await fetch('/api/movies/featured?limit=20');
+                    const data = await response.json();
+
+                    if (data.movies && data.movies.length > 0) {
+                        moviesGrid.innerHTML = `
+                            <div style="grid-column: 1 / -1; margin-bottom: 1rem;">
+                                <div class="ai-browse-movies-header">
+                                    <h3>All Movies</h3>
+                                    <button class="ai-browse-movies-close" onclick="closeBrowseMovies()">Close</button>
+                                </div>
+                            </div>
+                            ${data.movies.map(movie => {
+                                const genres = Array.isArray(movie.genres) ? movie.genres : (movie.genre ? [movie.genre] : []);
+                                return `
+                                    <div class="ai-movie-grid-card" onclick="showMovieDetail(${movie.id})">
+                                        <img src="/api/poster/${movie.poster_filename}" alt="${movie.title}" class="ai-movie-grid-poster">
+                                        <div class="ai-movie-grid-info">
+                                            <div class="ai-movie-grid-title">${movie.title}</div>
+                                            <div class="ai-movie-grid-rating">⭐ ${movie.rating}</div>
+                                            <div class="ai-movie-grid-meta">${movie.year} • ${genres.join(', ') || 'Unknown'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading movies:', error);
+                    moviesGrid.innerHTML = '<div class="ai-movie-result-card"><p>Error loading movies</p></div>';
+                }
+            }
+
+            function closeBrowseMovies() {
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+                moviesGrid.style.display = 'none';
+                restorePreviousState();
+            }
+
+            function showYouTubeTrailer(trailer) {
+                if (!trailer || !trailer.video_id) return;
+
+                saveCurrentState();
+
+                const welcome = document.getElementById('aiChatWelcome');
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                const detailView = document.getElementById('aiMovieDetailView');
+                const moviesGrid = document.getElementById('aiMoviesGrid');
+
+                welcome.classList.add('hidden');
+                detailView.classList.remove('visible');
+                moviesGrid.style.display = 'none';
+                resultsContent.style.display = 'block';
+                resultsContent.innerHTML = '';
+
+                const trailerContainer = document.createElement('div');
+                trailerContainer.className = 'ai-trailer-container';
+                
+                trailerContainer.innerHTML = `
+                    <button class="ai-trailer-close" onclick="closeTrailer()">Close Trailer</button>
+                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-top: 1rem;">
+                        <iframe 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                            src="https://www.youtube.com/embed/${trailer.video_id}?autoplay=1" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    <div style="margin-top: 1rem; color: #ffffff; text-align: center;">
+                        <h3 style="margin-bottom: 0.5rem;">${trailer.movie_title || 'Movie'}</h3>
+                        ${trailer.year ? `<p style="color: #9ca3af;">${trailer.year}</p>` : ''}
+                    </div>
+                `;
+                
+                resultsContent.appendChild(trailerContainer);
+            }
+
+            function closeTrailer() {
+                const resultsContent = document.getElementById('aiChatResultsContent');
+                resultsContent.innerHTML = '';
+                restorePreviousState();
+            }
+
+            async function sendAIMessage() {
+                const input = document.getElementById('aiChatInput');
+                const sendBtn = document.getElementById('aiChatSend');
+                const message = input.value.trim();
+                
+                if (!message || !AI_CHAT_API_URL) {
+                    if (!AI_CHAT_API_URL) {
+                        addAIMessage('AI Chat API is not configured. Please set AI_CHAT_API_URL in environment variables.', 'assistant');
+                    }
+                    return;
+                }
+
+                input.value = '';
+                sendBtn.disabled = true;
+                sendBtn.textContent = '...';
+
+                addAIMessage(message, 'user');
+                aiChatHistory.push({ role: 'user', content: message });
+
+                try {
+                    const response = await fetch(`${AI_CHAT_API_URL}/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            ...(AI_CHAT_API_KEY && { 'X-Api-Key': AI_CHAT_API_KEY })
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            history: aiChatHistory.slice(-10)
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error === 'Rate limit exceeded') {
+                        addAIMessage(`Sorry, you've exceeded the rate limit. ${data.message || 'Please try again later.'}`, 'assistant');
+                        return;
+                    }
+                    
+                    if (data.message) {
+                        addAIMessage(data.message, 'assistant');
+                        aiChatHistory.push({ role: 'assistant', content: data.message });
+                    }
+
+                    if (data.youtube_trailer && data.youtube_trailer.video_id) {
+                        showYouTubeTrailer(data.youtube_trailer);
+                    } else if (data.movie_detail) {
+                        showMovieDetail(data.movie_detail.id);
+                    } else if (data.movie_results && data.movie_results.length > 0) {
+                        showAIMovieResults(data.movie_results);
+                    }
+
+                } catch (error) {
+                    console.error('AI Chat error:', error);
+                    addAIMessage('Sorry, an error occurred. Please try again.', 'assistant');
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = 'Send';
+                    input.focus();
                 }
             }
 
