@@ -9,37 +9,36 @@ def check_s3():
             's3',
             region_name=Config.AWS_REGION
         )
-        
+
         bucket_name = Config.S3_BUCKET_NAME
-        
+
         s3.head_bucket(Bucket=bucket_name)
-        
+
         location = s3.get_bucket_location(Bucket=bucket_name)
         bucket_region = location.get('LocationConstraint') or 'us-east-1'
-        
+
         objects_response = s3.list_objects_v2(
             Bucket=bucket_name,
             MaxKeys=10
         )
-        
+
         object_count = objects_response.get('KeyCount', 0)
         is_truncated = objects_response.get('IsTruncated', False)
-        
+
 
         versioning = s3.get_bucket_versioning(Bucket=bucket_name)
         versioning_status = versioning.get('Status', 'Disabled')
-        
 
         test_key = '_health_check_test_object'
         test_content = b'health check test'
-        
+
         # Write test
         s3.put_object(
             Bucket=bucket_name,
             Key=test_key,
             Body=test_content
         )
-        
+
         # Read test
         read_response = s3.get_object(
             Bucket=bucket_name,
@@ -47,13 +46,13 @@ def check_s3():
         )
         read_content = read_response['Body'].read()
         read_success = read_content == test_content
-        
+
         # Delete test
         s3.delete_object(
             Bucket=bucket_name,
             Key=test_key
         )
-        
+
         return {
             'status': 'healthy',
             'service': 's3',
@@ -77,7 +76,7 @@ def check_s3():
                 }
             }
         }
-        
+
     except NoCredentialsError:
         return {
             'status': 'unhealthy',

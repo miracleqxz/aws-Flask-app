@@ -5,25 +5,25 @@ from config import Config
 def check_grafana():
     try:
         health_url = f"http://{Config.GRAFANA_HOST}:{Config.GRAFANA_PORT}/api/health"
-        
+
         response = requests.get(health_url, timeout=5)
-        
+
         is_healthy = response.status_code == 200
-        
+
         if is_healthy:
             health_data = response.json()
         else:
             health_data = {}
-        
+
         try:
             version_url = f"http://{Config.GRAFANA_HOST}:{Config.GRAFANA_PORT}/api/health"
             version_response = requests.get(version_url, timeout=5)
             version_info = version_response.json() if version_response.status_code == 200 else {}
-        except:
+        except Exception:
             version_info = {}
-        
+
         response_time = response.elapsed.total_seconds()
-        
+
         return {
             'status': 'healthy' if is_healthy else 'unhealthy',
             'service': 'grafana',
@@ -46,7 +46,7 @@ def check_grafana():
                 'info': version_info
             }
         }
-        
+
     except requests.ConnectionError as e:
         return {
             'status': 'unhealthy',

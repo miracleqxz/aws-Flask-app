@@ -14,58 +14,56 @@ def check_postgres():
             connect_timeout=5,
             sslmode='require'
         )
-        
+
         cursor = conn.cursor()
-        
-        
+
+
         cursor.execute("SELECT version();")
         version = cursor.fetchone()[0]
-        
-        
+
         cursor.execute("SELECT pg_size_pretty(pg_database_size(current_database()));")
         db_size = cursor.fetchone()[0]
-        
-        
+
         cursor.execute("""
-            SELECT COUNT(*) FROM information_schema.tables 
+            SELECT COUNT(*) FROM information_schema.tables
             WHERE table_schema = 'public';
         """)
         tables_count = cursor.fetchone()[0]
-        
+
         # Active connections
         cursor.execute("""
-            SELECT count(*) FROM pg_stat_activity 
+            SELECT count(*) FROM pg_stat_activity
             WHERE state = 'active';
         """)
         active_connections = cursor.fetchone()[0]
-        
+
         # Total connections
         cursor.execute("SELECT count(*) FROM pg_stat_activity;")
         total_connections = cursor.fetchone()[0]
-        
+
         # Max connections
         cursor.execute("SHOW max_connections;")
         max_connections = cursor.fetchone()[0]
-        
+
         # Uptime
         cursor.execute("SELECT date_trunc('second', current_timestamp - pg_postmaster_start_time());")
         uptime = str(cursor.fetchone()[0])
-        
+
         # Transaction stats
         cursor.execute("""
-            SELECT 
+            SELECT
                 xact_commit,
                 xact_rollback,
                 blks_read,
                 blks_hit
-            FROM pg_stat_database 
+            FROM pg_stat_database
             WHERE datname = current_database();
         """)
         stats = cursor.fetchone()
-        
+
         cursor.close()
         conn.close()
-        
+
         return {
             'status': 'healthy',
             'service': 'postgresql',
@@ -97,7 +95,7 @@ def check_postgres():
                 }
             }
         }
-        
+
     except psycopg2.OperationalError as e:
         return {
             'status': 'unhealthy',

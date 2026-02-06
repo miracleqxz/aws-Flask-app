@@ -7,7 +7,7 @@ def get_redis_client():
     return redis.Redis(
         host=Config.REDIS_HOST,
         port=Config.REDIS_PORT,
-        decode_responses=True  
+        decode_responses=True
     )
 
 
@@ -19,7 +19,7 @@ def cache_key(query):
 def get_cached_search(query):
     client = get_redis_client()
     key = cache_key(query)
-    
+
     try:
         cached = client.get(key)
         if cached:
@@ -33,7 +33,7 @@ def get_cached_search(query):
 def set_cached_search(query, results, ttl=300):
     client = get_redis_client()
     key = cache_key(query)
-    
+
     try:
         client.setex(
             key,
@@ -46,7 +46,7 @@ def set_cached_search(query, results, ttl=300):
 
 def clear_search_cache():
     client = get_redis_client()
-    
+
     try:
         keys = client.keys("search:*")
         if keys:
@@ -60,7 +60,7 @@ def clear_search_cache():
 
 def get_cache_stats():
     client = get_redis_client()
-    
+
     try:
         info = client.info('stats')
         return {

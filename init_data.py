@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 
 def init_postgres():
     print("Checking PostgreSQL...")
-    
+
     try:
         conn = psycopg2.connect(
             host=os.getenv("POSTGRES_HOST"),
@@ -20,7 +20,7 @@ def init_postgres():
             password=os.getenv("POSTGRES_PASSWORD"),
             sslmode="require",
         )
-        
+
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -40,25 +40,25 @@ def init_postgres():
 
         # Migration: if old 'genre' column exists, migrate data and drop it
         cursor.execute("""
-            SELECT column_name FROM information_schema.columns 
+            SELECT column_name FROM information_schema.columns
             WHERE table_name = 'movies' AND column_name = 'genre'
         """)
         if cursor.fetchone():
             print("Migrating from 'genre' to 'genres'...")
-        
+
             cursor.execute("""
-                ALTER TABLE movies 
+                ALTER TABLE movies
                 ADD COLUMN IF NOT EXISTS genres TEXT[]
             """)
-            
+
             cursor.execute("""
-                UPDATE movies 
+                UPDATE movies
                 SET genres = ARRAY[genre]
                 WHERE genre IS NOT NULL AND genres IS NULL
             """)
 
             cursor.execute("""
-                ALTER TABLE movies 
+                ALTER TABLE movies
                 DROP COLUMN genre
             """)
             conn.commit()
@@ -89,7 +89,7 @@ def init_postgres():
                 m["title"],
                 m["year"],
                 m["rating"],
-                m.get("genres", [m["genre"]] if "genre" in m else []),  
+                m.get("genres", [m["genre"]] if "genre" in m else []),
                 m["director"],
                 m["description"],
                 m["poster_filename"],
@@ -123,7 +123,7 @@ def init_postgres():
         cursor.close()
         conn.close()
         return True
-        
+
     except Exception as e:
         print(f"PostgreSQL error: {e}")
         return False
@@ -131,36 +131,36 @@ def init_postgres():
 
 def init_s3():
     print("Checking S3...")
-    
+
     try:
         bucket_name = os.getenv('S3_BUCKET_NAME')
         region = os.getenv('AWS_REGION', 'us-east-1')
-        
+
         if not bucket_name:
             print("S3_BUCKET_NAME not set, skipping")
             return False
-        
+
         s3 = boto3.client('s3', region_name=region)
-        
+
         try:
             s3.head_bucket(Bucket=bucket_name)
         except ClientError:
             print(f"Bucket '{bucket_name}' not found, skipping")
             return False
-        
+
         try:
             response = s3.list_objects_v2(Bucket=bucket_name, MaxKeys=1)
             if response.get('KeyCount', 0) > 0:
                 print("S3 already has objects")
                 return True
-        except:
+        except Exception:
             pass
-        
+
         posters_dir = '/app/posters'
-        
+
         if os.path.exists(posters_dir) and os.listdir(posters_dir):
             print(f"Uploading real posters from {posters_dir}...")
-            
+
             uploaded = 0
             for filename in os.listdir(posters_dir):
                 if filename.endswith('.jpg'):
@@ -177,11 +177,10 @@ def init_s3():
                         print(f"  {filename}")
                     except Exception as e:
                         print(f"  {filename} - error: {e}")
-            
+
             print(f"S3 OK ({uploaded} posters)")
             return True
-        
-        
+
     except Exception as e:
         print(f"S3 error: {e}")
         return False
@@ -189,7 +188,7 @@ def init_s3():
 
 def init_meilisearch():
     print("Checking Meilisearch...")
-    
+
     try:
         import requests
 
@@ -202,7 +201,7 @@ def init_meilisearch():
             if health.status_code != 200:
                 print("Meilisearch not accessible, skipping")
                 return False
-        except:
+        except Exception:
             print("Meilisearch not accessible, skipping")
             return False
 
@@ -215,7 +214,7 @@ def init_meilisearch():
                 index_exists = True
                 doc_count = stats.json().get("numberOfDocuments", 0)
                 print(f"Meilisearch movies index currently has {doc_count} documents")
-        except:
+        except Exception:
             pass
 
         if index_exists:
@@ -308,7 +307,7 @@ def init_meilisearch():
                 json=["title", "description", "director", "genres"],
                 timeout=10,
             )
-            
+
             requests.put(
                 f"{base_url}/indexes/movies/settings/filterable-attributes",
                 json=["genres", "year", "rating"],
@@ -341,14 +340,14 @@ def init_meilisearch():
 
 def main():
     print("\nData Initialization\n")
-    
+
     if not init_postgres():
         print("PostgreSQL initialization failed - CRITICAL")
         sys.exit(1)
-    
+
     init_s3()
     init_meilisearch()
-    
+
     print("\nInitialization complete\n")
 
 

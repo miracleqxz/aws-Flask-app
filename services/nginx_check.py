@@ -8,14 +8,14 @@ def check_nginx():
             f"http://{Config.NGINX_HOST}:{Config.NGINX_PORT}",
             timeout=5
         )
-        
+
 
         status_code = response.status_code
-        is_healthy = status_code == 200 or status_code == 404  
-        
+        is_healthy = status_code == 200 or status_code == 404
+
         server_header = response.headers.get('Server', 'Unknown')
         response_time = response.elapsed.total_seconds()
-        
+
         return {
             'status': 'healthy' if is_healthy else 'unhealthy',
             'service': 'nginx',
@@ -38,7 +38,7 @@ def check_nginx():
                 }
             }
         }
-        
+
     except requests.ConnectionError as e:
         return {
             'status': 'unhealthy',

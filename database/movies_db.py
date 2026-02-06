@@ -17,23 +17,23 @@ def get_db_connection():
 def init_database():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     with open('database/schema.sql', 'r', encoding='utf-8') as f:
         schema = f.read()
-    
+
     cursor.execute(schema)
     conn.commit()
-    
+
     cursor.close()
     conn.close()
-    
+
     print("Database schema created!")
 
 
 def insert_movie(movie_data):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("""
         INSERT INTO movies (title, year, rating, genres, director, description, poster_filename)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -47,76 +47,76 @@ def insert_movie(movie_data):
         movie_data['description'],
         movie_data['poster_filename']
     ))
-    
+
     movie_id = cursor.fetchone()[0]
     conn.commit()
-    
+
     cursor.close()
     conn.close()
-    
+
     return movie_id
 
 
 def get_all_movies():
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     cursor.execute("""
         SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         ORDER BY rating DESC
     """)
-    
+
     movies = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
     return movies
 
 
 def get_movie_by_id(movie_id):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     cursor.execute("""
         SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         WHERE id = %s
     """, (movie_id,))
-    
+
     movie = cursor.fetchone()
-    
+
     cursor.close()
     conn.close()
-    
+
     return movie
 
 
 def count_movies():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("SELECT COUNT(*) FROM movies")
     count = cursor.fetchone()[0]
-    
+
     cursor.close()
     conn.close()
-    
+
     return count
 
 
 def log_search_query(query, results_count):
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("""
         INSERT INTO search_queries (query, results_count)
         VALUES (%s, %s)
     """, (query, results_count))
-    
+
     conn.commit()
-    
+
     cursor.close()
     conn.close()
 
@@ -124,26 +124,26 @@ def log_search_query(query, results_count):
 def get_movies_paginated(page=1, per_page=20):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     offset = (page - 1) * per_page
-    
+
     cursor.execute("SELECT COUNT(*) FROM movies")
     total = cursor.fetchone()['count']
-    
+
     cursor.execute("""
         SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
         ORDER BY rating DESC
         LIMIT %s OFFSET %s
     """, (per_page, offset))
-    
+
     movies = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
     total_pages = (total + per_page - 1) // per_page
-    
+
     return {
         'movies': movies,
         'total': total,
@@ -156,26 +156,26 @@ def get_movies_paginated(page=1, per_page=20):
 def get_all_genres():
     conn = get_db_connection()
     cursor = conn.cursor()
-    
+
     cursor.execute("""
         SELECT DISTINCT UNNEST(genres) as genre
         FROM movies
         WHERE genres IS NOT NULL
         ORDER BY genre
     """)
-    
+
     genres = [row[0] for row in cursor.fetchall()]
-    
+
     cursor.close()
     conn.close()
-    
+
     return genres
 
 
 def get_movies_by_genre(genre, limit=10):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
+
     cursor.execute("""
         SELECT id, title, year, rating, genres, director, description, poster_filename
         FROM movies
@@ -183,31 +183,49 @@ def get_movies_by_genre(genre, limit=10):
         ORDER BY rating DESC
         LIMIT %s
     """, (genre, limit))
-    
+
     movies = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
+    return movies
+
+
+def get_movies_by_genres(genres_list, limit=10):
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    cursor.execute("""
+        SELECT id, title, year, rating, genres, director, description, poster_filename
+        FROM movies
+        WHERE genres && %s
+        ORDER BY rating DESC
+        LIMIT %s
+    """, (genres_list, limit))
+
+    movies = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
     return movies
 
 
 def get_similar_movies(movie_id, limit=5):
     conn = get_db_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
-    
-    
+
     cursor.execute("SELECT genres FROM movies WHERE id = %s", (movie_id,))
     result = cursor.fetchone()
-    
+
     if not result or not result['genres']:
         cursor.close()
         conn.close()
         return []
-    
+
     genres = result['genres']
-    
-    
+
     cursor.execute("""
         SELECT id, title, year, rating, genres, director, description, poster_filename,
                (SELECT COUNT(*) FROM UNNEST(genres) g WHERE g = ANY(%s)) as overlap
@@ -216,10 +234,10 @@ def get_similar_movies(movie_id, limit=5):
         ORDER BY overlap DESC, rating DESC
         LIMIT %s
     """, (genres, movie_id, genres, limit))
-    
+
     movies = cursor.fetchall()
-    
+
     cursor.close()
     conn.close()
-    
+
     return movies

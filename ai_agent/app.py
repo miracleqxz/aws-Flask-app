@@ -83,6 +83,7 @@ client = OpenAI(
 
 last_heartbeat = datetime.now(timezone.utc)
 
+
 def get_redis_client():
     try:
         return redis.Redis(
@@ -101,7 +102,7 @@ def send_heartbeat():
     global last_heartbeat
     if not LAMBDA_API_URL:
         return
-    
+
     try:
         response = requests.post(
             f"{LAMBDA_API_URL}/heartbeat",
@@ -153,12 +154,12 @@ def search_youtube_trailer(movie_title, year=None):
     if not YOUTUBE_API_KEY:
         logger.warning("YouTube API key not configured")
         return None
-    
+
     try:
         query = f"{movie_title} trailer"
         if year:
             query += f" {year}"
-        
+
         url = "https://www.googleapis.com/youtube/v3/search"
         params = {
             'part': 'id',
@@ -168,7 +169,7 @@ def search_youtube_trailer(movie_title, year=None):
             'key': YOUTUBE_API_KEY,
             'videoCategoryId': '1'
         }
-        
+
         response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
             data = response.json()
@@ -177,7 +178,7 @@ def search_youtube_trailer(movie_title, year=None):
                 video_id = items[0]['id']['videoId']
                 logger.info(f"Found YouTube trailer for {movie_title}: {video_id}")
                 return video_id
-        
+
         logger.warning(f"No YouTube trailer found for {movie_title}")
         return None
     except Exception as e:
@@ -189,10 +190,10 @@ def check_rate_limit(user_id):
     r = get_redis_client()
     if not r:
         return {'allowed': True, 'remaining': AI_CHAT_MAX_REQUESTS}
-    
+
     key = f"ai_chat_rate_limit:{user_id}"
     current_time = time.time()
-    
+
     try:
         pipe = r.pipeline()
         pipe.zremrangebyscore(key, 0, current_time - AI_CHAT_WINDOW_SECONDS)
@@ -200,9 +201,9 @@ def check_rate_limit(user_id):
         pipe.zadd(key, {str(current_time): current_time})
         pipe.expire(key, AI_CHAT_WINDOW_SECONDS)
         results = pipe.execute()
-        
+
         current_count = results[1]
-        
+
         if current_count >= AI_CHAT_MAX_REQUESTS:
             oldest_request = r.zrange(key, 0, 0, withscores=True)
             if oldest_request:
@@ -214,7 +215,7 @@ def check_rate_limit(user_id):
                     'reset_at': reset_time,
                     'message': f'Rate limit exceeded. Try again in {remaining_seconds} seconds.'
                 }
-        
+
         remaining = AI_CHAT_MAX_REQUESTS - current_count - 1
         return {
             'allowed': True,
@@ -230,7 +231,7 @@ def update_activity(user_id):
     r = get_redis_client()
     if not r:
         return
-    
+
     key = f"ai_chat_activity:{user_id}"
     try:
         r.setex(key, AI_CHAT_IDLE_TIMEOUT_MINUTES * 60, str(time.time()))
@@ -319,16 +320,16 @@ def chat():
         data = request.json
         user_message = data.get('message', '').strip()
         conversation_history = data.get('history', [])
-        
+
         if not user_message:
             return jsonify({'error': 'Message is required'}), 400
-        
+
         forwarded_for = request.headers.get('X-Forwarded-For', '')
         if forwarded_for:
             user_id = forwarded_for.split(',')[0].strip()
         else:
             user_id = request.remote_addr or 'unknown'
-        
+
         rate_limit_check = check_rate_limit(user_id)
         if not rate_limit_check.get('allowed', True):
             return jsonify({
@@ -337,10 +338,10 @@ def chat():
                 'reset_at': rate_limit_check.get('reset_at'),
                 'remaining': 0
             }), 429
-        
+
         update_activity(user_id)
         send_heartbeat()
-        
+
         messages = [
             {
                 "role": "system",
@@ -358,18 +359,18 @@ When a user asks about movies:
 Be conversational, friendly, and helpful. Don't overwhelm users with too many movies at once - focus on 1-3 most relevant ones."""
             }
         ]
-        
+
         for msg in conversation_history[-10:]:
             messages.append({
                 "role": msg.get('role', 'user'),
                 "content": msg.get('content', '')
             })
-        
+
         messages.append({
             "role": "user",
             "content": user_message
         })
-        
+
         response = client.chat.completions.create(
             model=CURSOR_MODEL,
             messages=messages,
@@ -378,25 +379,25 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
             temperature=0.7,
             max_tokens=1000
         )
-        
+
         assistant_message = response.choices[0].message
         messages.append(assistant_message)
-        
+
         tool_calls = assistant_message.tool_calls or []
         movie_results = []
         youtube_trailer = None
         movie_detail = None
-        
+
         for tool_call in tool_calls:
             function_name = tool_call.function.name
             function_args = json.loads(tool_call.function.arguments)
-            
+
             if function_name == "search_movies":
                 query = function_args.get('query', '')
                 limit = function_args.get('limit', 5)
                 movies = search_movies(query, limit)
                 movie_results.extend(movies)
-                
+
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
@@ -405,7 +406,7 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
                         "count": len(movies)
                     })
                 })
-            
+
             elif function_name == "get_movie_details":
                 movie_id = function_args.get('movie_id')
                 movie = get_movie_details(movie_id)
@@ -416,7 +417,7 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
                         "tool_call_id": tool_call.id,
                         "content": json.dumps({"movie": movie})
                     })
-            
+
             elif function_name == "get_youtube_trailer":
                 movie_title = function_args.get('movie_title', '')
                 year = function_args.get('year')
@@ -445,7 +446,7 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
                             "message": f"Could not find YouTube trailer for {movie_title}"
                         })
                     })
-        
+
         if tool_calls:
             final_response = client.chat.completions.create(
                 model=CURSOR_MODEL,
@@ -454,7 +455,7 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
                 max_tokens=1000
             )
             assistant_message = final_response.choices[0].message
-        
+
         return jsonify({
             'message': assistant_message.content,
             'movie_results': movie_results,
@@ -466,7 +467,7 @@ Be conversational, friendly, and helpful. Don't overwhelm users with too many mo
                 'reset_at': rate_limit_check.get('reset_at')
             }
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
         return jsonify({
@@ -492,17 +493,17 @@ def check_activity():
             'has_activity': False,
             'last_activity': None
         }), 200
-    
+
     try:
         pattern = "ai_chat_activity:*"
         keys = r.keys(pattern)
-        
+
         if not keys:
             return jsonify({
                 'has_activity': False,
                 'last_activity': None
             }), 200
-        
+
         latest_time = 0
         for key in keys:
             value = r.get(key)
@@ -512,23 +513,23 @@ def check_activity():
                     latest_time = max(latest_time, timestamp)
                 except ValueError:
                     continue
-        
+
         if latest_time > 0:
             current_time = time.time()
             idle_minutes = (current_time - latest_time) / 60
-            
+
             return jsonify({
                 'has_activity': True,
                 'last_activity': latest_time,
                 'idle_minutes': round(idle_minutes, 1),
                 'should_shutdown': idle_minutes >= AI_CHAT_IDLE_TIMEOUT_MINUTES
             }), 200
-        
+
         return jsonify({
             'has_activity': False,
             'last_activity': None
         }), 200
-        
+
     except Exception as e:
         logger.error(f"Activity check failed: {e}")
         return jsonify({
@@ -539,16 +540,15 @@ def check_activity():
 
 if __name__ == '__main__':
     import threading
-    import time
-    
+
     def heartbeat_worker():
         while True:
             time.sleep(HEARTBEAT_INTERVAL_SECONDS)
             send_heartbeat()
-    
+
     heartbeat_thread = threading.Thread(target=heartbeat_worker, daemon=True)
     heartbeat_thread.start()
-    
+
     app.run(
         host='0.0.0.0',
         port=5000,

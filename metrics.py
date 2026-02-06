@@ -56,34 +56,34 @@ def track_request(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         start_time = time.time()
-        
+
         try:
             response = f(*args, **kwargs)
             status_code = response.status_code if hasattr(response, 'status_code') else 200
-            
+
             # Track metrics
             REQUEST_COUNT.labels(
                 method=f.__name__,
                 endpoint=f.__name__,
                 http_status=status_code
             ).inc()
-            
+
             duration = time.time() - start_time
             REQUEST_DURATION.labels(
                 method=f.__name__,
                 endpoint=f.__name__
             ).observe(duration)
-            
+
             return response
-            
-        except Exception as e:
+
+        except Exception:
             REQUEST_COUNT.labels(
                 method=f.__name__,
                 endpoint=f.__name__,
                 http_status=500
             ).inc()
             raise
-    
+
     return wrapper
 
 
