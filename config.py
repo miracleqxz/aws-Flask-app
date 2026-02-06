@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    FLASK_HOST = os.getenv('FLASK_HOST', '0.0.0.0')
+    FLASK_HOST = os.getenv('FLASK_HOST', '0.0.0.0')  # nosec B104 - Required for container/EC2 deployment
     FLASK_PORT = int(os.getenv('FLASK_PORT', '5000'))
     FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 

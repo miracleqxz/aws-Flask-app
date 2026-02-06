@@ -2,7 +2,7 @@ from config import Config
 
 
 def test_config_defaults():
-    assert Config.FLASK_HOST == '0.0.0.0'
+    assert Config.FLASK_HOST == '0.0.0.0'  # nosec B104 - Test for default value
     assert Config.FLASK_PORT == 5000
     assert Config.AWS_REGION == 'us-east-1'
 

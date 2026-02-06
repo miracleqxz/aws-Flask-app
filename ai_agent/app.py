@@ -550,7 +550,7 @@ if __name__ == '__main__':
     heartbeat_thread.start()
 
     app.run(
-        host='0.0.0.0',
+        host='0.0.0.0',  # nosec B104 - Required for EC2 instance to accept connections
         port=5000,
         debug=False
     )
