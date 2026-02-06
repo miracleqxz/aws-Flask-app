@@ -1410,12 +1410,6 @@
                 </div>
             </div>
 
-            <div class="services-status">
-                <h3>All Services</h3>
-                <div class="services-grid" id="servicesGrid">
-                    <div class="loading">Loading services...</div>
-                </div>
-            </div>
         </div>
 
         <div class="search-box">
@@ -1525,11 +1519,6 @@
             let heartbeatInterval = null;
             let statusCheckInterval = null;
 
-            // Services that run on backend
-            const backendServices = ['redis', 'meilisearch', 'prometheus', 'grafana'];
-            let isLoadingServices = false;  // Prevent duplicate calls
-            const frontendServices = ['postgres', 'nginx'];
-
             // Search on Enter key
             document.getElementById('searchInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') searchMovies();
@@ -1596,8 +1585,6 @@
                     stopHeartbeat();
                 }
 
-                // Refresh services status
-                loadServicesStatus();
             }
 
             function getStateClass(state) {
@@ -1744,63 +1731,6 @@
             // =====================================================================
 
 
-            async function loadServicesStatus() {
-                // Prevent concurrent calls
-                if (isLoadingServices) return;
-                isLoadingServices = true;
-
-                const allServices = [...frontendServices, ...backendServices];
-
-                const grid = document.getElementById('servicesGrid');
-                grid.innerHTML = '';  // Clear before adding
-
-                for (const service of allServices) {
-                    const isBackendService = backendServices.includes(service);
-
-                    // If backend is not running, show offline for backend services
-                    if (isBackendService && backendState !== 'running') {
-                        const a = document.createElement('a');
-                        a.href = `/service/${service}`;
-                        a.className = 'service-item offline';
-                        a.innerHTML = `
-                        <span class="service-status-dot offline"></span>
-                        <span class="service-name">${service}</span>
-                        <span class="service-location">backend</span>
-                    `;
-                        grid.appendChild(a);
-                        continue;
-                    }
-
-                    try {
-                        const res = await fetch(`/check/${service}`);
-                        const data = await res.json();
-
-                        const a = document.createElement('a');
-                        a.href = `/service/${service}`;
-                        a.className = `service-item ${data.status}`;
-                        a.innerHTML = `
-                        <span class="service-status-dot ${data.status}"></span>
-                        <span class="service-name">${service}</span>
-                        <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
-                    `;
-                        grid.appendChild(a);
-                    } catch (e) {
-                        console.error(`Error checking ${service}:`, e);
-
-                        const a = document.createElement('a');
-                        a.href = `/service/${service}`;
-                        a.className = 'service-item unhealthy';
-                        a.innerHTML = `
-                        <span class="service-status-dot unhealthy"></span>
-                        <span class="service-name">${service}</span>
-                        <span class="service-location">${isBackendService ? 'backend' : 'frontend'}</span>
-                    `;
-                        grid.appendChild(a);
-                    }
-                }
-
-                isLoadingServices = false;  // Release lock
-            }
 
             // =====================================================================
             // Search Functions
@@ -2499,9 +2429,6 @@
             async function init() {
                 // Check backend status first
                 await checkBackendStatus();
-
-                // Load services
-                loadServicesStatus();
 
                 // Load cache stats
                 loadCacheStats();

@@ -21,11 +21,3 @@ def test_database_modules():
         pytest.fail(f"Database module import failed: {e}")
 
 
-def test_services_modules():
-    try:
-        from services import postgres_check  # noqa: F401
-        from services import redis_check  # noqa: F401
-        from services import s3_check  # noqa: F401
-        assert True
-    except ImportError as e:
-        pytest.fail(f"Services module import failed: {e}")

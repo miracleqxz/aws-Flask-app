@@ -128,11 +128,10 @@ def start_worker():
                         import traceback
                         traceback.print_exc()
 
-
                 if message_count % 10 == 0:
                     print(f"\nStats: processed={message_count}, errors={error_count}", flush=True)
 
-            except Exception as e:
+        except Exception as e:
                 print(f"\nWorker loop error: {e}", flush=True)
                 error_count += 1
                 import traceback
@@ -140,7 +139,7 @@ def start_worker():
                 time.sleep(5)
 
     except KeyboardInterrupt:
-        print(f"\n\nStopping worker...", flush=True)
+        print("\n\nStopping worker...", flush=True)
         print(f"Final stats: processed={message_count}, errors={error_count}", flush=True)
         print("Worker stopped", flush=True)
 

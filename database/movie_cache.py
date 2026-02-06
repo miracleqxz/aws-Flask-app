@@ -78,4 +78,3 @@ def clear_movie_cache(movie_id=None):
     except Exception as e:
         print(f"Redis clear error: {e}")
         return 0
-

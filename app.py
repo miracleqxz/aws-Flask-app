@@ -5,16 +5,6 @@ import os
 import logging
 import json
 
-from services.redis_check import check_redis
-from services.postgres_check import check_postgres
-from services.meilisearch_check import check_meilisearch
-from services.consul_check import check_consul
-from services.prometheus_check import check_prometheus
-from services.nginx_check import check_nginx
-from services.grafana_check import check_grafana
-from services.sqs_check import check_sqs
-from services.s3_check import check_s3
-
 from database.rate_limiter import check_rate_limit, get_rate_limit_status
 from database.movies_db import get_movies_paginated, get_all_genres, get_movies_by_genre, get_movies_by_genres, get_similar_movies, get_movie_by_id, get_all_movies, log_search_query
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
@@ -69,67 +59,6 @@ def health():
         'service': 'flask-app',
         'version': '1.0.0'
     }), 200
-
-
-@app.route('/check/redis')
-def check_redis_endpoint():
-    result = check_redis()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/postgres')
-def check_postgres_endpoint():
-    result = check_postgres()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/meilisearch')
-def check_meilisearch_endpoint():
-    result = check_meilisearch()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/consul')
-def check_consul_endpoint():
-    result = check_consul()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/prometheus')
-def check_prometheus_endpoint():
-    result = check_prometheus()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/nginx')
-def check_nginx_endpoint():
-    result = check_nginx()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-
-@app.route('/check/grafana')
-def check_grafana_endpoint():
-    result = check_grafana()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
-
-@app.route('/check/sqs')
-def check_sqs_endpoint():
-    result = check_sqs()
-    return jsonify(result)
-
-
-@app.route('/check/s3')
-def check_s3_endpoint():
-    result = check_s3()
-    status_code = 200 if result['status'] == 'healthy' else 503
-    return jsonify(result), status_code
 
 
 @app.route('/api/search')
@@ -245,6 +174,7 @@ def movie_detail(movie_id):
         from_cache=False
     )
 
+
 @app.route('/api/cache/stats')
 def api_cache_stats():
     stats = get_cache_stats()
@@ -317,6 +247,7 @@ def api_featured_movies():
 
     return jsonify({'movies': result})
 
+
 @app.route('/api/movies/genres')
 def api_movies_genres():
     try:
@@ -348,54 +279,30 @@ def api_movies_genres():
 @app.route('/api/sqs/stats')
 def api_sqs_stats():
     try:
-        result = check_sqs()
+        sqs = boto3.client('sqs', region_name=Config.AWS_REGION)
+        response = sqs.get_queue_attributes(
+            QueueUrl=Config.SQS_QUEUE_URL,
+            AttributeNames=['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessagesDelayed']
+        )
 
-        if result['status'] == 'unhealthy':
-            return jsonify({'error': 'SQS not available'}), 503
-
-        messages = result['details']['messages']
-
+        attributes = response['Attributes']
         return jsonify({
             'queue_url': Config.SQS_QUEUE_URL,
             'messages': {
-                'approximate_count': messages['approximate_count'],
-                'in_flight': messages['in_flight'],
-                'delayed': messages['delayed']
+                'approximate_count': int(attributes.get('ApproximateNumberOfMessages', 0)),
+                'in_flight': int(attributes.get('ApproximateNumberOfMessagesNotVisible', 0)),
+                'delayed': int(attributes.get('ApproximateNumberOfMessagesDelayed', 0))
             }
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/service/<service_name>')
-def service_detail(service_name):
-    check_functions = {
-        'postgres': check_postgres,
-        'redis': check_redis,
-        'meilisearch': check_meilisearch,
-        'consul': check_consul,
-        'prometheus': check_prometheus,
-        'nginx': check_nginx,
-        'grafana': check_grafana
-    }
-
-    if service_name not in check_functions:
-        return jsonify({'error': 'Service not found'}), 404
-
-    result = check_functions[service_name]()
-
-    return render_template(
-        'service_detail.html',
-        service_name=service_name.upper(),
-        status=result['status'],
-        data=result
-    )
-
-
 @app.route('/metrics')
 @track_request
 def metrics():
     return metrics_endpoint()
+
 
 @app.route('/api/backend/status')
 def backend_status():
@@ -545,6 +452,7 @@ def data_status():
         logging.error(f"Data status error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
 @app.route('/api/ai/search')
 def ai_search():
     query = request.args.get('q', '')
@@ -592,6 +500,7 @@ def ai_movie_detail(movie_id):
 
     return jsonify({'movie': dict(movie)})
 
+
 @app.route('/api/ai/by-mood')
 def ai_by_mood():
     mood = request.args.get('mood', '')
@@ -627,10 +536,10 @@ def ai_chat():
                            ai_chat_api_url=ai_chat_api_url,
                            ai_chat_api_key=ai_chat_api_key)
 
+
 if __name__ == '__main__':
     app.run(
         host=Config.FLASK_HOST,
         port=Config.FLASK_PORT,
         debug=Config.FLASK_DEBUG
     )
-

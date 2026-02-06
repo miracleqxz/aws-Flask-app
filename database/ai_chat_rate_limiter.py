@@ -5,6 +5,7 @@ from config import Config
 
 logger = logging.getLogger(__name__)
 
+
 def get_redis_client():
     try:
         return redis.Redis(
