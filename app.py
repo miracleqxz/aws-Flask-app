@@ -6,7 +6,11 @@ import logging
 import json
 
 from database.rate_limiter import check_rate_limit, get_rate_limit_status
-from database.movies_db import get_movies_paginated, get_all_genres, get_movies_by_genre, get_movies_by_genres, get_similar_movies, get_movie_by_id, get_all_movies, log_search_query
+from database.movies_db import (
+    get_movies_paginated, get_all_genres, get_movies_by_genre,
+    get_movies_by_genres, get_similar_movies, get_movie_by_id,
+    get_all_movies, log_search_query
+)
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
 from database.movie_cache import get_cached_movie, set_cached_movie, clear_movie_cache
 from database.meilisearch_sync import search_movies_meili
@@ -25,115 +29,73 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-
 app = Flask(__name__)
 app.config.from_object(Config)
 
 
+# ── Helpers ──
+
+def invoke_lambda(function_name, payload, async_invoke=False):
+    """Invoke a Lambda function and return parsed response body."""
+    client = boto3.client('lambda', region_name=Config.AWS_REGION)
+    response = client.invoke(
+        FunctionName=function_name,
+        InvocationType='Event' if async_invoke else 'RequestResponse',
+        Payload=json.dumps(payload)
+    )
+    if async_invoke:
+        return {'status': 'ok'}
+
+    result = json.loads(response['Payload'].read().decode())
+
+    if 'FunctionError' in response:
+        raise RuntimeError(f"Lambda error: {result}")
+
+    if 'body' in result:
+        result = json.loads(result['body'])
+    return result
+
+
+MOOD_TO_GENRES = {
+    "uplifting": ["Comedy", "Romance", "Adventure"],
+    "dark": ["Thriller", "Crime", "Drama"],
+    "intense": ["Action", "Thriller", "War"],
+    "romantic": ["Romance", "Drama"],
+    "funny": ["Comedy"],
+    "thought-provoking": ["Sci-Fi", "Drama", "Mystery"],
+    "scary": ["Horror", "Thriller"],
+    "epic": ["Action", "Adventure", "Fantasy"],
+    "emotional": ["Drama", "Romance"],
+    "nostalgic": ["Adventure", "Fantasy", "Family"],
+}
+
+
+#  Pages
+
 @app.route('/')
 @track_request
 def home():
-    ai_chat_api_url = os.getenv('AI_CHAT_API_URL', '')
-    ai_chat_api_key = os.getenv('AI_CHAT_API_KEY', '')
-    return render_template('index.html',
-                           ai_chat_api_url=ai_chat_api_url,
-                           ai_chat_api_key=ai_chat_api_key)
-
-
-@app.route('/info')
-def info():
-    import sys
-    return jsonify({
-        'app_name': 'Service Checker AWS',
-        'author': 'Pavlo',
-        'python_version': sys.version.split()[0],
-        'deployment': 'AWS ECS'
-    })
-
-
-@app.route('/health')
-@track_request
-def health():
-    return jsonify({
-        'status': 'healthy',
-        'service': 'flask-app',
-        'version': '1.0.0'
-    }), 200
-
-
-@app.route('/api/search')
-def search():
-    query = request.args.get('q', '').strip()
-
-    if not query:
-        return jsonify({'error': 'Query parameter "q" is required'}), 400
-
-    SEARCH_QUERY_COUNT.inc()
-
-    try:
-        cached_result = get_cached_search(query)
-
-        if cached_result:
-            CACHE_HIT_COUNT.inc()
-            result = cached_result
-            from_cache = True
-        else:
-            CACHE_MISS_COUNT.inc()
-            result = search_movies_meili(query)
-            set_cached_search(query, result, ttl=300)
-            from_cache = False
-
-        SEARCH_RESULTS_COUNT.observe(len(result))
-
-        log_search_query(query, len(result))
-
-        send_search_event(query, len(result), from_cache)
-
-        return jsonify({
-            'results': result,
-            'count': len(result),
-            'cached': from_cache
-        })
-
-    except Exception as e:
-        print(f"Search error: {e}")
-        return jsonify({'error': 'Search failed', 'details': str(e)}), 500
-
-
-@app.route('/api/poster/<filename>')
-def get_poster(filename):
-    from database.s3_storage import download_poster
-
-    print(f"=== Poster request: {filename} ===")
-
-    try:
-        image_data = download_poster(filename)
-
-        if image_data:
-            print(f"Returning {len(image_data)} bytes")
-            return Response(image_data, mimetype='image/jpeg')
-        else:
-            print("No image data returned")
-            return jsonify({'error': 'Poster not found'}), 404
-
-    except Exception as e:
-        print(f"ENDPOINT ERROR: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+    return render_template('index.html')
 
 
 @app.route('/movies')
 @track_request
-def movies_list():
+def movies_page():
+    ai_mode = request.args.get('ai')
+
+    if ai_mode:
+        return render_template(
+            'ai_movies.html',
+            ai_chat_api_url=os.getenv('AI_CHAT_API_URL', ''),
+            ai_chat_api_key=os.getenv('AI_CHAT_API_KEY', '')
+        )
+
     page = request.args.get('page', 1, type=int)
     per_page = 20
-
     if page < 1:
         page = 1
 
     result = get_movies_paginated(page, per_page)
-
     return render_template(
         'movies.html',
         movies=result['movies'],
@@ -147,51 +109,137 @@ def movies_list():
 @app.route('/movie/<int:movie_id>')
 @track_request
 def movie_detail(movie_id):
-
     MOVIE_VIEWS.labels(movie_id=movie_id).inc()
 
     cached_movie, from_cache = get_cached_movie(movie_id)
-
     if cached_movie and from_cache:
-        return render_template(
-            'movie_detail.html',
-            movie=cached_movie,
-            from_cache=True
-        )
+        return render_template('movie_detail.html', movie=cached_movie, from_cache=True)
 
     movie = get_movie_by_id(movie_id)
-
     if not movie:
         return jsonify({'error': 'Movie not found'}), 404
 
     movie_dict = dict(movie)
-
     set_cached_movie(movie_id, movie_dict, ttl=600)
+    return render_template('movie_detail.html', movie=movie_dict, from_cache=False)
 
-    return render_template(
-        'movie_detail.html',
-        movie=movie_dict,
-        from_cache=False
-    )
 
+#  Core API
+
+@app.route('/health')
+@track_request
+def health():
+    return jsonify({'status': 'healthy', 'service': 'flask-app', 'version': '1.0.0'})
+
+
+@app.route('/info')
+def info():
+    import sys
+    return jsonify({
+        'app_name': 'Service Checker AWS',
+        'author': 'Pavlo',
+        'python_version': sys.version.split()[0],
+        'deployment': 'AWS ECS'
+    })
+
+
+@app.route('/metrics')
+@track_request
+def metrics():
+    return metrics_endpoint()
+
+
+#  Search & Movies API
+
+@app.route('/api/search')
+def search():
+    query = request.args.get('q', '').strip()
+    if not query:
+        return jsonify({'error': 'Query parameter "q" is required'}), 400
+
+    SEARCH_QUERY_COUNT.inc()
+
+    try:
+        cached_result = get_cached_search(query)
+        if cached_result:
+            CACHE_HIT_COUNT.inc()
+            result, from_cache = cached_result, True
+        else:
+            CACHE_MISS_COUNT.inc()
+            result = search_movies_meili(query)
+            set_cached_search(query, result, ttl=300)
+            from_cache = False
+
+        SEARCH_RESULTS_COUNT.observe(len(result))
+        log_search_query(query, len(result))
+        send_search_event(query, len(result), from_cache)
+
+        return jsonify({'results': result, 'count': len(result), 'cached': from_cache})
+    except Exception as e:
+        logging.error(f"Search error: {e}")
+        return jsonify({'error': 'Search failed', 'details': str(e)}), 500
+
+
+@app.route('/api/poster/<filename>')
+def get_poster(filename):
+    from database.s3_storage import download_poster
+    try:
+        image_data = download_poster(filename)
+        if image_data:
+            return Response(image_data, mimetype='image/jpeg')
+        return jsonify({'error': 'Poster not found'}), 404
+    except Exception as e:
+        logging.error(f"Poster error for {filename}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/movies/featured')
+def api_featured_movies():
+    limit = request.args.get('limit', 8, type=int)
+    movies = get_all_movies()[:limit]
+
+    return jsonify({
+        'movies': [{
+            'id': m['id'],
+            'title': m['title'],
+            'rating': float(m['rating']),
+            'year': m['year'],
+            'genres': m.get('genres', []),
+            'genre': m.get('genre', ''),
+            'poster_filename': m['poster_filename']
+        } for m in movies]
+    })
+
+
+@app.route('/api/movies/genres')
+def api_movies_genres():
+    try:
+        movies = get_all_movies()
+        genre_counts = {}
+        for movie in movies:
+            genre = movie.get('genre', 'Unknown')
+            genre_counts[genre] = genre_counts.get(genre, 0) + 1
+
+        sorted_genres = sorted(genre_counts.items(), key=lambda x: x[1], reverse=True)
+        return jsonify({
+            'total_genres': len(genre_counts),
+            'genres': [{'name': g, 'count': c} for g, c in sorted_genres]
+        })
+    except Exception as e:
+        logging.error(f"Genres error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+#  Cache & Analytics API
 
 @app.route('/api/cache/stats')
 def api_cache_stats():
     stats = get_cache_stats()
-
     if stats is None:
-        return jsonify({
-            'connected': False,
-            'error': 'Redis unavailable (backend may be starting or REDIS_HOST outdated)',
-            'hits': 0,
-            'misses': 0,
-            'hit_rate': '0%',
-            'cached_keys': 0
-        }), 200
+        return jsonify({'connected': False, 'error': 'Redis unavailable', 'hits': 0, 'misses': 0, 'hit_rate': '0%', 'cached_keys': 0})
 
     total = stats['hits'] + stats['misses']
     hit_rate = (stats['hits'] / total * 100) if total > 0 else 0
-
     return jsonify({
         'connected': True,
         'hits': stats['hits'],
@@ -201,100 +249,27 @@ def api_cache_stats():
     })
 
 
-@app.route('/check/redis')
-def check_redis():
-    """Health check for Redis; returns 200 if connected, 503 if not."""
-    try:
-        from database.redis_cache import get_redis_client
-        r = get_redis_client()
-        r.ping()
-        return jsonify({'status': 'ok', 'redis': 'connected'}), 200
-    except Exception as e:
-        logging.warning(f"Redis check failed: {e}")
-        return jsonify({'status': 'unavailable', 'redis': str(e)}), 503
-
-
 @app.route('/api/cache/clear', methods=['POST'])
 def api_cache_clear():
     count = clear_search_cache()
-
-    return jsonify({
-        'message': f'Cleared {count} cached searches'
-    })
+    return jsonify({'message': f'Cleared {count} cached searches'})
 
 
 @app.route('/api/cache/clear/movies', methods=['POST'])
 def clear_movies_cache_endpoint():
     count = clear_movie_cache()
-
-    return jsonify({
-        'message': f'Cleared {count} cached movies'
-    })
+    return jsonify({'message': f'Cleared {count} cached movies'})
 
 
 @app.route('/api/analytics/popular')
 def api_popular_searches():
     limit = request.args.get('limit', 10, type=int)
-    popular = get_popular_searches(limit)
-
-    return jsonify({
-        'popular_searches': popular
-    })
+    return jsonify({'popular_searches': get_popular_searches(limit)})
 
 
 @app.route('/api/analytics/stats')
 def api_analytics_stats():
-    stats = get_search_stats()
-
-    return jsonify(stats)
-
-
-@app.route('/api/movies/featured')
-def api_featured_movies():
-    limit = request.args.get('limit', 8, type=int)
-    movies = get_all_movies()
-    featured = movies[:limit]
-
-    result = []
-    for movie in featured:
-        result.append({
-            'id': movie['id'],
-            'title': movie['title'],
-            'rating': float(movie['rating']),
-            'year': movie['year'],
-            'genres': movie.get('genres', []),
-            'poster_filename': movie['poster_filename']
-        })
-
-    return jsonify({'movies': result})
-
-
-@app.route('/api/movies/genres')
-def api_movies_genres():
-    try:
-        movies = get_all_movies()
-
-        genre_counts = {}
-        for movie in movies:
-            genre = movie.get('genre', 'Unknown')
-            genre_counts[genre] = genre_counts.get(genre, 0) + 1
-
-        sorted_genres = sorted(
-            genre_counts.items(),
-            key=lambda x: x[1],
-            reverse=True
-        )
-
-        return jsonify({
-            'total_genres': len(genre_counts),
-            'genres': [
-                {'name': genre, 'count': count}
-                for genre, count in sorted_genres
-            ]
-        })
-    except Exception as e:
-        logging.error(f"Genres error: {e}")
-        return jsonify({'error': str(e)}), 500
+    return jsonify(get_search_stats())
 
 
 @app.route('/api/sqs/stats')
@@ -305,189 +280,92 @@ def api_sqs_stats():
             QueueUrl=Config.SQS_QUEUE_URL,
             AttributeNames=['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible', 'ApproximateNumberOfMessagesDelayed']
         )
-
-        attributes = response['Attributes']
+        attrs = response['Attributes']
         return jsonify({
             'queue_url': Config.SQS_QUEUE_URL,
             'messages': {
-                'approximate_count': int(attributes.get('ApproximateNumberOfMessages', 0)),
-                'in_flight': int(attributes.get('ApproximateNumberOfMessagesNotVisible', 0)),
-                'delayed': int(attributes.get('ApproximateNumberOfMessagesDelayed', 0))
+                'approximate_count': int(attrs.get('ApproximateNumberOfMessages', 0)),
+                'in_flight': int(attrs.get('ApproximateNumberOfMessagesNotVisible', 0)),
+                'delayed': int(attrs.get('ApproximateNumberOfMessagesDelayed', 0))
             }
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/metrics')
-@track_request
-def metrics():
-    return metrics_endpoint()
-
+#  Backend Control (Lambda orchestration)
 
 @app.route('/api/backend/status')
 def backend_status():
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'status'})
+        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'status'})
 
-        backend_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'status'})
-        )
-
-        backend_result = json.loads(backend_response['Payload'].read().decode())
-        if 'body' in backend_result:
-            backend_result = json.loads(backend_result['body'])
-
-        ai_agent_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'status'})
-        )
-
-        ai_agent_result = json.loads(ai_agent_response['Payload'].read().decode())
-        if 'body' in ai_agent_result:
-            ai_agent_result = json.loads(ai_agent_result['body'])
-
-        backend_state = backend_result.get('state', 'unknown')
-        ai_agent_state = ai_agent_result.get('state', 'unknown')
-
-        overall_state = 'running' if backend_state == 'running' and ai_agent_state == 'running' else 'stopped'
+        backend_state = backend.get('state', 'unknown')
+        ai_state = ai_agent.get('state', 'unknown')
+        overall = 'running' if backend_state == 'running' and ai_state == 'running' else 'stopped'
 
         return jsonify({
-            'state': overall_state,
-            'backend': backend_result,
-            'ai_agent': ai_agent_result
+            'state': overall,
+            'instance_id': backend.get('instance_id'),
+            'private_ip': backend.get('private_ip'),
+            'heartbeat': backend.get('heartbeat'),
+            'backend': backend,
+            'ai_agent': ai_agent
         })
-
     except Exception as e:
         logging.error(f"Backend status error: {e}")
-        return jsonify({
-            'status': 'error',
-            'state': 'unknown',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'state': 'unknown', 'message': str(e)}), 500
 
 
 @app.route('/api/backend/start', methods=['POST'])
 def backend_start():
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
+        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'})
+        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'start'})
 
-        backend_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'start'})
-        )
-
-        backend_result = json.loads(backend_response['Payload'].read().decode())
-        if 'body' in backend_result:
-            backend_result = json.loads(backend_result['body'])
-
-        ai_agent_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'start'})
-        )
-
-        ai_agent_payload = ai_agent_response['Payload'].read().decode()
-        ai_agent_result = json.loads(ai_agent_payload)
-        if 'body' in ai_agent_result:
-            ai_agent_result = json.loads(ai_agent_result['body'])
-        if 'FunctionError' in ai_agent_response:
-            logging.error(f"AI agent Lambda error: {ai_agent_response.get('FunctionError')} - {ai_agent_result}")
-            return jsonify({
-                'status': 'error',
-                'message': 'AI agent start failed',
-                'backend': backend_result,
-                'ai_agent': ai_agent_result
-            }), 500
-        if ai_agent_result.get('state') not in ('running', 'pending', 'starting'):
-            error_msg = ai_agent_result.get('message', ai_agent_result.get('error', str(ai_agent_result)))
-            logging.warning(f"AI agent not running after start: {ai_agent_result}")
+        if ai_agent.get('state') not in ('running', 'pending', 'starting'):
+            error_msg = ai_agent.get('message', ai_agent.get('error', str(ai_agent)))
+            logging.warning(f"AI agent not running after start: {ai_agent}")
             return jsonify({
                 'status': 'error',
                 'message': error_msg or 'AI agent did not start',
-                'backend': backend_result,
-                'ai_agent': ai_agent_result
+                'backend': backend,
+                'ai_agent': ai_agent
             }), 500
 
-        return jsonify({
-            'backend': backend_result,
-            'ai_agent': ai_agent_result,
-            'status': 'started'
-        })
-
+        return jsonify({'backend': backend, 'ai_agent': ai_agent, 'status': 'started'})
     except Exception as e:
         logging.error(f"Backend start error: {e}")
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @app.route('/api/backend/stop', methods=['POST'])
 def backend_stop():
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
-
-        backend_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'stop'})
-        )
-
-        backend_result = json.loads(backend_response['Payload'].read().decode())
-        if 'body' in backend_result:
-            backend_result = json.loads(backend_result['body'])
-
-        ai_agent_response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'stop'})
-        )
-
-        ai_agent_result = json.loads(ai_agent_response['Payload'].read().decode())
-        if 'body' in ai_agent_result:
-            ai_agent_result = json.loads(ai_agent_result['body'])
-
-        return jsonify({
-            'backend': backend_result,
-            'ai_agent': ai_agent_result,
-            'status': 'stopped'
-        })
-
+        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'stop'})
+        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'stop'})
+        return jsonify({'backend': backend, 'ai_agent': ai_agent, 'status': 'stopped'})
     except Exception as e:
         logging.error(f"Backend stop error: {e}")
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 @app.route('/api/backend/heartbeat', methods=['POST'])
 def backend_heartbeat():
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
-
-        lambda_client.invoke(
-            FunctionName=Config.LAMBDA_BACKEND_CONTROL,
-            InvocationType='Event',
-            Payload=json.dumps({'action': 'heartbeat'})
-        )
-
+        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'heartbeat'}, async_invoke=True)
         return jsonify({'status': 'ok'})
-
     except Exception as e:
         logging.error(f"Heartbeat error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+#  Data Pipeline
+
 @app.route('/api/data/sync', methods=['POST'])
 def data_sync():
     rate_check = check_rate_limit('data_sync', cooldown_seconds=300)
-
     if not rate_check['allowed']:
         return jsonify({
             'status': 'rate_limited',
@@ -496,57 +374,36 @@ def data_sync():
         }), 429
 
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
-        response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_DATA_PIPELINE,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'sync'})
-        )
-        result = json.loads(response['Payload'].read().decode())
-        if 'body' in result:
-            return jsonify(json.loads(result['body']))
+        result = invoke_lambda(Config.LAMBDA_DATA_PIPELINE, {'action': 'sync'})
         return jsonify(result)
     except Exception as e:
         logging.error(f"Data sync error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
-@app.route('/api/data/rate-limit-status')
-def data_rate_limit_status():
-    status = get_rate_limit_status('data_sync', cooldown_seconds=300)
-    return jsonify(status)
-
-
 @app.route('/api/data/status')
 def data_status():
     try:
-        lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
-
-        response = lambda_client.invoke(
-            FunctionName=Config.LAMBDA_DATA_PIPELINE,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({'action': 'status'})
-        )
-
-        result = json.loads(response['Payload'].read().decode())
-
-        if 'body' in result:
-            return jsonify(json.loads(result['body']))
+        result = invoke_lambda(Config.LAMBDA_DATA_PIPELINE, {'action': 'status'})
         return jsonify(result)
-
     except Exception as e:
         logging.error(f"Data status error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+@app.route('/api/data/rate-limit-status')
+def data_rate_limit_status():
+    return jsonify(get_rate_limit_status('data_sync', cooldown_seconds=300))
+
+
+#  AI Agent API (consumed by AI Flask app)
+
 @app.route('/api/ai/search')
 def ai_search():
     query = request.args.get('q', '')
     limit = request.args.get('limit', 5, type=int)
-
     if not query:
         return jsonify({'error': 'Query parameter "q" is required'}), 400
-
     results = search_movies_meili(query, limit)
     return jsonify({'movies': results, 'count': len(results)})
 
@@ -561,10 +418,8 @@ def ai_genres():
 def ai_by_genre():
     genre = request.args.get('genre', '')
     limit = request.args.get('limit', 5, type=int)
-
     if not genre:
         return jsonify({'error': 'Query parameter "genre" is required'}), 400
-
     results = get_movies_by_genre(genre, limit)
     return jsonify({'movies': results, 'count': len(results)})
 
@@ -572,7 +427,6 @@ def ai_by_genre():
 @app.route('/api/ai/similar/<int:movie_id>')
 def ai_similar(movie_id):
     limit = request.args.get('limit', 5, type=int)
-
     results = get_similar_movies(movie_id, limit)
     return jsonify({'movies': results, 'count': len(results)})
 
@@ -580,10 +434,8 @@ def ai_similar(movie_id):
 @app.route('/api/ai/movie/<int:movie_id>')
 def ai_movie_detail(movie_id):
     movie = get_movie_by_id(movie_id)
-
     if not movie:
         return jsonify({'error': 'Movie not found'}), 404
-
     return jsonify({'movie': dict(movie)})
 
 
@@ -591,37 +443,16 @@ def ai_movie_detail(movie_id):
 def ai_by_mood():
     mood = request.args.get('mood', '')
     limit = request.args.get('limit', 5, type=int)
-
     if not mood:
         return jsonify({'error': 'Query parameter "mood" is required'}), 400
 
-    MOOD_TO_GENRES = {
-        "uplifting": ["Comedy", "Romance", "Adventure"],
-        "dark": ["Thriller", "Crime", "Drama"],
-        "intense": ["Action", "Thriller", "War"],
-        "romantic": ["Romance", "Drama"],
-        "funny": ["Comedy"],
-        "thought-provoking": ["Sci-Fi", "Drama", "Mystery"],
-        "scary": ["Horror", "Thriller"],
-        "epic": ["Action", "Adventure", "Fantasy"],
-        "emotional": ["Drama", "Romance"],
-        "nostalgic": ["Adventure", "Fantasy", "Family"],
-    }
-
     genres = MOOD_TO_GENRES.get(mood.lower(), ["Drama"])
     results = get_movies_by_genres(genres, limit)
-
     return jsonify({'movies': results, 'count': len(results), 'mood': mood})
 
 
-@app.route('/ai-chat')
-def ai_chat():
-    ai_chat_api_url = os.getenv('AI_CHAT_API_URL', '')
-    ai_chat_api_key = os.getenv('AI_CHAT_API_KEY', '')
-    return render_template('ai_chat.html',
-                           ai_chat_api_url=ai_chat_api_url,
-                           ai_chat_api_key=ai_chat_api_key)
 
+#  Entry point
 
 if __name__ == '__main__':
     app.run(

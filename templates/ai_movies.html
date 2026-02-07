@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Movie Assistant — Movie Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-deep: #0a0a0a;
+            --bg-panel: #111113;
+            --bg-card: #1a1a1e;
+            --bg-elevated: #222226;
+            --bg-input: #1e1e22;
+            --border: #2a2a2e;
+            --border-light: #333338;
+            --text-primary: #eaeaec;
+            --text-secondary: #8e8e93;
+            --text-muted: #5e5e63;
+            --accent: #6366f1;
+            --accent-hover: #5558e6;
+            --gold: #f0b429;
+            --red: #ef4444;
+            --green: #10b981;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════════
+           MAIN SPLIT LAYOUT
+        ═══════════════════════════════════════════ */
+        .split-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ── LEFT PANEL: Movies ── */
+        .panel-left {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-left-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-deep);
+            flex-shrink: 0;
+        }
+
+        .panel-left-header h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: var(--text-primary);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.15s;
+        }
+
+        .back-link:hover { color: var(--text-primary); background: var(--bg-elevated); }
+
+        .panel-left-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem;
+        }
+
+        .panel-left-content::-webkit-scrollbar { width: 6px; }
+        .panel-left-content::-webkit-scrollbar-track { background: transparent; }
+        .panel-left-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        .panel-left-content::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* ── RIGHT PANEL: Chat ── */
+        .panel-right {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-deep);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .chat-header h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            font-weight: 400;
+        }
+
+        .chat-header .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        /* ── Chat Messages ── */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+        .chat-welcome {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 0.75rem;
+            padding: 2rem;
+            opacity: 0.7;
+        }
+
+        .chat-welcome h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.75rem;
+            color: var(--text-primary);
+        }
+
+        .chat-welcome p {
+            color: var(--text-secondary);
+            max-width: 360px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .msg {
+            max-width: 82%;
+            padding: 0.85rem 1.1rem;
+            border-radius: 16px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 0.925rem;
+            animation: msg-in 0.25s ease-out;
+        }
+
+        @keyframes msg-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            background: var(--accent);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg.assistant {
+            align-self: flex-start;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .msg.typing {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* ── Chat Input ── */
+        .chat-input-bar {
+            display: flex;
+            gap: 0.6rem;
+            padding: 0.85rem 1.25rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-panel);
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 22px;
+            font-size: 0.925rem;
+            font-family: inherit;
+            outline: none;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+
+        .chat-input::placeholder { color: var(--text-muted); }
+        .chat-input:focus { border-color: var(--accent); background: var(--bg-card); }
+
+        .chat-send {
+            padding: 0.7rem 1.4rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 22px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .chat-send:hover:not(:disabled) { background: var(--accent-hover); }
+        .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ═══════════════════════════════════════════
+           MOVIE GRID
+        ═══════════════════════════════════════════ */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .movie-thumb {
+            background: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .movie-thumb:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border-color: var(--border-light);
+        }
+
+        .movie-thumb img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .movie-thumb .thumb-info {
+            padding: 0.65rem 0.75rem;
+        }
+
+        .movie-thumb .thumb-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .movie-thumb .thumb-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .rating-pill {
+            display: inline-block;
+            background: var(--gold);
+            color: #1a1a2e;
+            padding: 0.1rem 0.45rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.7rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           AI RESULT CARDS
+        ═══════════════════════════════════════════ */
+        .ai-results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .ai-result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-result-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px var(--accent);
+        }
+
+        .ai-result-card h4 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-result-card .tag-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-result-card .tag {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .ai-result-card .tag.gold {
+            background: var(--gold);
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+
+        .ai-result-card .genre-row {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .ai-result-card .genre-pill {
+            background: rgba(99,102,241,0.15);
+            color: #a5b4fc;
+            padding: 0.2rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+
+        .ai-result-card .desc {
+            color: var(--text-secondary);
+            line-height: 1.55;
+            font-size: 0.875rem;
+            margin-top: 0.6rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           MOVIE DETAIL VIEW
+        ═══════════════════════════════════════════ */
+        .detail-view {
+            display: none;
+        }
+
+        .detail-view.visible { display: block; }
+
+        .detail-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .detail-hero {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .detail-poster {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+
+        .detail-info h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-meta span {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .detail-rating {
+            display: inline-block;
+            background: var(--gold);
+            color: #1a1a2e;
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-desc {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+
+        .detail-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.25rem 1.5rem 1.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: background 0.15s;
+        }
+
+        .detail-back:hover { background: var(--border-light); }
+
+        /* ═══════════════════════════════════════════
+           TRAILER OVERLAY (TikTok-style)
+        ═══════════════════════════════════════════ */
+        .trailer-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(8px);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .trailer-overlay.visible { display: flex; }
+
+        .trailer-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            z-index: 51;
+        }
+
+        .trailer-close:hover { background: rgba(255,255,255,0.2); }
+
+        .trailer-player {
+            width: 100%;
+            max-width: 640px;
+            aspect-ratio: 16 / 9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .trailer-player iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .trailer-caption {
+            text-align: center;
+            margin-top: 1.25rem;
+        }
+
+        .trailer-caption h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: #fff;
+            margin-bottom: 0.25rem;
+        }
+
+        .trailer-caption p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           EMPTY / LOADING STATES
+        ═══════════════════════════════════════════ */
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.6rem;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ═══════════════════════════════════════════
+           RESPONSIVE
+        ═══════════════════════════════════════════ */
+        @media (max-width: 900px) {
+            .split-layout { flex-direction: column; }
+            .panel-left { width: 100%; height: 45vh; }
+            .panel-right { width: 100%; flex: 1; }
+            .detail-hero { grid-template-columns: 1fr; }
+            .detail-poster { max-width: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="split-layout">
+
+    <!-- ═══════════ LEFT PANEL: Movie Content ═══════════ -->
+    <div class="panel-left">
+        <div class="panel-left-header">
+            <h2 id="leftPanelTitle">Browse Movies</h2>
+            <a href="/" class="back-link">← Back to Dashboard</a>
+        </div>
+
+        <div class="panel-left-content" id="leftContent">
+            <!-- Default: movie grid loaded on init -->
+            <div class="loading-state" id="moviesLoading"><div class="spinner"></div> Loading movies…</div>
+            <div class="movies-grid" id="moviesGrid" style="display:none;"></div>
+            <div class="ai-results-list" id="aiResultsList" style="display:none;"></div>
+            <div class="detail-view" id="detailView"></div>
+        </div>
+
+        <!-- Trailer Overlay -->
+        <div class="trailer-overlay" id="trailerOverlay">
+            <button class="trailer-close" id="trailerCloseBtn" title="Close trailer">✕</button>
+            <div class="trailer-player" id="trailerPlayer"></div>
+            <div class="trailer-caption" id="trailerCaption"></div>
+        </div>
+    </div>
+
+    <!-- ═══════════ RIGHT PANEL: AI Chat ═══════════ -->
+    <div class="panel-right">
+        <div class="chat-header">
+            <h3>AI Movie Assistant</h3>
+            <span class="badge">AI</span>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-welcome" id="chatWelcome">
+                <h2>Hello!</h2>
+                <p>Describe what you'd like to watch — a genre, mood, actor, or anything — and I'll find the perfect movie for you.</p>
+            </div>
+        </div>
+
+        <div class="chat-input-bar">
+            <input type="text" class="chat-input" id="chatInput"
+                placeholder="e.g., I want to watch something sad…" autocomplete="off">
+            <button class="chat-send" id="chatSend" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ── Config ──
+    const API_URL = '{{ ai_chat_api_url }}' || '';
+    const API_KEY = '{{ ai_chat_api_key }}' || '';
+
+    // ── DOM refs ──
+    const $chatMessages = document.getElementById('chatMessages');
+    const $chatInput    = document.getElementById('chatInput');
+    const $chatSend     = document.getElementById('chatSend');
+    const $chatWelcome  = document.getElementById('chatWelcome');
+    const $moviesGrid   = document.getElementById('moviesGrid');
+    const $moviesLoading = document.getElementById('moviesLoading');
+    const $aiResults    = document.getElementById('aiResultsList');
+    const $detailView   = document.getElementById('detailView');
+    const $trailerOverlay = document.getElementById('trailerOverlay');
+    const $trailerPlayer  = document.getElementById('trailerPlayer');
+    const $trailerCaption = document.getElementById('trailerCaption');
+    const $leftTitle    = document.getElementById('leftPanelTitle');
+
+    // ── State ──
+    let chatHistory = [];
+    let viewStack = []; // for back navigation
+
+    // ── Enter to send ──
+    $chatInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    // ═══════════════════════════════════════════
+    //  LEFT PANEL — View Management
+    // ═══════════════════════════════════════════
+
+    function showView(view) {
+        // view: 'grid' | 'results' | 'detail'
+        $moviesGrid.style.display   = view === 'grid'    ? 'grid' : 'none';
+        $aiResults.style.display    = view === 'results' ? 'flex' : 'none';
+        $detailView.style.display   = view === 'detail'  ? 'block' : 'none';
+        $detailView.classList.toggle('visible', view === 'detail');
+        $moviesLoading.style.display = 'none';
+    }
+
+    function pushView(name) {
+        viewStack.push(name);
+    }
+
+    function popView() {
+        viewStack.pop();
+        const prev = viewStack[viewStack.length - 1] || 'grid';
+        showView(prev);
+        $leftTitle.textContent = prev === 'grid' ? 'Browse Movies' : prev === 'results' ? 'Recommendations' : 'Movie Details';
+    }
+
+    // ═══════════════════════════════════════════
+    //  LOAD ALL MOVIES
+    // ═══════════════════════════════════════════
+
+    async function loadMovies() {
+        try {
+            const res = await fetch('/api/movies/featured?limit=50');
+            const data = await res.json();
+            if (data.movies && data.movies.length > 0) {
+                $moviesGrid.innerHTML = data.movies.map(m => {
+                    const genre = Array.isArray(m.genres) ? m.genres.join(', ') : (m.genre || '');
+                    return `
+                        <div class="movie-thumb" onclick="openDetail(${m.id})">
+                            <img src="/api/poster/${m.poster_filename}" alt="${m.title}" loading="lazy">
+                            <div class="thumb-info">
+                                <div class="thumb-title">${m.title}</div>
+                                <span class="rating-pill">${m.rating}</span>
+                                <div class="thumb-meta">${m.year} · ${genre}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+            } else {
+                $moviesGrid.innerHTML = '<div class="loading-state">No movies found</div>';
+            }
+        } catch (e) {
+            console.error('Failed to load movies:', e);
+            $moviesGrid.innerHTML = '<div class="loading-state">Error loading movies</div>';
+        }
+        $moviesLoading.style.display = 'none';
+        $moviesGrid.style.display = 'grid';
+        pushView('grid');
+    }
+
+    // ═══════════════════════════════════════════
+    //  AI SEARCH RESULTS
+    // ═══════════════════════════════════════════
+
+    function displayAIResults(movies) {
+        if (!movies || movies.length === 0) return;
+
+        $aiResults.innerHTML = movies.map(m => {
+            const genres = Array.isArray(m.genres) ? m.genres : [];
+            return `
+                <div class="ai-result-card" onclick="openDetail(${m.id})">
+                    <h4>${m.title}</h4>
+                    <div class="tag-row">
+                        <span class="tag gold">${m.rating}</span>
+                        <span class="tag">${m.year}</span>
+                        ${m.director ? `<span class="tag">${m.director}</span>` : ''}
+                    </div>
+                    ${genres.length > 0 ? `<div class="genre-row">${genres.map(g => `<span class="genre-pill">${g}</span>`).join('')}</div>` : ''}
+                    ${m.description ? `<p class="desc">${m.description}</p>` : ''}
+                </div>`;
+        }).join('');
+
+        showView('results');
+        $leftTitle.textContent = 'Recommendations';
+        viewStack = ['grid', 'results'];
+    }
+
+    // ═══════════════════════════════════════════
+    //  MOVIE DETAIL
+    // ═══════════════════════════════════════════
+
+    async function openDetail(movieId) {
+        showView('detail');
+        $leftTitle.textContent = 'Movie Details';
+        pushView('detail');
+
+        $detailView.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading…</div>';
+
+        try {
+            const res = await fetch(`/api/ai/movie/${movieId}`);
+            const data = await res.json();
+
+            if (data.movie) {
+                const m = data.movie;
+                const genres = Array.isArray(m.genres) ? m.genres : [];
+                $detailView.innerHTML = `
+                    <div class="detail-container">
+                        <div class="detail-hero">
+                            <img src="/api/poster/${m.poster_filename}" alt="${m.title}" class="detail-poster">
+                            <div class="detail-info">
+                                <h2>${m.title}</h2>
+                                <div class="detail-meta">
+                                    <span>${m.year}</span>
+                                    ${genres.map(g => `<span>${g}</span>`).join('')}
+                                    ${m.director ? `<span>${m.director}</span>` : ''}
+                                </div>
+                                <div class="detail-rating">${m.rating}/10</div>
+                                <p class="detail-desc">${m.description || 'No description available.'}</p>
+                            </div>
+                        </div>
+                        <button class="detail-back" onclick="popView()">← Back</button>
+                    </div>`;
+            }
+        } catch (e) {
+            console.error('Movie detail error:', e);
+            $detailView.innerHTML = '<div class="loading-state">Error loading details</div>';
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    //  TRAILER OVERLAY
+    // ═══════════════════════════════════════════
+
+    function openTrailer(trailer) {
+        if (!trailer || !trailer.video_id) return;
+
+        $trailerPlayer.innerHTML = `
+            <iframe src="https://www.youtube.com/embed/${trailer.video_id}?autoplay=1&rel=0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>`;
+
+        $trailerCaption.innerHTML = `
+            <h3>${trailer.movie_title || 'Trailer'}</h3>
+            ${trailer.year ? `<p>${trailer.year}</p>` : ''}`;
+
+        $trailerOverlay.classList.add('visible');
+    }
+
+    function closeTrailer() {
+        $trailerOverlay.classList.remove('visible');
+        $trailerPlayer.innerHTML = ''; // stop playback
+    }
+
+    // Close trailer on backdrop click
+    $trailerOverlay.addEventListener('click', e => {
+        if (e.target === $trailerOverlay) closeTrailer();
+    });
+
+    document.getElementById('trailerCloseBtn').addEventListener('click', closeTrailer);
+
+    // Close on Escape
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeTrailer();
+    });
+
+    // ═══════════════════════════════════════════
+    //  CHAT
+    // ═══════════════════════════════════════════
+
+    function addMessage(text, role) {
+        if ($chatWelcome) $chatWelcome.remove();
+
+        const div = document.createElement('div');
+        div.className = `msg ${role}`;
+        div.textContent = text;
+        $chatMessages.appendChild(div);
+        $chatMessages.scrollTop = $chatMessages.scrollHeight;
+    }
+
+    function showTyping() {
+        const div = document.createElement('div');
+        div.className = 'msg assistant typing';
+        div.id = 'typingIndicator';
+        div.textContent = 'Thinking…';
+        $chatMessages.appendChild(div);
+        $chatMessages.scrollTop = $chatMessages.scrollHeight;
+    }
+
+    function removeTyping() {
+        const el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+    }
+
+    async function sendMessage() {
+        const text = $chatInput.value.trim();
+        if (!text) return;
+
+        if (!API_URL) {
+            addMessage('AI Chat API is not configured.', 'assistant');
+            return;
+        }
+
+        $chatInput.value = '';
+        $chatSend.disabled = true;
+        addMessage(text, 'user');
+        chatHistory.push({ role: 'user', content: text });
+        showTyping();
+
+        try {
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(API_KEY && { 'X-Api-Key': API_KEY })
+                },
+                body: JSON.stringify({
+                    message: text,
+                    history: chatHistory.slice(-10)
+                })
+            });
+
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+
+            removeTyping();
+
+            if (data.error === 'Rate limit exceeded') {
+                addMessage(`Rate limit exceeded. ${data.message || 'Please try again later.'}`, 'assistant');
+                return;
+            }
+
+            if (data.message) {
+                addMessage(data.message, 'assistant');
+                chatHistory.push({ role: 'assistant', content: data.message });
+            }
+
+            // Handle different response types — trailer takes priority
+            if (data.youtube_trailer && data.youtube_trailer.video_id) {
+                openTrailer(data.youtube_trailer);
+            } else if (data.movie_detail) {
+                openDetail(data.movie_detail.id);
+            } else if (data.movie_results && data.movie_results.length > 0) {
+                displayAIResults(data.movie_results);
+            }
+
+        } catch (e) {
+            removeTyping();
+            console.error('Chat error:', e);
+            addMessage('Sorry, an error occurred. Please try again.', 'assistant');
+        } finally {
+            $chatSend.disabled = false;
+            $chatInput.focus();
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════
+
+    loadMovies();
+    $chatInput.focus();
+</script>
+
+</body>
+</html>

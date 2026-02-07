@@ -1,2460 +1,914 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <style>
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
+            font-family: 'DM Sans', sans-serif;
+            background: #f5f5f0;
+            color: #1a1a2e;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
+        /* ── Layout ── */
+        .page-wrapper {
+            max-width: 1320px;
             margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
         }
 
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .header {
+        /* ── Header ── */
+        .site-header {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: space-between;
-            gap: 24px;
-            margin-bottom: 32px;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #1a1a2e;
         }
 
-        .header-text {
-            flex: 1;
+        .site-header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.75rem;
+            font-weight: 400;
+            line-height: 1;
+            letter-spacing: -0.02em;
+            color: #1a1a2e;
         }
 
-        .header-text h1 {
-            font-size: 2.5em;
-            margin-bottom: 8px;
-            font-weight: 700;
-            color: #111827;
-        }
-
-        .header-subtitle {
+        .site-header .subtitle {
+            font-size: 0.9rem;
             color: #6b7280;
-            font-size: 1.05em;
+            margin-top: 0.35rem;
         }
 
-        .header-actions {
+        .header-nav {
             display: flex;
+            gap: 0.75rem;
             align-items: center;
-            justify-content: flex-end;
         }
 
-        .btn-secondary {
+        .nav-link {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 10px 22px;
-            border-radius: 999px;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
-            color: #111827;
-            font-size: 0.95em;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            border: 1.5px solid #d1d5db;
+            background: #fff;
+            color: #1a1a2e;
+            font-size: 0.875rem;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+            cursor: pointer;
             transition: all 0.2s ease;
-            white-space: nowrap;
+            font-family: inherit;
         }
 
-        .btn-secondary:hover {
-            border-color: #2563eb;
-            color: #2563eb;
-            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.18);
+        .nav-link:hover {
+            border-color: #1a1a2e;
+            box-shadow: 0 2px 8px rgba(26,26,46,0.08);
             transform: translateY(-1px);
         }
 
-        /* Backend Control Panel */
-        .backend-control {
-            background: #f8f9fa;
+        .nav-link.primary {
+            background: #1a1a2e;
+            color: #fff;
+            border-color: #1a1a2e;
+        }
+
+        .nav-link.primary:hover {
+            background: #16213e;
+            box-shadow: 0 4px 14px rgba(26,26,46,0.25);
+        }
+
+        /* ── Backend Control ── */
+        .backend-panel {
+            background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            color: #1f2937;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 2rem;
         }
 
-        .backend-header {
+        .backend-panel-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
+            align-items: center;
+            margin-bottom: 1rem;
         }
 
-        .backend-header h3 {
-            font-size: 1.2em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            margin: 0;
+        .backend-panel-header h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.15rem;
+            font-weight: 400;
         }
 
-        .backend-status {
-            display: flex;
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
             border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
-            font-size: 0.9em;
         }
 
-        .status-indicator.running {
-            background: rgba(16, 185, 129, 0.2);
-            color: #10b981;
-        }
-
-        .status-indicator.stopped {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-
-        .status-indicator.pending {
-            background: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
-        }
+        .status-badge.running { background: rgba(16,185,129,0.12); color: #059669; }
+        .status-badge.stopped { background: rgba(239,68,68,0.1); color: #dc2626; }
+        .status-badge.pending { background: rgba(251,191,36,0.12); color: #b45309; }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            animation: pulse 2s infinite;
         }
 
-        .status-dot.running {
-            background: #10b981;
-        }
+        .status-dot.running { background: #10b981; animation: pulse-dot 2s infinite; }
+        .status-dot.stopped { background: #ef4444; }
+        .status-dot.pending { background: #fbbf24; animation: pulse-dot 1s infinite; }
 
-        .status-dot.stopped {
-            background: #ef4444;
-        }
-
-        .status-dot.pending {
-            background: #fbbf24;
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
         }
 
         .backend-actions {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 15px;
+            gap: 0.75rem;
         }
 
-        .btn-backend {
-            padding: 10px 20px;
+        .btn-control {
+            flex: 1;
+            padding: 0.6rem 1.25rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.95em;
+            font-size: 0.875rem;
             font-weight: 600;
+            font-family: inherit;
             cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 140px;
-            justify-content: center;
+            transition: all 0.2s;
         }
 
-        .btn-backend:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .btn-control:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-start {
+        .btn-control.start {
             background: #10b981;
-            color: white;
+            color: #fff;
         }
 
-        .btn-start:hover:not(:disabled) {
+        .btn-control.start:hover:not(:disabled) {
             background: #059669;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 10px rgba(16,185,129,0.3);
         }
 
-        .btn-stop {
+        .btn-control.stop {
             background: #ef4444;
-            color: white;
+            color: #fff;
         }
 
-        .btn-stop:hover:not(:disabled) {
+        .btn-control.stop:hover:not(:disabled) {
             background: #dc2626;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 2px 10px rgba(239,68,68,0.3);
         }
 
-        .backend-info {
+        .backend-info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .info-item {
-            background: white;
-            border: 1px solid #e5e7eb;
-            padding: 12px 16px;
-            border-radius: 8px;
-        }
-
-        .info-label {
-            font-size: 0.8em;
-            color: #6b7280;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            font-weight: 600;
-            font-size: 1em;
-        }
-
-        .heartbeat-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85em;
-            color: #6b7280;
-        }
-
-        .heartbeat-icon {
-            animation: heartbeat 1s infinite;
-        }
-
-        .heartbeat-icon.inactive {
-            animation: none;
-            opacity: 0.3;
-        }
-
-        @keyframes heartbeat {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .services-status {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .services-status h3 {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-        }
-
-        .service-item {
-            background: #f9fafb;
-            padding: 16px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: 2px solid transparent;
-            position: relative;
-        }
-
-        .service-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            background: #ffffff;
-        }
-
-        .service-item.healthy {
-            border-color: #10b981;
-        }
-
-        .service-item.unhealthy {
-            border-color: #ef4444;
-        }
-
-        .service-item.offline {
-            border-color: #9ca3af;
-            opacity: 0.6;
-        }
-
-        .service-name {
-            font-weight: 600;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #1f2937;
-            position: relative;
-            z-index: 1;
-        }
-
-        .service-status-dot {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .service-status-dot.healthy {
-            background: #10b981;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
-            animation: pulse-green 2s infinite;
-        }
-
-        .service-status-dot.unhealthy {
-            background: #ef4444;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2);
-            animation: pulse-red 2s infinite;
-        }
-
-        .service-status-dot.offline {
-            background: #9ca3af;
-        }
-
-        .service-location {
-            font-size: 0.7em;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        @keyframes pulse-green {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-            }
-
-            50% {
-                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
-            }
-        }
-
-        @keyframes pulse-red {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
-            }
-
-            50% {
-                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-            }
-        }
-
-        .search-box {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .search-input-wrapper {
-            display: flex;
-            gap: 10px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 15px 20px;
-            font-size: 1.1em;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            outline: none;
-        }
-
-        .search-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-
-        .search-btn {
-            padding: 15px 40px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .search-btn:hover {
-            background: #1d4ed8;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-        }
-
-        .search-meta {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-between;
-            color: #6b7280;
-            font-size: 0.9em;
-        }
-
-        .results {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            min-height: 200px;
-        }
-
-        .movie-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-
-        .movie-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border-color: #d1d5db;
-        }
-
-        .movie-poster {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-            background: #f3f4f6;
-        }
-
-        .movie-info {
-            padding: 20px;
-        }
-
-        .movie-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #1f2937;
-        }
-
-        .movie-meta {
-            color: #6b7280;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-
-        .movie-rating {
-            display: inline-block;
-            background: #fbbf24;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .movie-description {
-            color: #4b5563;
-            line-height: 1.5;
-            font-size: 0.95em;
-        }
-
-        .analytics {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .analytics h3 {
-            margin-bottom: 15px;
-            color: #1f2937;
-        }
-
-        .popular-tag {
-            display: inline-block;
-            background: #e5e7eb;
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin: 5px;
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .popular-tag:hover {
-            background: #2563eb;
-            color: white;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
-            font-size: 1.2em;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 15px;
-            grid-column: 1 / -1;
-        }
-
-        .empty-state h2 {
-            color: #6b7280;
-            margin-bottom: 10px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .stat-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .stat-card-title {
-            font-size: 0.9em;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-card-value {
-            font-size: 2em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 8px;
-        }
-
-        .stat-card-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85em;
-            color: #6b7280;
-            margin-top: 12px;
-            padding-top: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
             border-top: 1px solid #f3f4f6;
         }
 
-        .stat-card-detail-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        .info-cell {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
         }
 
-        .stat-card-detail-label {
-            font-size: 0.75em;
+        .info-cell .label {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-cell .value {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .heartbeat-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-left: 0.75rem;
+        }
+
+        .heartbeat-pulse {
+            display: inline-block;
+            animation: hb 1s infinite;
+        }
+
+        .heartbeat-pulse.off { animation: none; opacity: 0.3; }
+
+        @keyframes hb {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+
+        /* ── Search ── */
+        .search-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .search-field {
+            flex: 1;
+            padding: 0.75rem 1.1rem;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+
+        .search-field:focus {
+            border-color: #1a1a2e;
+            background: #fff;
+        }
+
+        .search-submit {
+            padding: 0.75rem 2rem;
+            background: #1a1a2e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-submit:hover {
+            background: #16213e;
+            box-shadow: 0 2px 8px rgba(26,26,46,0.2);
+        }
+
+        .search-meta {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        /* ── Dashboard Grid ── */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-row { grid-template-columns: 1fr; }
+        }
+
+        /* ── Quick Actions Card ── */
+        .card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem 1.75rem;
+        }
+
+        .card h3 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .action-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fafafa;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+
+        .action-row:hover:not(:disabled) {
+            border-color: #1a1a2e;
+            background: #fff;
+        }
+
+        .action-row:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .action-row .status-text {
+            font-size: 0.75rem;
             color: #9ca3af;
         }
 
-        .stat-card-detail-value {
-            font-weight: 600;
-            color: #4b5563;
+        /* ── Movie Grid ── */
+        .section-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            font-weight: 400;
+            margin-bottom: 1.25rem;
         }
 
-        .load-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 12px;
-        }
-
-        .load-bar {
-            flex: 1;
-            height: 8px;
-            background: #f3f4f6;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .load-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .load-bar-fill.medium {
-            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
-        }
-
-        .load-bar-fill.high {
-            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .load-value {
-            font-size: 0.9em;
-            font-weight: 600;
-            color: #1f2937;
-            min-width: 50px;
-            text-align: right;
-        }
-
-        .hit-rate-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .hit-rate-badge.excellent {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
-
-        .hit-rate-badge.good {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
-
-        .hit-rate-badge.fair {
-            background: rgba(251, 191, 36, 0.1);
-            color: #fbbf24;
-        }
-
-        .hit-rate-badge.poor {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-        }
-
-        .featured-movies {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .featured-movies h3 {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .featured-grid {
+        .movie-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.25rem;
         }
 
-        .featured-movie-card {
-            background: #f9fafb;
+        .movie-card {
+            background: #fff;
             border: 1px solid #e5e7eb;
             border-radius: 10px;
             overflow: hidden;
-            transition: all 0.3s;
-            cursor: pointer;
+            transition: all 0.25s ease;
             text-decoration: none;
             color: inherit;
             display: block;
         }
 
-        .featured-movie-card:hover {
+        .movie-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 24px rgba(26,26,46,0.1);
             border-color: #d1d5db;
         }
 
-        .featured-poster {
+        .movie-card .poster {
             width: 100%;
-            height: 220px;
+            height: 260px;
             object-fit: cover;
-            background: #f3f4f6;
+            background: #e5e7eb;
         }
 
-        .featured-info {
-            padding: 12px;
+        .movie-card .info {
+            padding: 0.85rem;
         }
 
-        .featured-title {
-            font-size: 0.9em;
+        .movie-card .title {
             font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 6px;
+            font-size: 0.9rem;
             line-height: 1.3;
+            margin-bottom: 0.4rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
-            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .featured-rating {
+        .movie-card .rating-badge {
             display: inline-block;
             background: #fbbf24;
-            color: white;
-            padding: 3px 8px;
+            color: #1a1a2e;
+            padding: 0.15rem 0.5rem;
             border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.8em;
+            font-weight: 700;
+            font-size: 0.75rem;
         }
 
-        .featured-meta {
-            font-size: 0.75em;
+        .movie-card .meta {
+            font-size: 0.75rem;
             color: #6b7280;
-            margin-top: 6px;
+            margin-top: 0.3rem;
         }
 
-        .ai-chat-panel {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            backdrop-filter: blur(4px);
-        }
-
-        .ai-chat-panel.visible {
-            display: flex;
-        }
-
-        .ai-chat-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #1a1a1a;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-
-        .ai-chat-results {
-            width: 50%;
-            overflow-y: auto;
-            padding: 2rem;
-            background: #1a1a1a;
-            border-right: 1px solid #333333;
-        }
-
-        .ai-chat-results::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .ai-chat-results::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-
-        .ai-chat-results::-webkit-scrollbar-thumb {
-            background: #404040;
-            border-radius: 4px;
-        }
-
-        .ai-chat-results::-webkit-scrollbar-thumb:hover {
-            background: #505050;
-        }
-
-        .ai-chat-results.hidden {
-            display: none;
-        }
-
-        .ai-chat-welcome {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-            text-align: center;
-            color: #9ca3af;
-        }
-
-        .ai-chat-welcome.hidden {
-            display: none;
-        }
-
-        .ai-chat-welcome h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #ffffff;
-        }
-
-        .ai-chat-welcome p {
-            font-size: 1.1rem;
-            max-width: 500px;
-            color: #9ca3af;
-        }
-
-        @media (max-width: 768px) {
-            .ai-movie-detail-hero {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .ai-trailer-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .ai-trailer-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            z-index: 10;
-            transition: background 0.2s;
-        }
-
-        .ai-trailer-close:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-
-        .ai-movie-detail-view {
-            display: none;
-        }
-
-        .ai-movie-detail-view.visible {
-            display: block;
-        }
-
-        .ai-movie-detail-container {
-            background: #2d2d2d;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #333333;
-        }
-
-        .ai-movie-detail-hero {
+        /* ── Search Results ── */
+        .results-grid {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
-        .ai-movie-detail-poster {
-            width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .ai-movie-detail-info h2 {
-            color: #ffffff;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .ai-movie-detail-meta {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .ai-movie-detail-meta span {
-            background: #404040;
-            color: #d1d5db;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .ai-movie-detail-rating {
-            display: inline-block;
-            background: #fbbf24;
-            color: #1f2937;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        .ai-movie-detail-description {
-            color: #9ca3af;
-            line-height: 1.6;
-            margin-top: 1rem;
-        }
-
-        .ai-movie-detail-close {
-            background: #404040;
-            color: #ffffff;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 1rem;
-            transition: background 0.2s;
-        }
-
-        .ai-movie-detail-close:hover {
-            background: #505050;
-        }
-
-        .ai-movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .ai-movie-grid-card {
-            background: #2d2d2d;
+        .result-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
             border-radius: 12px;
             overflow: hidden;
-            border: 1px solid #333333;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.25s;
         }
 
-        .ai-movie-grid-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(26,26,46,0.08);
         }
 
-        .ai-movie-grid-poster {
+        .result-card .poster {
             width: 100%;
-            height: 280px;
+            height: 380px;
             object-fit: cover;
+            background: #e5e7eb;
         }
 
-        .ai-movie-grid-info {
-            padding: 1rem;
+        .result-card .body {
+            padding: 1.25rem;
         }
 
-        .ai-movie-grid-title {
-            color: #ffffff;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+        .result-card .title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.25rem;
+            margin-bottom: 0.4rem;
         }
 
-        .ai-movie-grid-rating {
+        .result-card .rating-badge {
             display: inline-block;
             background: #fbbf24;
-            color: #1f2937;
-            padding: 0.25rem 0.75rem;
-            border-radius: 6px;
-            font-weight: 600;
+            color: #1a1a2e;
+            padding: 0.2rem 0.6rem;
+            border-radius: 5px;
+            font-weight: 700;
             font-size: 0.85rem;
             margin-bottom: 0.5rem;
         }
 
-        .ai-movie-grid-meta {
-            color: #9ca3af;
-            font-size: 0.85rem;
-        }
-
-        .ai-chat-messages {
-            width: 50%;
-            display: flex;
-            flex-direction: column;
-            background: #1a1a1a;
-        }
-
-        .ai-chat-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid #333333;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1f1f1f;
-        }
-
-        .ai-chat-header h3 {
-            font-size: 1.25rem;
-            color: #ffffff;
-            margin: 0;
-        }
-
-        .ai-browse-movies-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .ai-browse-movies-header h3 {
-            color: #ffffff;
-            font-size: 1.5rem;
-            margin: 0;
-        }
-
-        .ai-browse-movies-close {
-            background: #404040;
-            color: #ffffff;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .ai-browse-movies-close:hover {
-            background: #505050;
-        }
-
-        .ai-chat-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #9ca3af;
-            cursor: pointer;
-            padding: 0.5rem;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-
-        .ai-chat-close:hover {
-            color: #ef4444;
-        }
-
-        .ai-chat-messages-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            background: #1a1a1a;
-        }
-
-        .ai-chat-messages-list::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .ai-chat-messages-list::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-
-        .ai-chat-messages-list::-webkit-scrollbar-thumb {
-            background: #404040;
-            border-radius: 4px;
-        }
-
-        .ai-chat-messages-list::-webkit-scrollbar-thumb:hover {
-            background: #505050;
-        }
-
-        .ai-chat-message {
-            max-width: 80%;
-            padding: 1rem 1.25rem;
-            border-radius: 18px;
-            word-wrap: break-word;
-            animation: fadeIn 0.3s;
-        }
-
-        .ai-chat-message.user {
-            align-self: flex-end;
-            background: #667eea;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .ai-chat-message.assistant {
-            align-self: flex-start;
-            background: #2d2d2d;
-            color: #e5e7eb;
-            border-bottom-left-radius: 4px;
-        }
-
-        .ai-chat-input-container {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #333333;
-            display: flex;
-            gap: 0.75rem;
-            background: #1f1f1f;
-        }
-
-        .ai-chat-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid #333333;
-            border-radius: 24px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-            background: #2d2d2d;
-            color: #ffffff;
-        }
-
-        .ai-chat-input::placeholder {
+        .result-card .meta {
             color: #6b7280;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
         }
 
-        .ai-chat-input-container {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #333333;
-            display: flex;
-            gap: 0.75rem;
-            background: #1f1f1f;
+        .result-card .desc {
+            color: #4b5563;
+            line-height: 1.55;
+            font-size: 0.9rem;
         }
 
-        .ai-chat-input:focus {
-            border-color: #667eea;
-            background: #333333;
-        }
-
-        .ai-chat-send {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 24px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-
-        .ai-chat-send:hover:not(:disabled) {
-            background: #5568d3;
-        }
-
-        .ai-chat-send:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .ai-movie-result-card {
-            background: #2d2d2d;
+        /* ── Analytics ── */
+        .analytics-section {
+            background: #fff;
+            border: 1px solid #e5e7eb;
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            border: 1px solid #333333;
+            padding: 1.5rem 1.75rem;
+            margin-top: 2rem;
         }
 
-        .ai-movie-result-card h4 {
-            color: #ffffff;
-            font-size: 1.25rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .ai-movie-result-meta {
+        .tag-cloud {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
             flex-wrap: wrap;
-        }
-
-        .ai-movie-result-meta span {
-            background: #404040;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            color: #d1d5db;
-        }
-
-        .ai-movie-result-meta .rating {
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .ai-movie-result-description {
-            color: #9ca3af;
-            line-height: 1.6;
+            gap: 0.5rem;
             margin-top: 0.75rem;
         }
 
-        .ai-youtube-trailer {
-            margin-top: 1rem;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .ai-youtube-trailer iframe {
-            width: 100%;
-            height: 315px;
-            border: none;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .ai-chat-container {
-                flex-direction: column;
-            }
-
-            .ai-chat-results {
-                width: 100%;
-                max-height: 40%;
-            }
-
-            .ai-chat-messages {
-                width: 100%;
-                flex: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .services-grid {
-                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            }
-
-            .backend-header {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .backend-actions {
-                width: 100%;
-            }
-
-            .btn-backend {
-                flex: 1;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .header-actions {
-                width: 100%;
-                justify-content: flex-start;
-            }
-        }
-
-        .action-btn {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 14px;
+        .search-tag {
+            display: inline-block;
+            background: #f3f4f6;
             border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: #fff;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.9em;
+            font-family: inherit;
+            color: #1a1a2e;
         }
 
-        .action-btn:hover:not(:disabled) {
-            border-color: #3b82f6;
-            background: #f8fafc;
+        .search-tag:hover {
+            background: #1a1a2e;
+            color: #fff;
+            border-color: #1a1a2e;
         }
 
-        .action-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        /* ── Empty / Loading ── */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state h2 {
+            font-family: 'DM Serif Display', serif;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p { color: #9ca3af; }
+
+        .loading-text {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .site-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .header-nav { width: 100%; }
+            .site-header h1 { font-size: 2rem; }
+            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-text">
+    <div class="page-wrapper">
+
+        <!-- Header -->
+        <header class="site-header">
+            <div>
                 <h1>Movie Database</h1>
-                <p class="header-subtitle">Search across 200 popular movies with full-text search</p>
+                <p class="subtitle">Search across 200 popular movies with full-text search</p>
             </div>
-            <div class="header-actions">
-                <button class="btn-secondary" onclick="toggleAIChat()" style="margin-right: 12px;" id="aiChatToggleBtn">
-                    AI Movie Assistant
-                </button>
-                <a href="/movies" class="btn-secondary">
-                    Browse all movies
-                </a>
-            </div>
-        </div>
+            <nav class="header-nav">
+                <a href="/movies" class="nav-link">Browse all movies</a>
+                <a href="/movies?ai=1" class="nav-link primary">AI Movie Assistant</a>
+            </nav>
+        </header>
 
-        <div class="main-grid">
-            <div class="backend-control">
-                <div class="backend-header">
+        <!-- Backend Control -->
+        <section class="backend-panel">
+            <div class="backend-panel-header">
+                <div style="display:flex;align-items:center;">
                     <h3>Backend Services</h3>
-                    <div class="backend-status">
-                        <div class="status-indicator stopped" id="backendStatusBadge">
-                            <span class="status-dot stopped" id="statusDot"></span>
-                            <span id="statusText">Checking...</span>
-                        </div>
-                        <div class="heartbeat-indicator" id="heartbeatIndicator" style="display: none;">
-                            <span class="heartbeat-icon"></span>
-                            <span>Heartbeat active</span>
-                        </div>
-                    </div>
+                    <span class="heartbeat-tag" id="heartbeatIndicator" style="display:none;">
+                        <span class="heartbeat-pulse">❤</span> Heartbeat active
+                    </span>
                 </div>
-
-                <div class="backend-actions">
-                    <button class="btn-backend btn-start" id="btnStart" onclick="startBackend()" disabled>
-                        Start
-                    </button>
-                    <button class="btn-backend btn-stop" id="btnStop" onclick="stopBackend()" disabled>
-                        Stop
-                    </button>
-                </div>
-
-                <div class="backend-info" id="backendInfo" style="display: none;">
-                    <div class="info-item">
-                        <div class="info-label">Instance ID</div>
-                        <div class="info-value" id="infoInstanceId">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Private IP</div>
-                        <div class="info-value" id="infoPrivateIp">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Auto-shutdown in</div>
-                        <div class="info-value" id="infoShutdownTimer">-</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Services</div>
-                        <div class="info-value">Redis, Meilisearch, Prometheus, Grafana</div>
-                    </div>
-                </div>
+                <span class="status-badge stopped" id="backendStatusBadge">
+                    <span class="status-dot stopped" id="statusDot"></span>
+                    <span id="statusText">Checking…</span>
+                </span>
             </div>
 
-        </div>
+            <div class="backend-actions">
+                <button class="btn-control start" id="btnStart" onclick="startBackend()" disabled>Start</button>
+                <button class="btn-control stop" id="btnStop" onclick="stopBackend()" disabled>Stop</button>
+            </div>
 
-        <div class="search-box">
-            <div class="search-input-wrapper">
-                <input type="text" id="searchInput" class="search-input"
-                    placeholder="Search movies by title, director, or description..." autofocus>
-                <button class="search-btn" onclick="searchMovies()">Search</button>
+            <div class="backend-info-grid" id="backendInfo" style="display:none;">
+                <div class="info-cell">
+                    <div class="label">Instance ID</div>
+                    <div class="value" id="infoInstanceId">-</div>
+                </div>
+                <div class="info-cell">
+                    <div class="label">Private IP</div>
+                    <div class="value" id="infoPrivateIp">-</div>
+                </div>
+                <div class="info-cell">
+                    <div class="label">Auto-shutdown in</div>
+                    <div class="value" id="infoShutdownTimer">-</div>
+                </div>
+                <div class="info-cell">
+                    <div class="label">Services</div>
+                    <div class="value">Redis, Meilisearch, Prometheus, Grafana</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search -->
+        <section class="search-section">
+            <div class="search-row">
+                <input type="text" id="searchInput" class="search-field"
+                    placeholder="Search movies by title, director, or description…" autofocus>
+                <button class="search-submit" onclick="searchMovies()">Search</button>
             </div>
             <div class="search-meta" id="searchMeta"></div>
-        </div>
+        </section>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-card-header">
-                    <div class="stat-card-title">Cache Performance</div>
-                    <span class="hit-rate-badge" id="hitRateBadge">-</span>
-                </div>
-                <div class="stat-card-value" id="hitRateValue">-</div>
-                <div class="stat-card-details">
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">Hits</div>
-                        <div class="stat-card-detail-value" id="cacheHits">-</div>
-                    </div>
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">Misses</div>
-                        <div class="stat-card-detail-value" id="cacheMisses">-</div>
-                    </div>
-                    <div class="stat-card-detail-item">
-                        <div class="stat-card-detail-label">Cached Keys</div>
-                        <div class="stat-card-detail-value" id="cachedKeys">-</div>
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="stat-card">
-                <div class="stat-card-header">
-                    <div class="stat-card-title">Quick Actions</div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-                    <button class="action-btn" id="btnSyncData" onclick="syncData()">
+        <!-- Quick Actions -->
+        <div class="dashboard-row">
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="action-list">
+                    <button class="action-row" id="btnSyncData" onclick="syncData()">
                         Sync Data
-                        <span id="syncStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                        <span class="status-text" id="syncStatus">Ready</span>
                     </button>
-                    <button class="action-btn" id="btnClearCache" onclick="clearCache()">
+                    <button class="action-row" id="btnClearCache" onclick="clearCache()">
                         Clear Cache
-                        <span id="cacheActionStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                        <span class="status-text" id="cacheActionStatus">Ready</span>
                     </button>
-                    <button class="action-btn" id="btnPipelineStatus" onclick="checkPipelineStatus()">
+                    <button class="action-row" id="btnPipelineStatus" onclick="checkPipelineStatus()">
                         Pipeline Status
-                        <span id="pipelineStatus" style="font-size: 0.8em; color: #6b7280;">Ready</span>
+                        <span class="status-text" id="pipelineStatus">Ready</span>
                     </button>
                 </div>
             </div>
-
-
-
-            <div class="results" id="results"></div>
-
-            <div class="featured-movies" id="featuredMovies">
-                <h3>Top Rated Movies</h3>
-                <div class="featured-grid" id="featuredGrid">
-                    <div class="loading">Loading featured movies...</div>
-                </div>
-            </div>
-
-            <div class="analytics">
-                <h3>Popular Searches (Last 7 Days)</h3>
-                <div id="popularSearches">Loading...</div>
-            </div>
-        </div>
-
-        <div class="ai-chat-panel" id="aiChatPanel">
-            <div class="ai-chat-container">
-                <div class="ai-chat-results" id="aiChatResults">
-                    <div class="ai-chat-welcome" id="aiChatWelcome">
-                        <h2>Hello!</h2>
-                        <p>I'll help you find the perfect movie to watch. Just describe what you'd like to see, and I'll find suitable options!</p>
-                    </div>
-                    <div id="aiChatResultsContent"></div>
-                    <div class="ai-movie-detail-view" id="aiMovieDetailView"></div>
-                    <div class="ai-movies-grid" id="aiMoviesGrid" style="display: none;"></div>
-                </div>
-                <div class="ai-chat-messages">
-                    <div class="ai-chat-header">
-                        <h3>AI Movie Assistant</h3>
-                        <button class="ai-chat-close" onclick="toggleAIChat()">×</button>
-                    </div>
-                    <div class="ai-chat-messages-list" id="aiChatMessages"></div>
-                    <div class="ai-chat-input-container">
-                        <input 
-                            type="text" 
-                            class="ai-chat-input" 
-                            id="aiChatInput" 
-                            placeholder="e.g., I want to watch something sad..."
-                            autocomplete="off"
-                        >
-                        <button class="ai-chat-send" id="aiChatSend" onclick="sendAIMessage()">Send</button>
-                    </div>
+            <div class="card" id="analyticsCard">
+                <h3>Popular Searches</h3>
+                <div class="tag-cloud" id="popularSearches">
+                    <span class="loading-text">Loading…</span>
                 </div>
             </div>
         </div>
 
-        <script>
-            // Backend state
-            let backendState = 'unknown';
-            let heartbeatInterval = null;
-            let statusCheckInterval = null;
+        <!-- Search Results (hidden by default) -->
+        <div class="results-grid" id="results"></div>
 
-            // Search on Enter key
-            document.getElementById('searchInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchMovies();
-            });
+        <!-- Featured Movies -->
+        <section id="featuredMovies">
+            <h2 class="section-title">Top Rated Movies</h2>
+            <div class="movie-grid" id="featuredGrid">
+                <div class="loading-text">Loading featured movies…</div>
+            </div>
+        </section>
+    </div>
 
-            // =====================================================================
-            // Backend Control Functions
-            // =====================================================================
+    <script>
+        let backendState = 'unknown';
+        let heartbeatInterval = null;
+        let statusCheckInterval = null;
 
-            async function checkBackendStatus() {
-                try {
-                    const res = await fetch('/api/backend/status');
-                    const data = await res.json();
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') searchMovies();
+        });
 
-                    updateBackendUI(data);
-                    return data;
-                } catch (e) {
-                    console.error('Backend status check failed:', e);
-                    updateBackendUI({ state: 'unknown', message: e.message });
-                    return null;
+        // ── Backend Control ──
+
+        async function checkBackendStatus() {
+            try {
+                const res = await fetch('/api/backend/status');
+                const data = await res.json();
+                updateBackendUI(data);
+                return data;
+            } catch (e) {
+                console.error('Backend status check failed:', e);
+                updateBackendUI({ state: 'unknown' });
+                return null;
+            }
+        }
+
+        function updateBackendUI(data) {
+            const badge = document.getElementById('backendStatusBadge');
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+            const info = document.getElementById('backendInfo');
+            const heartbeat = document.getElementById('heartbeatIndicator');
+            const state = data.state || 'unknown';
+            backendState = state;
+
+            const cls = state === 'running' ? 'running' : (state === 'stopped' || state === 'unknown') ? 'stopped' : 'pending';
+            badge.className = 'status-badge ' + cls;
+            dot.className = 'status-dot ' + cls;
+
+            const labels = { running: 'Running', stopped: 'Stopped', pending: 'Pending…', starting: 'Starting…', stopping: 'Stopping…' };
+            text.textContent = labels[state] || 'Unknown';
+
+            btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
+            btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
+
+            if (state === 'running') {
+                info.style.display = 'grid';
+                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
+                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
+                if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
+                    document.getElementById('infoShutdownTimer').textContent = data.heartbeat.will_stop_in + ' min';
                 }
-            }
-
-            function updateBackendUI(data) {
-                const badge = document.getElementById('backendStatusBadge');
-                const dot = document.getElementById('statusDot');
-                const text = document.getElementById('statusText');
-                const btnStart = document.getElementById('btnStart');
-                const btnStop = document.getElementById('btnStop');
-                const info = document.getElementById('backendInfo');
-                const heartbeat = document.getElementById('heartbeatIndicator');
-
-                const state = data.state || 'unknown';
-                backendState = state;
-
-                // Update badge
-                badge.className = 'status-indicator ' + getStateClass(state);
-                dot.className = 'status-dot ' + getStateClass(state);
-                text.textContent = getStateText(state);
-
-                // Update buttons
-                btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
-                btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
-
-                // Update info panel
-                if (state === 'running') {
-                    info.style.display = 'grid';
-                    document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
-                    document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
-
-                    if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
-                        document.getElementById('infoShutdownTimer').textContent =
-                            data.heartbeat.will_stop_in + ' minutes';
-                    }
-
-                    // Start heartbeat if not already running
-                    if (!heartbeatInterval) {
-                        startHeartbeat();
-                    }
-                    heartbeat.style.display = 'flex';
-                } else {
-                    info.style.display = 'none';
-                    heartbeat.style.display = 'none';
-                    stopHeartbeat();
-                }
-
-            }
-
-            function getStateClass(state) {
-                switch (state) {
-                    case 'running': return 'running';
-                    case 'stopped': return 'stopped';
-                    case 'pending':
-                    case 'starting':
-                    case 'stopping': return 'pending';
-                    default: return 'stopped';
-                }
-            }
-
-            function getStateText(state) {
-                switch (state) {
-                    case 'running': return 'Running';
-                    case 'stopped': return 'Stopped';
-                    case 'pending': return 'Pending...';
-                    case 'starting': return 'Starting...';
-                    case 'stopping': return 'Stopping...';
-                    default: return 'Unknown';
-                }
-            }
-
-            async function startBackend() {
-                const btn = document.getElementById('btnStart');
-                btn.disabled = true;
-                btn.innerHTML = 'Starting...';
-
-                try {
-                    const res = await fetch('/api/backend/start', { method: 'POST' });
-                    const data = await res.json();
-
-                    console.log('Start response:', data);
-
-                    // Poll for status until running
-                    pollUntilState('running', 60000); // 60 sec timeout
-
-                } catch (e) {
-                    console.error('Start failed:', e);
-                    alert('Failed to start backend: ' + e.message);
-                    btn.disabled = false;
-                    btn.innerHTML = 'Start Monitoring';
-                }
-            }
-
-            async function stopBackend() {
-                if (!confirm('Are you sure you want to stop the backend services?')) {
-                    return;
-                }
-
-                const btn = document.getElementById('btnStop');
-                btn.disabled = true;
-                btn.innerHTML = 'Stopping...';
-
-                try {
-                    const res = await fetch('/api/backend/stop', { method: 'POST' });
-                    const data = await res.json();
-
-                    console.log('Stop response:', data);
-                    stopHeartbeat();
-
-                    // Poll for status until stopped
-                    pollUntilState('stopped', 60000);
-
-                } catch (e) {
-                    console.error('Stop failed:', e);
-                    alert('Failed to stop backend: ' + e.message);
-                    btn.disabled = false;
-                    btn.innerHTML = 'Stop Backend';
-                }
-            }
-
-            async function pollUntilState(targetState, timeout) {
-                const startTime = Date.now();
-
-                const poll = async () => {
-                    if (Date.now() - startTime > timeout) {
-                        console.log('Polling timeout');
-                        checkBackendStatus();
-                        return;
-                    }
-
-                    const data = await checkBackendStatus();
-
-                    if (data && data.state === targetState) {
-                        console.log('Reached target state:', targetState);
-                        return;
-                    }
-
-                    setTimeout(poll, 3000); // Poll every 3 seconds
-                };
-
-                poll();
-            }
-
-            // =====================================================================
-            // Heartbeat Functions
-            // =====================================================================
-
-            function startHeartbeat() {
-                if (heartbeatInterval) return;
-
-                console.log('Starting heartbeat...');
-
-                // Send immediately
-                sendHeartbeat();
-
-                // Then every 30 seconds
-                heartbeatInterval = setInterval(sendHeartbeat, 30000);
-
-                // Update UI
-                const icon = document.querySelector('.heartbeat-icon');
-                if (icon) icon.classList.remove('inactive');
-            }
-
-            function stopHeartbeat() {
-                if (heartbeatInterval) {
-                    console.log('Stopping heartbeat...');
-                    clearInterval(heartbeatInterval);
-                    heartbeatInterval = null;
-                }
-
-                const icon = document.querySelector('.heartbeat-icon');
-                if (icon) icon.classList.add('inactive');
-            }
-
-            async function sendHeartbeat() {
-                try {
-                    await fetch('/api/backend/heartbeat', { method: 'POST' });
-                    console.log('Heartbeat sent');
-                } catch (e) {
-                    console.error('Heartbeat failed:', e);
-                }
-            }
-
-            // Stop heartbeat when leaving page
-            window.addEventListener('beforeunload', () => {
+                if (!heartbeatInterval) startHeartbeat();
+                heartbeat.style.display = 'inline-flex';
+            } else {
+                info.style.display = 'none';
+                heartbeat.style.display = 'none';
                 stopHeartbeat();
-            });
+            }
+        }
 
-            // =====================================================================
-            // Services Status
-            // =====================================================================
+        async function startBackend() {
+            const btn = document.getElementById('btnStart');
+            btn.disabled = true;
+            btn.textContent = 'Starting…';
+            try {
+                await fetch('/api/backend/start', { method: 'POST' });
+                pollUntilState('running', 60000);
+            } catch (e) {
+                alert('Failed to start backend: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Start';
+            }
+        }
 
+        async function stopBackend() {
+            if (!confirm('Stop backend services?')) return;
+            const btn = document.getElementById('btnStop');
+            btn.disabled = true;
+            btn.textContent = 'Stopping…';
+            try {
+                await fetch('/api/backend/stop', { method: 'POST' });
+                stopHeartbeat();
+                pollUntilState('stopped', 60000);
+            } catch (e) {
+                alert('Failed to stop backend: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Stop';
+            }
+        }
 
+        async function pollUntilState(target, timeout) {
+            const start = Date.now();
+            const poll = async () => {
+                if (Date.now() - start > timeout) { checkBackendStatus(); return; }
+                const data = await checkBackendStatus();
+                if (data && data.state === target) return;
+                setTimeout(poll, 3000);
+            };
+            poll();
+        }
 
-            // =====================================================================
-            // Search Functions
-            // =====================================================================
+        // ── Heartbeat ──
 
-            async function searchMovies() {
-                const query = document.getElementById('searchInput').value.trim();
-                if (!query) return;
+        function startHeartbeat() {
+            if (heartbeatInterval) return;
+            sendHeartbeat();
+            heartbeatInterval = setInterval(sendHeartbeat, 30000);
+            const icon = document.querySelector('.heartbeat-pulse');
+            if (icon) icon.classList.remove('off');
+        }
 
-                // Check if backend is running (needed for Meilisearch)
-                if (backendState !== 'running') {
-                    document.getElementById('results').innerHTML = `
-                    <div class="empty-state">
-                        <h2>Backend Offline</h2>
-                        <p>Search requires Meilisearch. Please start the backend first.</p>
-                    </div>
-                `;
+        function stopHeartbeat() {
+            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+            const icon = document.querySelector('.heartbeat-pulse');
+            if (icon) icon.classList.add('off');
+        }
+
+        async function sendHeartbeat() {
+            try { await fetch('/api/backend/heartbeat', { method: 'POST' }); } catch (e) { /* silent */ }
+        }
+
+        window.addEventListener('beforeunload', stopHeartbeat);
+
+        // ── Search ──
+
+        async function searchMovies() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            if (backendState !== 'running') {
+                document.getElementById('results').innerHTML = `
+                    <div class="empty-state"><h2>Backend Offline</h2><p>Search requires Meilisearch. Start the backend first.</p></div>`;
+                return;
+            }
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading-text">Searching…</div>';
+            document.getElementById('featuredMovies').style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                document.getElementById('searchMeta').textContent = `Found ${data.count} results`;
+
+                if (data.count === 0) {
+                    resultsDiv.innerHTML = '<div class="empty-state"><h2>No results</h2><p>Try different keywords</p></div>';
+                    document.getElementById('featuredMovies').style.display = 'block';
                     return;
                 }
 
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = '<div class="loading">Searching...</div>';
-
-                // Hide featured movies when searching
-                document.getElementById('featuredMovies').style.display = 'none';
-
-                try {
-                    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-                    const data = await res.json();
-
-                    document.getElementById('searchMeta').innerHTML = `
-                    Found ${data.count} results in ${data.cached ? 'cache' : 'Meilisearch'}
-                `;
-
-                    if (data.count === 0) {
-                        resultsDiv.innerHTML = `
-                        <div class="empty-state">
-                            <h2>No results found</h2>
-                            <p>Try different keywords</p>
+                resultsDiv.innerHTML = data.results.map(m => `
+                    <div class="result-card">
+                        <img src="/api/poster/${m.poster_filename}" alt="${m.title}" class="poster">
+                        <div class="body">
+                            <div class="title">${m.title}</div>
+                            <div class="rating-badge">${m.rating}/10</div>
+                            <div class="meta">${m.genre} · ${m.year}</div>
+                            <div class="meta">Director: ${m.director}</div>
+                            <p class="desc">${m.description}</p>
                         </div>
-                    `;
-                        // Show featured movies when no search results
-                        document.getElementById('featuredMovies').style.display = 'block';
-                        return;
-                    }
+                    </div>`).join('');
 
-                    resultsDiv.innerHTML = data.results.map(movie => `
-                    <div class="movie-card">
-                        <img 
-                            src="/api/poster/${movie.poster_filename}" 
-                            alt="${movie.title}"
-                            class="movie-poster"
-                        >
-                        <div class="movie-info">
-                            <div class="movie-title">${movie.title}</div>
-                            <div class="movie-rating">${movie.rating}/10</div>
-                            <div class="movie-meta">${movie.genre} • ${movie.year}</div>
-                            <div class="movie-meta">Director: ${movie.director}</div>
-                            <div class="movie-description">${movie.description}</div>
-                        </div>
-                    </div>
-                `).join('');
-
-                    // Hide featured movies when showing search results
-                    document.getElementById('featuredMovies').style.display = 'none';
-
-                    loadPopularSearches();
-
-                } catch (e) {
-                    resultsDiv.innerHTML = `
-                    <div class="empty-state">
-                        <h2>Error</h2>
-                        <p>${e.message}</p>
-                    </div>
-                `;
-                }
-            }
-
-            // =====================================================================
-            // Cache Statistics
-            // =====================================================================
-
-            async function loadCacheStats() {
-                try {
-                    const res = await fetch('/api/cache/stats');
-                    const data = await res.json();
-
-                    if (data.error) {
-                        console.error('Cache stats error:', data.error);
-                        return;
-                    }
-
-                    // Update hit rate
-                    const hitRate = parseFloat(data.hit_rate.replace('%', ''));
-                    document.getElementById('hitRateValue').textContent = data.hit_rate;
-                    document.getElementById('cacheHits').textContent = data.hits.toLocaleString();
-                    document.getElementById('cacheMisses').textContent = data.misses.toLocaleString();
-                    document.getElementById('cachedKeys').textContent = data.cached_keys.toLocaleString();
-
-                    // Update badge color based on hit rate
-                    const badge = document.getElementById('hitRateBadge');
-                    badge.textContent = data.hit_rate;
-                    badge.className = 'hit-rate-badge ';
-                    if (hitRate >= 80) {
-                        badge.className += 'excellent';
-                    } else if (hitRate >= 60) {
-                        badge.className += 'good';
-                    } else if (hitRate >= 40) {
-                        badge.className += 'fair';
-                    } else {
-                        badge.className += 'poor';
-                    }
-                } catch (e) {
-                    console.error('Failed to load cache stats:', e);
-                    document.getElementById('hitRateValue').textContent = 'Error';
-                }
-            }
-
-            // =====================================================================
-            // System Load Indicator
-            // =====================================================================
-
-            async function loadSystemLoad() {
-                try {
-                    // Get Redis stats for system load
-                    const redisRes = await fetch('/check/redis');
-                    const redisData = await redisRes.json();
-
-                    if (redisData.status === 'healthy' && redisData.details) {
-                        const perf = redisData.details.performance || {};
-                        const memory = redisData.details.memory || {};
-                        const ops = perf.instantaneous_ops_per_sec || 0;
-
-                        // Get Postgres stats for DB cache hit ratio
-                        const pgRes = await fetch('/check/postgres');
-                        const pgData = await pgRes.json();
-
-                        let dbCacheHit = '-';
-                        let dbConnectionsPercent = 0;
-                        let loadStatus = 'Normal';
-
-                        if (pgData.status === 'healthy' && pgData.details) {
-                            const pgPerf = pgData.details.performance || {};
-                            dbCacheHit = pgPerf.cache_hit_ratio ? `${pgPerf.cache_hit_ratio}%` : '-';
-
-                            const connections = pgData.details.connections || {};
-                            dbConnectionsPercent = connections.usage_percent || 0;
-                        }
-
-                        // Calculate system load based on:
-                        // 1. Redis memory usage (if we can parse it)
-                        // 2. Redis activity (OPS normalized)
-                        // 3. DB connection usage
-
-                        // Parse Redis memory (format: "1.2M", "500K", etc.)
-                        let redisMemoryPercent = 0;
-                        const memoryUsed = memory.used || '0';
-                        if (memoryUsed !== 'N/A' && memoryUsed !== '-') {
-                            // Try to extract number from memory string
-                            const memoryMatch = memoryUsed.match(/([\d.]+)([KMGT]?)/i);
-                            if (memoryMatch) {
-                                let bytes = parseFloat(memoryMatch[1]);
-                                const unit = memoryMatch[2].toUpperCase();
-                                if (unit === 'K') bytes *= 1024;
-                                else if (unit === 'M') bytes *= 1024 * 1024;
-                                else if (unit === 'G') bytes *= 1024 * 1024 * 1024;
-
-                                // Assume 512MB max for Redis (typical small instance)
-                                // This is an approximation
-                                redisMemoryPercent = Math.min((bytes / (512 * 1024 * 1024)) * 100, 100);
-                            }
-                        }
-
-                        // Normalize Redis OPS (assuming 500 ops/sec is medium load, 1000 is high)
-                        const redisOpsPercent = Math.min((ops / 500) * 50, 50);
-
-                        // Combine metrics: memory (40%), OPS (30%), DB connections (30%)
-                        const overallLoad = Math.min(
-                            (redisMemoryPercent * 0.4) +
-                            (redisOpsPercent * 0.3) +
-                            (dbConnectionsPercent * 0.3),
-                            100
-                        );
-
-                        // Update UI
-                        document.getElementById('systemLoadValue').textContent = overallLoad.toFixed(1) + '%';
-                        document.getElementById('loadValue').textContent = overallLoad.toFixed(1) + '%';
-                        document.getElementById('redisOps').textContent = ops.toLocaleString() + '/s';
-                        document.getElementById('dbCacheHit').textContent = dbCacheHit;
-
-                        // Update load bar
-                        const loadBar = document.getElementById('loadBarFill');
-                        loadBar.style.width = overallLoad + '%';
-
-                        // Update bar color based on load
-                        loadBar.className = 'load-bar-fill';
-                        if (overallLoad >= 80) {
-                            loadBar.className += ' high';
-                            loadStatus = 'High';
-                        } else if (overallLoad >= 50) {
-                            loadBar.className += ' medium';
-                            loadStatus = 'Medium';
-                        } else {
-                            loadStatus = 'Normal';
-                        }
-
-                        document.getElementById('systemStatus').textContent = loadStatus;
-                    } else {
-                        // If Redis is not available, show error
-                        document.getElementById('systemLoadValue').textContent = 'N/A';
-                        document.getElementById('loadValue').textContent = 'N/A';
-                        document.getElementById('redisOps').textContent = '-';
-                        document.getElementById('dbCacheHit').textContent = '-';
-                        document.getElementById('systemStatus').textContent = 'Unavailable';
-                    }
-                } catch (e) {
-                    console.error('Failed to load system load:', e);
-                    document.getElementById('systemLoadValue').textContent = 'Error';
-                    document.getElementById('loadValue').textContent = 'Error';
-                }
-            }
-
-            // =====================================================================
-            // Featured Movies
-            // =====================================================================
-
-            async function loadFeaturedMovies() {
-                try {
-                    const res = await fetch('/api/movies/featured');
-                    const data = await res.json();
-
-                    if (data.movies && data.movies.length > 0) {
-                        const grid = document.getElementById('featuredGrid');
-                        const container = document.getElementById('featuredMovies');
-
-                        grid.innerHTML = data.movies.map(movie => `
-                        <a href="/movie/${movie.id}" class="featured-movie-card">
-                            <img 
-                                src="/api/poster/${movie.poster_filename}" 
-                                alt="${movie.title}"
-                                class="featured-poster"
-                            >
-                            <div class="featured-info">
-                                <div class="featured-title">${movie.title}</div>
-                                <div class="featured-rating">${movie.rating}/10</div>
-                                <div class="featured-meta">${movie.year} • ${movie.genre}</div>
-                            </div>
-                        </a>
-                    `).join('');
-
-                        container.style.display = 'block';
-                    }
-                } catch (e) {
-                    console.error('Failed to load featured movies:', e);
-                }
-            }
-
-            // Quick Actions
-            async function syncData() {
-                const btn = document.getElementById('btnSyncData');
-                const status = document.getElementById('syncStatus');
-                btn.disabled = true;
-                status.textContent = 'Syncing...';
-
-                try {
-                    const res = await fetch('/api/data/sync', { method: 'POST' });
-                    const data = await res.json();
-
-                    if (res.status === 429) {
-                        status.textContent = `Wait ${data.retry_after}s`;
-                        setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, data.retry_after * 1000);
-                        return;
-                    }
-
-                    status.textContent = 'Done!';
-                    loadCacheStats();
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 300000); // 5 min cooldown
-                } catch (e) {
-                    status.textContent = 'Error';
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
-                }
-            }
-
-            async function clearCache() {
-                const btn = document.getElementById('btnClearCache');
-                const status = document.getElementById('cacheActionStatus');
-                btn.disabled = true;
-                status.textContent = 'Clearing...';
-
-                try {
-                    await fetch('/api/cache/clear', { method: 'POST' });
-                    status.textContent = 'Cleared!';
-                    loadCacheStats();
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 60000);
-                } catch (e) {
-                    status.textContent = 'Error';
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
-                }
-            }
-
-            async function checkPipelineStatus() {
-                const btn = document.getElementById('btnPipelineStatus');
-                const status = document.getElementById('pipelineStatus');
-                btn.disabled = true;
-                status.textContent = 'Checking...';
-
-                try {
-                    const res = await fetch('/api/data/status');
-                    const data = await res.json();
-                    const pg = data.postgres?.status || '?';
-                    const meili = data.meilisearch?.status || '?';
-                    status.textContent = `PG:${pg} M:${meili}`;
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 5000);
-                } catch (e) {
-                    status.textContent = 'Error';
-                    setTimeout(() => { btn.disabled = false; status.textContent = 'Ready'; }, 3000);
-                }
-            }
-
-            // =====================================================================
-            // Analytics
-            // =====================================================================
-
-            async function loadPopularSearches() {
-                try {
-                    const res = await fetch('/api/analytics/popular?limit=10');
-                    const data = await res.json();
-
-                    const div = document.getElementById('popularSearches');
-
-                    if (data.popular_searches.length === 0) {
-                        div.innerHTML = 'No searches yet';
-                        return;
-                    }
-
-                    div.innerHTML = data.popular_searches.map(item => `
-                    <span class="popular-tag" onclick="document.getElementById('searchInput').value='${item.query}'; searchMovies();">
-                        ${item.query} (${item.search_count})
-                    </span>
-                `).join('');
-                } catch (e) {
-                    document.getElementById('popularSearches').innerHTML = 'Error loading';
-                }
-            }
-
-            // =====================================================================
-            // AI Chat
-            // =====================================================================
-
-            const AI_CHAT_API_URL = '{{ ai_chat_api_url }}' || '';
-            const AI_CHAT_API_KEY = '{{ ai_chat_api_key }}' || '';
-            let aiChatHistory = [];
-            let previousState = null;
-            let currentMovieDetailId = null;
-
-            function toggleAIChat() {
-                const chatPanel = document.getElementById('aiChatPanel');
-                const isVisible = chatPanel.classList.contains('visible');
-                
-                if (isVisible) {
-                    chatPanel.classList.remove('visible');
-                } else {
-                    chatPanel.classList.add('visible');
-                    document.getElementById('aiChatInput').focus();
-                }
-            }
-
-            document.getElementById('aiChatInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendAIMessage();
-                }
-            });
-
-            function addAIMessage(content, role) {
-                const messagesList = document.getElementById('aiChatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `ai-chat-message ${role}`;
-                messageDiv.textContent = content;
-                messagesList.appendChild(messageDiv);
-                messagesList.scrollTop = messagesList.scrollHeight;
-            }
-
-            function saveCurrentState() {
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-                
-                if (detailView.classList.contains('visible')) {
-                    previousState = {
-                        type: 'detail',
-                        movieId: currentMovieDetailId
-                    };
-                } else if (moviesGrid.style.display !== 'none') {
-                    previousState = {
-                        type: 'browse'
-                    };
-                } else if (resultsContent.innerHTML.trim() !== '') {
-                    previousState = {
-                        type: 'results',
-                        html: resultsContent.innerHTML
-                    };
-                }
-            }
-
-            function restorePreviousState() {
-                if (!previousState) {
-                    const welcome = document.getElementById('aiChatWelcome');
-                    welcome.classList.remove('hidden');
-                    return;
-                }
-
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-                const welcome = document.getElementById('aiChatWelcome');
-
-                welcome.classList.add('hidden');
-                detailView.classList.remove('visible');
-                moviesGrid.style.display = 'none';
-                resultsContent.style.display = 'block';
-
-                if (previousState.type === 'detail') {
-                    showMovieDetail(previousState.movieId);
-                } else if (previousState.type === 'browse') {
-                    showBrowseAllMovies();
-                } else if (previousState.type === 'results') {
-                    resultsContent.innerHTML = previousState.html;
-                }
-
-                previousState = null;
-            }
-
-            function showAIMovieResults(movies) {
-                if (movies.length === 0) return;
-
-                const welcome = document.getElementById('aiChatWelcome');
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-                
-                welcome.classList.add('hidden');
-                detailView.classList.remove('visible');
-                moviesGrid.style.display = 'none';
-                resultsContent.style.display = 'block';
-                resultsContent.innerHTML = '';
-
-                movies.forEach(movie => {
-                    const genres = Array.isArray(movie.genres) ? movie.genres : [];
-                    const card = document.createElement('div');
-                    card.className = 'ai-movie-result-card';
-                    card.style.cursor = 'pointer';
-                    
-                    card.innerHTML = `
-                        <h4>${movie.title}</h4>
-                        <div class="ai-movie-result-meta">
-                            <span class="rating">${movie.rating}</span>
-                            <span>${movie.year}</span>
-                            ${movie.director ? `<span>${movie.director}</span>` : ''}
-                        </div>
-                        ${genres.length > 0 ? `
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
-                                ${genres.map(genre => `<span style="background: #404040; color: #93c5fd; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.875rem;">${genre}</span>`).join('')}
-                            </div>
-                        ` : ''}
-                        ${movie.description ? `<p class="ai-movie-result-description">${movie.description}</p>` : ''}
-                        <button onclick="showMovieDetail(${movie.id})" style="margin-top: 1rem; background: #667eea; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem;">View Details</button>
-                    `;
-                    
-                    card.onclick = () => showMovieDetail(movie.id);
-                    resultsContent.appendChild(card);
-                });
-            }
-
-            async function showMovieDetail(movieId) {
-                saveCurrentState();
-                currentMovieDetailId = movieId;
-
-                const welcome = document.getElementById('aiChatWelcome');
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-
-                welcome.classList.add('hidden');
-                resultsContent.style.display = 'none';
-                moviesGrid.style.display = 'none';
-                detailView.classList.add('visible');
-
-                try {
-                    const response = await fetch(`/api/ai/movie/${movieId}`);
-                    const data = await response.json();
-
-                    if (data.movie) {
-                        const movie = data.movie;
-                        const genres = Array.isArray(movie.genres) ? movie.genres : [];
-
-                        detailView.innerHTML = `
-                            <div class="ai-movie-detail-container">
-                                <div class="ai-movie-detail-hero">
-                                    <img src="/api/poster/${movie.poster_filename}" alt="${movie.title}" class="ai-movie-detail-poster">
-                                    <div class="ai-movie-detail-info">
-                                        <h2>${movie.title}</h2>
-                                        <div class="ai-movie-detail-meta">
-                                            <span>${movie.year}</span>
-                                            ${genres.map(g => `<span>${g}</span>`).join('')}
-                                            <span>${movie.director}</span>
-                                        </div>
-                                        <div class="ai-movie-detail-rating">${movie.rating}/10</div>
-                                        <p class="ai-movie-detail-description">${movie.description || 'No description available'}</p>
-                                    </div>
-                                </div>
-                                <button class="ai-movie-detail-close" onclick="closeMovieDetail()">Close Details</button>
-                            </div>
-                        `;
-                    }
-                } catch (error) {
-                    console.error('Error loading movie details:', error);
-                    detailView.innerHTML = '<div class="ai-movie-result-card"><p>Error loading movie details</p></div>';
-                }
-            }
-
-            function closeMovieDetail() {
-                const detailView = document.getElementById('aiMovieDetailView');
-                detailView.classList.remove('visible');
-                currentMovieDetailId = null;
-                showBrowseAllMovies();
-            }
-
-            async function showBrowseAllMovies() {
-                saveCurrentState();
-
-                const welcome = document.getElementById('aiChatWelcome');
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-
-                welcome.classList.add('hidden');
-                resultsContent.style.display = 'none';
-                detailView.classList.remove('visible');
-                moviesGrid.style.display = 'grid';
-
-                try {
-                    const response = await fetch('/api/movies/featured?limit=20');
-                    const data = await response.json();
-
-                    if (data.movies && data.movies.length > 0) {
-                        moviesGrid.innerHTML = `
-                            <div style="grid-column: 1 / -1; margin-bottom: 1rem;">
-                                <div class="ai-browse-movies-header">
-                                    <h3>All Movies</h3>
-                                    <button class="ai-browse-movies-close" onclick="closeBrowseMovies()">Close</button>
-                                </div>
-                            </div>
-                            ${data.movies.map(movie => {
-                                const genres = Array.isArray(movie.genres) ? movie.genres : (movie.genre ? [movie.genre] : []);
-                                return `
-                                    <div class="ai-movie-grid-card" onclick="showMovieDetail(${movie.id})">
-                                        <img src="/api/poster/${movie.poster_filename}" alt="${movie.title}" class="ai-movie-grid-poster">
-                                        <div class="ai-movie-grid-info">
-                                            <div class="ai-movie-grid-title">${movie.title}</div>
-                                            <div class="ai-movie-grid-rating">${movie.rating}</div>
-                                            <div class="ai-movie-grid-meta">${movie.year} • ${genres.join(', ') || 'Unknown'}</div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        `;
-                    }
-                } catch (error) {
-                    console.error('Error loading movies:', error);
-                    moviesGrid.innerHTML = '<div class="ai-movie-result-card"><p>Error loading movies</p></div>';
-                }
-            }
-
-            function closeBrowseMovies() {
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-                moviesGrid.style.display = 'none';
-                restorePreviousState();
-            }
-
-            function showYouTubeTrailer(trailer) {
-                if (!trailer || !trailer.video_id) return;
-
-                saveCurrentState();
-
-                const welcome = document.getElementById('aiChatWelcome');
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                const detailView = document.getElementById('aiMovieDetailView');
-                const moviesGrid = document.getElementById('aiMoviesGrid');
-
-                welcome.classList.add('hidden');
-                detailView.classList.remove('visible');
-                moviesGrid.style.display = 'none';
-                resultsContent.style.display = 'block';
-                resultsContent.innerHTML = '';
-
-                const trailerContainer = document.createElement('div');
-                trailerContainer.className = 'ai-trailer-container';
-                
-                trailerContainer.innerHTML = `
-                    <button class="ai-trailer-close" onclick="closeTrailer()">Close Trailer</button>
-                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-top: 1rem;">
-                        <iframe 
-                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
-                            src="https://www.youtube.com/embed/${trailer.video_id}?autoplay=1" 
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                    <div style="margin-top: 1rem; color: #ffffff; text-align: center;">
-                        <h3 style="margin-bottom: 0.5rem;">${trailer.movie_title || 'Movie'}</h3>
-                        ${trailer.year ? `<p style="color: #9ca3af;">${trailer.year}</p>` : ''}
-                    </div>
-                `;
-                
-                resultsContent.appendChild(trailerContainer);
-            }
-
-            function closeTrailer() {
-                const resultsContent = document.getElementById('aiChatResultsContent');
-                resultsContent.innerHTML = '';
-                restorePreviousState();
-            }
-
-            async function sendAIMessage() {
-                const input = document.getElementById('aiChatInput');
-                const sendBtn = document.getElementById('aiChatSend');
-                const message = input.value.trim();
-                
-                if (!message || !AI_CHAT_API_URL) {
-                    if (!AI_CHAT_API_URL) {
-                        addAIMessage('AI Chat API is not configured. Please set AI_CHAT_API_URL in environment variables.', 'assistant');
-                    }
-                    return;
-                }
-
-                input.value = '';
-                sendBtn.disabled = true;
-                sendBtn.textContent = '...';
-
-                addAIMessage(message, 'user');
-                aiChatHistory.push({ role: 'user', content: message });
-
-                try {
-                    const response = await fetch(`${AI_CHAT_API_URL}/chat`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            ...(AI_CHAT_API_KEY && { 'X-Api-Key': AI_CHAT_API_KEY })
-                        },
-                        body: JSON.stringify({
-                            message: message,
-                            history: aiChatHistory.slice(-10)
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    
-                    if (data.error === 'Rate limit exceeded') {
-                        addAIMessage(`Sorry, you've exceeded the rate limit. ${data.message || 'Please try again later.'}`, 'assistant');
-                        return;
-                    }
-                    
-                    if (data.message) {
-                        addAIMessage(data.message, 'assistant');
-                        aiChatHistory.push({ role: 'assistant', content: data.message });
-                    }
-
-                    if (data.youtube_trailer && data.youtube_trailer.video_id) {
-                        showYouTubeTrailer(data.youtube_trailer);
-                    } else if (data.movie_detail) {
-                        showMovieDetail(data.movie_detail.id);
-                    } else if (data.movie_results && data.movie_results.length > 0) {
-                        showAIMovieResults(data.movie_results);
-                    }
-
-                } catch (error) {
-                    console.error('AI Chat error:', error);
-                    addAIMessage('Sorry, an error occurred. Please try again.', 'assistant');
-                } finally {
-                    sendBtn.disabled = false;
-                    sendBtn.textContent = 'Send';
-                    input.focus();
-                }
-            }
-
-            // =====================================================================
-            // Initialization
-            // =====================================================================
-
-            async function init() {
-                // Check backend status first
-                await checkBackendStatus();
-
-                // Load cache stats
-                loadCacheStats();
-
-                // Load system load
-                loadSystemLoad();
-
-                // Load featured movies
-                loadFeaturedMovies();
-
-                // Load analytics
                 loadPopularSearches();
-
-                // Periodic status check (every 30 seconds)
-                statusCheckInterval = setInterval(checkBackendStatus, 30000);
-
-                // Periodic stats refresh (every 10 seconds)
-                setInterval(() => {
-                    loadCacheStats();
-                    loadSystemLoad();
-                }, 10000);
+            } catch (e) {
+                resultsDiv.innerHTML = `<div class="empty-state"><h2>Error</h2><p>${e.message}</p></div>`;
             }
+        }
 
-            // Start
-            init();
-        </script>
+        // ── Featured Movies ──
+
+        async function loadFeaturedMovies() {
+            try {
+                const res = await fetch('/api/movies/featured');
+                const data = await res.json();
+                if (data.movies && data.movies.length > 0) {
+                    document.getElementById('featuredGrid').innerHTML = data.movies.map(m => `
+                        <a href="/movie/${m.id}" class="movie-card">
+                            <img src="/api/poster/${m.poster_filename}" alt="${m.title}" class="poster">
+                            <div class="info">
+                                <div class="title">${m.title}</div>
+                                <span class="rating-badge">${m.rating}/10</span>
+                                <div class="meta">${m.year} · ${m.genre}</div>
+                            </div>
+                        </a>`).join('');
+                }
+            } catch (e) { console.error('Featured movies failed:', e); }
+        }
+
+        // ── Quick Actions ──
+
+        async function syncData() {
+            const btn = document.getElementById('btnSyncData');
+            const st = document.getElementById('syncStatus');
+            btn.disabled = true; st.textContent = 'Syncing…';
+            try {
+                const res = await fetch('/api/data/sync', { method: 'POST' });
+                const data = await res.json();
+                if (res.status === 429) {
+                    st.textContent = `Wait ${data.retry_after}s`;
+                    setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, data.retry_after * 1000);
+                    return;
+                }
+                st.textContent = 'Done!';
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 300000);
+            } catch (e) {
+                st.textContent = 'Error';
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
+            }
+        }
+
+        async function clearCache() {
+            const btn = document.getElementById('btnClearCache');
+            const st = document.getElementById('cacheActionStatus');
+            btn.disabled = true; st.textContent = 'Clearing…';
+            try {
+                await fetch('/api/cache/clear', { method: 'POST' });
+                st.textContent = 'Cleared!';
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 60000);
+            } catch (e) {
+                st.textContent = 'Error';
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
+            }
+        }
+
+        async function checkPipelineStatus() {
+            const btn = document.getElementById('btnPipelineStatus');
+            const st = document.getElementById('pipelineStatus');
+            btn.disabled = true; st.textContent = 'Checking…';
+            try {
+                const res = await fetch('/api/data/status');
+                const data = await res.json();
+                st.textContent = `PG:${data.postgres?.status || '?'} M:${data.meilisearch?.status || '?'}`;
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 5000);
+            } catch (e) {
+                st.textContent = 'Error';
+                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
+            }
+        }
+
+        // ── Analytics ──
+
+        async function loadPopularSearches() {
+            try {
+                const res = await fetch('/api/analytics/popular?limit=10');
+                const data = await res.json();
+                const div = document.getElementById('popularSearches');
+                if (data.popular_searches.length === 0) { div.textContent = 'No searches yet'; return; }
+                div.innerHTML = data.popular_searches.map(s =>
+                    `<span class="search-tag" onclick="document.getElementById('searchInput').value='${s.query}';searchMovies();">${s.query} (${s.search_count})</span>`
+                ).join('');
+            } catch (e) { document.getElementById('popularSearches').textContent = 'Error loading'; }
+        }
+
+        // ── Init ──
+
+        async function init() {
+            await checkBackendStatus();
+            loadFeaturedMovies();
+            loadPopularSearches();
+            statusCheckInterval = setInterval(checkBackendStatus, 30000);
+        }
+
+        init();
+    </script>
 </body>
-
 </html>
