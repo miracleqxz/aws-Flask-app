@@ -122,7 +122,6 @@ resource "aws_instance" "backend" {
   }
 }
 
-# AI agent runs as ECS service (service-checker-ai-agent-service); this instance joins the cluster.
 resource "aws_instance" "ai_agent" {
   ami                    = data.aws_ami.ecs_optimized.id
   instance_type          = var.ai_agent_instance_type
@@ -160,7 +159,6 @@ resource "aws_instance" "ai_agent" {
     ignore_changes = [ami]
   }
 
-  # AI agent must be stopped by default; Lambda starts it on demand from frontend (POST /start)
   provisioner "local-exec" {
     command = "aws ec2 stop-instances --instance-ids ${self.id}"
   }

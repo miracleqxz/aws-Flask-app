@@ -10,6 +10,7 @@ resource "aws_lambda_layer_version" "psycopg2" {
 
 # Lambda Function - Data Pipeline
 
+
 data "archive_file" "lambda_data_pipeline" {
   type        = "zip"
   output_path = "${path.module}/lambda_data_pipeline.zip"
@@ -46,6 +47,7 @@ MEILI_PORT = os.environ.get('MEILISEARCH_PORT', '7700')
 
 s3 = boto3.client('s3')
 
+
 # Database Functions
 
 
@@ -62,37 +64,19 @@ def get_db_connection():
 
 
 def ensure_tables(cursor):
-    # Check if old 'genre' column exists and migrate
-    cursor.execute("""
-        SELECT column_name FROM information_schema.columns 
-        WHERE table_name = 'movies' AND column_name = 'genre'
-    """)
-    has_old_genre = cursor.fetchone() is not None
-    
-    if has_old_genre:
-        logger.info("Migrating from 'genre' to 'genres'...")
-        cursor.execute("ALTER TABLE movies ADD COLUMN IF NOT EXISTS genres TEXT[]")
-        cursor.execute("UPDATE movies SET genres = ARRAY[genre] WHERE genre IS NOT NULL AND genres IS NULL")
-        cursor.execute("ALTER TABLE movies DROP COLUMN IF EXISTS genre")
-        logger.info("Migration complete")
-    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movies (
             id SERIAL PRIMARY KEY,
             title VARCHAR(255) NOT NULL,
             year INTEGER NOT NULL,
             rating DECIMAL(3, 1) NOT NULL,
-            genres TEXT[],
+            genre VARCHAR(255) NOT NULL,
             director VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
             poster_filename VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
-    
-    # Ensure genres column exists (for existing tables)
-    cursor.execute("ALTER TABLE movies ADD COLUMN IF NOT EXISTS genres TEXT[]")
-    
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS search_queries (
             id SERIAL PRIMARY KEY,
@@ -111,29 +95,27 @@ def sync_movies_to_postgres(movies):
     
     try:
         ensure_tables(cursor)
-        conn.commit()
         
-        for m in movies:
-            # Support both 'genres' array and legacy 'genre' string
-            genres = m.get('genres')
-            if genres is None and 'genre' in m:
-                genres = [m['genre']]
-            
-            cursor.execute("""
-                INSERT INTO movies (id, title, year, rating, genres, director, description, poster_filename)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (id) DO UPDATE SET
-                    title = EXCLUDED.title,
-                    year = EXCLUDED.year,
-                    rating = EXCLUDED.rating,
-                    genres = EXCLUDED.genres,
-                    director = EXCLUDED.director,
-                    description = EXCLUDED.description,
-                    poster_filename = EXCLUDED.poster_filename;
-            """, (
+        values = [
+            (
                 m['id'], m['title'], m['year'], m['rating'],
-                genres, m['director'], m['description'], m['poster_filename']
-            ))
+                m['genre'], m['director'], m['description'], m['poster_filename']
+            )
+            for m in movies
+        ]
+        
+        cursor.executemany("""
+            INSERT INTO movies (id, title, year, rating, genre, director, description, poster_filename)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                title = EXCLUDED.title,
+                year = EXCLUDED.year,
+                rating = EXCLUDED.rating,
+                genre = EXCLUDED.genre,
+                director = EXCLUDED.director,
+                description = EXCLUDED.description,
+                poster_filename = EXCLUDED.poster_filename;
+        """, values)
         
         conn.commit()
         
@@ -154,7 +136,7 @@ def get_movies_from_postgres():
     
     try:
         cursor.execute("""
-            SELECT id, title, description, poster_filename, year, rating, genres, director
+            SELECT id, title, description, poster_filename, year, rating, genre, director
             FROM movies ORDER BY id;
         """)
         
@@ -167,7 +149,7 @@ def get_movies_from_postgres():
                 'poster_filename': row[3],
                 'year': row[4],
                 'rating': float(row[5]),
-                'genres': row[6] if row[6] else [],
+                'genre': row[6],
                 'director': row[7]
             })
         
@@ -177,7 +159,9 @@ def get_movies_from_postgres():
         cursor.close()
         conn.close()
 
+
 # S3 Functions
+
 
 def load_movies_from_s3():
     logger.info(f"Loading movies from s3://{S3_BUCKET}/{MOVIES_KEY}")
@@ -226,55 +210,13 @@ def check_meilisearch_health():
     return result is not None and result.get('status') == 'available'
 
 
-def reindex_meilisearch(movies, force=False):
-    if not MEILI_HOST:
-        logger.info("Meilisearch not configured, skipping")
-        return {'status': 'skipped', 'reason': 'not_configured'}
-    
-    if not check_meilisearch_health():
-        logger.warning("Meilisearch not accessible")
-        return {'status': 'skipped', 'reason': 'not_accessible'}
-    
-    logger.info("Reindexing Meilisearch...")
-    
-    # Check if index exists
-    stats = meili_request('GET', '/indexes/movies/stats')
-    index_exists = stats is not None
-    
-    if not index_exists:
-        logger.info("Creating movies index...")
-        meili_request('POST', '/indexes', {'uid': 'movies', 'primaryKey': 'id'})
-        
-        # Configure searchable attributes with genres
-        meili_request('PUT', '/indexes/movies/settings/searchable-attributes',
-                      ['title', 'description', 'director', 'genres'])
-        
-        # Configure filterable attributes
-        meili_request('PUT', '/indexes/movies/settings/filterable-attributes',
-                      ['genres', 'year', 'rating', 'director'])
-        
-        # Configure sortable attributes
-        meili_request('PUT', '/indexes/movies/settings/sortable-attributes',
-                      ['year', 'rating', 'title'])
-        
-        force = True  # Force full reindex for new index
-    
-    if force:
-        # Delete all documents and reindex
-        logger.info(f"Full reindex: {len(movies)} movies")
-        meili_request('DELETE', '/indexes/movies/documents')
-        
-        # Wait a bit for deletion
-        import time
-        time.sleep(1)
-        
-        result = meili_request('POST', '/indexes/movies/documents', movies, timeout=60)
-        if result:
-            return {'status': 'ok', 'indexed': len(movies), 'task': result.get('taskUid')}
-        return {'status': 'error', 'message': 'indexing_failed'}
-    
-    # Incremental update - get existing IDs
+def get_indexed_movie_ids():
     existing_ids = set()
+    
+    stats = meili_request('GET', '/indexes/movies/stats')
+    if stats is None:
+        return existing_ids, False
+    
     limit = 1000
     offset = 0
     
@@ -294,6 +236,27 @@ def reindex_meilisearch(movies, force=False):
         if len(docs) < limit:
             break
         offset += limit
+    
+    return existing_ids, True
+
+
+def reindex_meilisearch(movies):
+    if not MEILI_HOST:
+        logger.info("Meilisearch not configured, skipping")
+        return {'status': 'skipped', 'reason': 'not_configured'}
+    
+    if not check_meilisearch_health():
+        logger.warning("Meilisearch not accessible")
+        return {'status': 'skipped', 'reason': 'not_accessible'}
+    
+    logger.info("Reindexing Meilisearch...")
+    
+    existing_ids, index_exists = get_indexed_movie_ids()
+    
+    if not index_exists:
+        meili_request('POST', '/indexes', {'uid': 'movies', 'primaryKey': 'id'})
+        meili_request('PUT', '/indexes/movies/settings/searchable-attributes',
+                      ['title', 'description', 'director', 'genre'])
     
     missing_movies = [m for m in movies if m['id'] not in existing_ids]
     
@@ -338,7 +301,7 @@ def run_full_sync(force=False):
     # Step 3: Reindex Meilisearch (get fresh data from DB)
     try:
         db_movies = get_movies_from_postgres()
-        results['meilisearch'] = reindex_meilisearch(db_movies, force=force)
+        results['meilisearch'] = reindex_meilisearch(db_movies)
     except Exception as e:
         logger.error(f"Meilisearch reindex failed: {e}")
         results['meilisearch'] = {'status': 'error', 'message': str(e)}
@@ -393,7 +356,6 @@ def get_pipeline_status():
     
     return status
 
-
 # Lambda Handler
 
 def handler(event, context):
@@ -401,7 +363,6 @@ def handler(event, context):
     
     action = 'sync'
     source = 'unknown'
-    force = False
     
     # Determine action from event source
     if 'Records' in event:
@@ -414,7 +375,6 @@ def handler(event, context):
             
             if key == MOVIES_KEY or key.endswith('movies.json'):
                 action = 'sync'
-                force = True  # Force full reindex on S3 upload
             else:
                 logger.info(f"Ignoring S3 event for {key}")
                 return {'statusCode': 200, 'body': json.dumps({'status': 'ignored', 'key': key})}
@@ -441,13 +401,12 @@ def handler(event, context):
         # Direct invocation (from Flask via boto3)
         source = 'direct'
         action = event.get('action', 'sync')
-        force = event.get('force', False)
     
-    logger.info(f"Action: {action}, Source: {source}, Force: {force}")
+    logger.info(f"Action: {action}, Source: {source}")
     
     try:
         if action == 'sync':
-            result = run_full_sync(force=force)
+            result = run_full_sync()
         elif action == 'status':
             result = get_pipeline_status()
         else:
@@ -530,6 +489,60 @@ resource "aws_lambda_function" "data_pipeline" {
 }
 
 
+resource "aws_iam_role" "lambda_data_pipeline" {
+  name = "${var.project_name}-lambda-data-pipeline"
 
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.project_name}-lambda-data-pipeline-role"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_data_pipeline_basic" {
+  role       = aws_iam_role.lambda_data_pipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_data_pipeline_vpc" {
+  role       = aws_iam_role.lambda_data_pipeline.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_iam_role_policy" "lambda_data_pipeline_s3" {
+  name = "${var.project_name}-lambda-data-pipeline-s3"
+  role = aws_iam_role.lambda_data_pipeline.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:HeadObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.posters.arn,
+          "${aws_s3_bucket.posters.arn}/*"
+        ]
+      }
+    ]
+  })
+}
 
 

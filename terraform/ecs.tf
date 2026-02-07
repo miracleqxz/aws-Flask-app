@@ -347,7 +347,6 @@ resource "aws_ecs_task_definition" "backend" {
   }
 }
 
-# AI Agent as ECS service (logs in CloudWatch /ecs/service-checker-ai-agent)
 resource "aws_ecs_task_definition" "ai_agent" {
   family                   = "${var.project_name}-ai-agent"
   network_mode             = "host"
@@ -393,10 +392,9 @@ resource "aws_ecs_task_definition" "ai_agent" {
           { name = "AI_CHAT_WINDOW_SECONDS", value = tostring(var.ai_chat_window_seconds) },
           { name = "AI_CHAT_IDLE_TIMEOUT_MINUTES", value = tostring(var.ai_chat_idle_timeout_minutes) }
         ],
-        var.cursor_api_key != "" ? [
-          { name = "CURSOR_API_KEY", value = var.cursor_api_key },
-          { name = "CURSOR_API_BASE_URL", value = var.cursor_api_base_url },
-          { name = "CURSOR_MODEL", value = var.cursor_model }
+        var.gemini_api_key != "" ? [
+          { name = "GEMINI_API_KEY", value = var.gemini_api_key },
+          { name = "GEMINI_MODEL", value = var.gemini_model }
         ] : []
       )
 

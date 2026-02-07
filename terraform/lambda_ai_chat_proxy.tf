@@ -1,141 +1,7 @@
 data "archive_file" "lambda_ai_chat_proxy" {
   type        = "zip"
+  source_file = "${path.module}/lambda_functions/ai_chat_proxy/lambda_function.py"
   output_path = "${path.module}/lambda_ai_chat_proxy.zip"
-
-  source {
-    content  = <<-EOF
-import json
-import os
-import requests
-import logging
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-AI_AGENT_FLASK_URL = os.environ.get('AI_AGENT_FLASK_URL', 'http://localhost:5000')
-API_KEY = os.environ.get('API_KEY', '')
-
-def handler(event, context):
-    logger.info(f"Received event: {json.dumps(event)}")
-    
-    if 'requestContext' not in event:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'Invalid request'})
-        }
-    
-    path = event.get('rawPath', event.get('path', ''))
-    method = event.get('requestContext', {}).get('http', {}).get('method', 'GET')
-    
-    api_key_header = event.get('headers', {}).get('x-api-key') or event.get('headers', {}).get('X-Api-Key', '')
-    
-    if API_KEY and api_key_header != API_KEY:
-        return {
-            'statusCode': 401,
-            'headers': {
-                'Content-Type': 'application/json'
-            },
-            'body': json.dumps({'error': 'Invalid API key'})
-        }
-    
-    try:
-        if path == '/chat' and method == 'POST':
-            body = event.get('body', '{}')
-            if isinstance(body, str):
-                body = json.loads(body)
-            
-            headers = {'Content-Type': 'application/json'}
-            if 'headers' in event:
-                forwarded_for = event['headers'].get('x-forwarded-for') or event['headers'].get('X-Forwarded-For', '')
-                if forwarded_for:
-                    headers['X-Forwarded-For'] = forwarded_for.split(',')[0].strip()
-            
-            response = requests.post(
-                f"{AI_AGENT_FLASK_URL}/chat",
-                json=body,
-                timeout=30,
-                headers=headers
-            )
-            
-            return {
-                'statusCode': response.status_code,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-                    'Access-Control-Allow-Headers': 'Content-Type, X-Api-Key'
-                },
-                'body': response.text
-            }
-        
-        elif path == '/health' and method == 'GET':
-            response = requests.get(
-                f"{AI_AGENT_FLASK_URL}/health",
-                timeout=5
-            )
-            
-            return {
-                'statusCode': response.status_code,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                'body': response.text
-            }
-        
-        elif path == '/activity/check' and method == 'GET':
-            response = requests.get(
-                f"{AI_AGENT_FLASK_URL}/activity/check",
-                timeout=5
-            )
-            
-            return {
-                'statusCode': response.status_code,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
-                'body': response.text
-            }
-        
-        else:
-            return {
-                'statusCode': 404,
-                'headers': {
-                    'Content-Type': 'application/json'
-                },
-                'body': json.dumps({'error': 'Not found'})
-            }
-    
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Request error: {e}")
-        return {
-            'statusCode': 503,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'AI Agent service unavailable',
-                'details': str(e)
-            })
-        }
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}", exc_info=True)
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({
-                'error': 'Internal server error',
-                'details': str(e)
-            })
-        }
-EOF
-    filename = "lambda_function.py"
-  }
 }
 
 resource "aws_iam_role" "lambda_ai_chat_proxy" {
@@ -182,6 +48,11 @@ resource "aws_iam_role_policy" "lambda_ai_chat_proxy_logs" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_ai_chat_proxy_vpc" {
+  role       = aws_iam_role.lambda_ai_chat_proxy.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
 resource "aws_cloudwatch_log_group" "lambda_ai_chat_proxy" {
   name              = "/aws/lambda/${var.lambda_ai_chat_proxy_function_name}"
   retention_in_days = var.log_retention_days
@@ -199,11 +70,16 @@ resource "aws_lambda_function" "ai_chat_proxy" {
   role          = aws_iam_role.lambda_ai_chat_proxy.arn
   handler       = "lambda_function.handler"
   runtime       = "python3.12"
-  timeout       = 30
+  timeout       = 60
   memory_size   = 128
 
   filename         = data.archive_file.lambda_ai_chat_proxy.output_path
   source_code_hash = data.archive_file.lambda_ai_chat_proxy.output_base64sha256
+
+  vpc_config {
+    subnet_ids         = aws_subnet.private_subnets[*].id
+    security_group_ids = [aws_security_group.lambda_ai_chat_proxy.id]
+  }
 
   environment {
     variables = {
@@ -222,9 +98,12 @@ resource "aws_lambda_function" "ai_chat_proxy" {
   )
 
   depends_on = [
-    aws_cloudwatch_log_group.lambda_ai_chat_proxy
+    aws_cloudwatch_log_group.lambda_ai_chat_proxy,
+    aws_iam_role_policy_attachment.lambda_ai_chat_proxy_vpc
   ]
 }
+
+# --- API Gateway ---
 
 resource "aws_apigatewayv2_api" "ai_chat" {
   name          = "${var.project_name}-ai-chat-api"
@@ -286,13 +165,13 @@ resource "aws_apigatewayv2_stage" "ai_chat_default" {
     destination_arn = aws_cloudwatch_log_group.ai_chat_api_gateway.arn
     format = jsonencode({
       requestId      = "$context.requestId"
-      ip              = "$context.identity.sourceIp"
-      requestTime     = "$context.requestTime"
-      httpMethod      = "$context.httpMethod"
-      routeKey        = "$context.routeKey"
-      status          = "$context.status"
-      protocol        = "$context.protocol"
-      responseLength  = "$context.responseLength"
+      ip             = "$context.identity.sourceIp"
+      requestTime    = "$context.requestTime"
+      httpMethod     = "$context.httpMethod"
+      routeKey       = "$context.routeKey"
+      status         = "$context.status"
+      protocol       = "$context.protocol"
+      responseLength = "$context.responseLength"
     })
   }
 }
