@@ -176,6 +176,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push AI Agent Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ai_agent
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:ai-agent
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -196,6 +205,14 @@ jobs:
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER }} \
             --service ${{ secrets.ECS_SERVICE_BACKEND }} \
+            --force-new-deployment
+
+      - name: Force ECS deployment - AI Agent
+        continue-on-error: true
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service service-checker-ai-agent-service \
             --force-new-deployment
 
       - name: Wait for service stability
