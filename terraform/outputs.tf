@@ -282,12 +282,3 @@ output "ai_chat_api_key" {
   sensitive   = true
 }
 
-output "ai_agent_deploy_lambda_function_name" {
-  description = "AI Agent Deploy Lambda function name"
-  value       = aws_lambda_function.ai_agent_deploy.function_name
-}
-
-output "ai_agent_deploy_lambda_arn" {
-  description = "AI Agent Deploy Lambda function ARN"
-  value       = aws_lambda_function.ai_agent_deploy.arn
-}

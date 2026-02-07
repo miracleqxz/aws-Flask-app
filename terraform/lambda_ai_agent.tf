@@ -553,7 +553,6 @@ resource "aws_iam_role" "lambda_ai_agent_control" {
 }
 
 resource "aws_iam_role_policy" "lambda_ai_agent_control_ec2" {
-  name = "${var.project_name}-lambda-ai-agent-control-ec2-policy"
   role = aws_iam_role.lambda_ai_agent_control.id
 
   policy = jsonencode({
@@ -574,7 +573,6 @@ resource "aws_iam_role_policy" "lambda_ai_agent_control_ec2" {
 }
 
 resource "aws_iam_role_policy" "lambda_ai_agent_control_dynamodb" {
-  name = "${var.project_name}-lambda-ai-agent-control-dynamodb-policy"
   role = aws_iam_role.lambda_ai_agent_control.id
 
   policy = jsonencode({
@@ -595,7 +593,6 @@ resource "aws_iam_role_policy" "lambda_ai_agent_control_dynamodb" {
 }
 
 resource "aws_iam_role_policy" "lambda_ai_agent_control_ssm" {
-  name = "${var.project_name}-lambda-ai-agent-control-ssm-policy"
   role = aws_iam_role.lambda_ai_agent_control.id
 
   policy = jsonencode({
@@ -629,7 +626,6 @@ resource "aws_iam_role_policy" "lambda_ai_agent_control_ssm" {
 }
 
 resource "aws_iam_role_policy" "lambda_ai_agent_control_logs" {
-  name = "${var.project_name}-lambda-ai-agent-control-logs-policy"
   role = aws_iam_role.lambda_ai_agent_control.id
 
   policy = jsonencode({
@@ -790,13 +786,6 @@ resource "aws_lambda_permission" "ai_agent_control_api_gateway" {
   function_name = aws_lambda_function.ai_agent_control.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.ai_agent_control.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "ai_agent_control_github" {
-  statement_id  = "AllowExecutionFromGitHubActions"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ai_agent_control.function_name
-  principal     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
 }
 
 resource "aws_lambda_permission" "ai_agent_control_github" {

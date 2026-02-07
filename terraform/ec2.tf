@@ -13,6 +13,21 @@ data "aws_ami" "ecs_optimized" {
   }
 }
 
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_key_pair" "main" {
   key_name   = "${var.project_name}-key"
   public_key = file(var.ssh_public_key_path)
@@ -32,7 +47,7 @@ resource "aws_instance" "frontend" {
 
 
   # ECS Agent configuration
-  user_data = base64encode(<<-EOF
+  user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
     echo "ECS_CLUSTER=${var.ecs_cluster_name}" >> /etc/ecs/ecs.config
     echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
@@ -45,11 +60,10 @@ resource "aws_instance" "frontend" {
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 30
+    volume_size           = 30  # ECS-optimized AMI snapshot requires >= 30GB
     delete_on_termination = true
     encrypted             = true
   }
-
 
   monitoring = false
 
@@ -75,7 +89,7 @@ resource "aws_instance" "backend" {
   iam_instance_profile   = aws_iam_instance_profile.ecs_instance_profile.name
 
   # ECS Agent configuration
-  user_data = base64encode(<<-EOF
+  user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
     echo "ECS_CLUSTER=${var.ecs_cluster_name}" >> /etc/ecs/ecs.config
     echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
@@ -89,11 +103,10 @@ resource "aws_instance" "backend" {
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 30
+    volume_size           = 30  # ECS-optimized AMI snapshot requires >= 30GB
     delete_on_termination = true
     encrypted             = true
   }
-
 
   monitoring = false
 
@@ -110,14 +123,14 @@ resource "aws_instance" "backend" {
 }
 
 resource "aws_instance" "ai_agent" {
-  ami                    = data.aws_ami.ecs_optimized.id
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.ai_agent_instance_type
   key_name               = aws_key_pair.main.key_name
   subnet_id              = aws_subnet.public_subnets[0].id
   vpc_security_group_ids = [aws_security_group.ai_agent.id]
   iam_instance_profile   = aws_iam_instance_profile.ai_agent.name
 
-  user_data = base64encode(<<-EOF
+  user_data_base64 = base64encode(<<-EOF
     #!/bin/bash
     yum update -y
     yum install -y python3 python3-pip git
@@ -166,7 +179,7 @@ SERVICEEOF
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 30  # cannot shrink EBS; keep >= existing size
     delete_on_termination = true
     encrypted             = true
   }
@@ -183,6 +196,10 @@ SERVICEEOF
   lifecycle {
     ignore_changes = [ami]
   }
-}
 
+  # AI agent must be stopped by default; Lambda starts it on demand from frontend (POST /start)
+  provisioner "local-exec" {
+    command = "aws ec2 stop-instances --instance-ids ${self.id}"
+  }
+}
 

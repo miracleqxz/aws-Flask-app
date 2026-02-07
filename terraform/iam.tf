@@ -86,7 +86,8 @@ resource "aws_iam_role_policy" "ecs_task_lambda" {
         ]
         Resource = [
           "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}",
-          aws_lambda_function.data_pipeline.arn
+          aws_lambda_function.data_pipeline.arn,
+          aws_lambda_function.ai_agent_control.arn
         ]
       }
     ]
