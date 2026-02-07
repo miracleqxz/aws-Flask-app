@@ -88,3 +88,8 @@ allowed_http_cidrs = ["0.0.0.0/0"]
 # Service Configuration
 meilisearch_master_key = ""  # Optional
 grafana_admin_password = "admin"  # CHANGE IN PRODUCTION!
+
+# AI Agent (ECS) - required for AI chat
+cursor_api_key      = ""  # OpenAI or Cursor-compatible API key (sensitive)
+cursor_api_base_url = ""  # e.g. "https://api.openai.com/v1"
+cursor_model        = ""  # e.g. "gpt-4o-mini"

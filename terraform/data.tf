@@ -287,6 +287,17 @@ resource "aws_cloudwatch_log_group" "ecs_backend" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "ecs_ai_agent" {
+  name              = "/ecs/${var.project_name}-ai-agent"
+  retention_in_days = var.log_retention_days
+
+  tags = {
+    Name        = "${var.project_name}-ai-agent-logs"
+    Project     = var.project_name
+    Environment = var.environment
+  }
+}
+
 resource "aws_cloudwatch_log_group" "lambda" {
   name              = "/aws/lambda/${var.lambda_function_name}"
   retention_in_days = var.log_retention_days

@@ -400,3 +400,28 @@ variable "grafana_admin_password" {
   default     = "admin"
   sensitive   = true
 }
+
+variable "ai_agent_image" {
+  description = "Docker image for AI agent (ECS)"
+  type        = string
+  default     = "ghcr.io/miracleqxz/k8s-flask-app:ai-agent"
+}
+
+variable "cursor_api_key" {
+  description = "API key for Cursor/OpenAI-compatible API (AI chat)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "cursor_api_base_url" {
+  description = "Base URL for Cursor/OpenAI-compatible API"
+  type        = string
+  default     = ""
+}
+
+variable "cursor_model" {
+  description = "Model name for Cursor/OpenAI API"
+  type        = string
+  default     = ""
+}
