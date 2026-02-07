@@ -180,17 +180,38 @@ def api_cache_stats():
     stats = get_cache_stats()
 
     if stats is None:
-        return jsonify({'error': 'Failed to get stats'}), 500
+        return jsonify({
+            'connected': False,
+            'error': 'Redis unavailable (backend may be starting or REDIS_HOST outdated)',
+            'hits': 0,
+            'misses': 0,
+            'hit_rate': '0%',
+            'cached_keys': 0
+        }), 200
 
     total = stats['hits'] + stats['misses']
     hit_rate = (stats['hits'] / total * 100) if total > 0 else 0
 
     return jsonify({
+        'connected': True,
         'hits': stats['hits'],
         'misses': stats['misses'],
         'hit_rate': f"{hit_rate:.1f}%",
         'cached_keys': stats['keys_count']
     })
+
+
+@app.route('/check/redis')
+def check_redis():
+    """Health check for Redis; returns 200 if connected, 503 if not."""
+    try:
+        from database.redis_cache import get_redis_client
+        r = get_redis_client()
+        r.ping()
+        return jsonify({'status': 'ok', 'redis': 'connected'}), 200
+    except Exception as e:
+        logging.warning(f"Redis check failed: {e}")
+        return jsonify({'status': 'unavailable', 'redis': str(e)}), 503
 
 
 @app.route('/api/cache/clear', methods=['POST'])
@@ -309,17 +330,36 @@ def backend_status():
     try:
         lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
 
-        response = lambda_client.invoke(
+        backend_response = lambda_client.invoke(
             FunctionName=Config.LAMBDA_BACKEND_CONTROL,
             InvocationType='RequestResponse',
             Payload=json.dumps({'action': 'status'})
         )
 
-        result = json.loads(response['Payload'].read().decode())
+        backend_result = json.loads(backend_response['Payload'].read().decode())
+        if 'body' in backend_result:
+            backend_result = json.loads(backend_result['body'])
 
-        if 'body' in result:
-            return jsonify(json.loads(result['body']))
-        return jsonify(result)
+        ai_agent_response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'status'})
+        )
+
+        ai_agent_result = json.loads(ai_agent_response['Payload'].read().decode())
+        if 'body' in ai_agent_result:
+            ai_agent_result = json.loads(ai_agent_result['body'])
+
+        backend_state = backend_result.get('state', 'unknown')
+        ai_agent_state = ai_agent_result.get('state', 'unknown')
+
+        overall_state = 'running' if backend_state == 'running' and ai_agent_state == 'running' else 'stopped'
+
+        return jsonify({
+            'state': overall_state,
+            'backend': backend_result,
+            'ai_agent': ai_agent_result
+        })
 
     except Exception as e:
         logging.error(f"Backend status error: {e}")
@@ -335,17 +375,49 @@ def backend_start():
     try:
         lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
 
-        response = lambda_client.invoke(
+        backend_response = lambda_client.invoke(
             FunctionName=Config.LAMBDA_BACKEND_CONTROL,
             InvocationType='RequestResponse',
             Payload=json.dumps({'action': 'start'})
         )
 
-        result = json.loads(response['Payload'].read().decode())
+        backend_result = json.loads(backend_response['Payload'].read().decode())
+        if 'body' in backend_result:
+            backend_result = json.loads(backend_result['body'])
 
-        if 'body' in result:
-            return jsonify(json.loads(result['body']))
-        return jsonify(result)
+        ai_agent_response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'start'})
+        )
+
+        ai_agent_payload = ai_agent_response['Payload'].read().decode()
+        ai_agent_result = json.loads(ai_agent_payload)
+        if 'body' in ai_agent_result:
+            ai_agent_result = json.loads(ai_agent_result['body'])
+        if 'FunctionError' in ai_agent_response:
+            logging.error(f"AI agent Lambda error: {ai_agent_response.get('FunctionError')} - {ai_agent_result}")
+            return jsonify({
+                'status': 'error',
+                'message': 'AI agent start failed',
+                'backend': backend_result,
+                'ai_agent': ai_agent_result
+            }), 500
+        if ai_agent_result.get('state') not in ('running', 'pending', 'starting'):
+            error_msg = ai_agent_result.get('message', ai_agent_result.get('error', str(ai_agent_result)))
+            logging.warning(f"AI agent not running after start: {ai_agent_result}")
+            return jsonify({
+                'status': 'error',
+                'message': error_msg or 'AI agent did not start',
+                'backend': backend_result,
+                'ai_agent': ai_agent_result
+            }), 500
+
+        return jsonify({
+            'backend': backend_result,
+            'ai_agent': ai_agent_result,
+            'status': 'started'
+        })
 
     except Exception as e:
         logging.error(f"Backend start error: {e}")
@@ -360,17 +432,31 @@ def backend_stop():
     try:
         lambda_client = boto3.client('lambda', region_name=Config.AWS_REGION)
 
-        response = lambda_client.invoke(
+        backend_response = lambda_client.invoke(
             FunctionName=Config.LAMBDA_BACKEND_CONTROL,
             InvocationType='RequestResponse',
             Payload=json.dumps({'action': 'stop'})
         )
 
-        result = json.loads(response['Payload'].read().decode())
+        backend_result = json.loads(backend_response['Payload'].read().decode())
+        if 'body' in backend_result:
+            backend_result = json.loads(backend_result['body'])
 
-        if 'body' in result:
-            return jsonify(json.loads(result['body']))
-        return jsonify(result)
+        ai_agent_response = lambda_client.invoke(
+            FunctionName=Config.LAMBDA_AI_AGENT_CONTROL,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({'action': 'stop'})
+        )
+
+        ai_agent_result = json.loads(ai_agent_response['Payload'].read().decode())
+        if 'body' in ai_agent_result:
+            ai_agent_result = json.loads(ai_agent_result['body'])
+
+        return jsonify({
+            'backend': backend_result,
+            'ai_agent': ai_agent_result,
+            'status': 'stopped'
+        })
 
     except Exception as e:
         logging.error(f"Backend stop error: {e}")
