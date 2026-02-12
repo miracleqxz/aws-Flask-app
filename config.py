@@ -31,8 +31,8 @@ class Config:
     NGINX_HOST = os.getenv('NGINX_HOST', 'localhost')
     NGINX_PORT = int(os.getenv('NGINX_PORT', '80'))
 
-    PROMETHEUS_HOST = os.getenv('PROMETHEUS_HOST', 'localhost')
-    PROMETHEUS_PORT = int(os.getenv('PROMETHEUS_PORT', '9090'))
+    VICTORIAMETRICS_HOST = os.getenv('VICTORIAMETRICS_HOST', 'localhost')
+    VICTORIAMETRICS_PORT = int(os.getenv('VICTORIAMETRICS_PORT', '8428'))
 
     GRAFANA_HOST = os.getenv('GRAFANA_HOST', 'localhost')
     GRAFANA_PORT = int(os.getenv('GRAFANA_PORT', '3000'))

@@ -1,3 +1,8 @@
+variable "victoriametrics_image" {
+  description = "Docker image for VictoriaMetrics single-node"
+  type        = string
+  default     = "victoriametrics/victoria-metrics:latest"
+}
 variable "aws_region" {
   description = "AWS region for all resources"
   type        = string

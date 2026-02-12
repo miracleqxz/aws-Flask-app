@@ -57,8 +57,8 @@ resource "aws_ecs_task_definition" "frontend" {
 
         { name = "CONSUL_HOST", value = aws_instance.backend.private_ip },
         { name = "CONSUL_PORT", value = "8500" },
-        { name = "PROMETHEUS_HOST", value = aws_instance.backend.private_ip },
-        { name = "PROMETHEUS_PORT", value = "9090" },
+        { name = "VICTORIAMETRICS_HOST", value = aws_instance.backend.private_ip },
+        { name = "VICTORIAMETRICS_PORT", value = "8428" },
         { name = "GRAFANA_HOST", value = aws_instance.backend.private_ip },
         { name = "GRAFANA_PORT", value = "3000" },
         { name = "NGINX_HOST", value = "127.0.0.1" },
@@ -225,8 +225,8 @@ resource "aws_ecs_task_definition" "backend" {
     },
 
     {
-      name              = "prometheus"
-      image             = var.prometheus_image
+      name              = "victoriametrics"
+      image             = var.victoriametrics_image
       essential         = false
       cpu               = 128
       memory            = 256
@@ -234,14 +234,14 @@ resource "aws_ecs_task_definition" "backend" {
 
       portMappings = [
         {
-          containerPort = 9090
-          hostPort      = 9090
+          containerPort = 8428
+          hostPort      = 8428
           protocol      = "tcp"
         }
       ]
 
       healthCheck = {
-        command     = ["CMD-SHELL", "wget -q --spider http://localhost:9090/-/healthy || exit 1"]
+        command     = ["CMD-SHELL", "wget -q --spider http://localhost:8428/metrics || exit 1"]
         interval    = 30
         timeout     = 5
         retries     = 3
@@ -253,7 +253,7 @@ resource "aws_ecs_task_definition" "backend" {
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_backend.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "prometheus"
+          "awslogs-stream-prefix" = "victoriametrics"
         }
       }
     },
