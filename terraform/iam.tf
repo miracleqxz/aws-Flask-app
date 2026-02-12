@@ -369,6 +369,23 @@ resource "aws_iam_role_policy" "lambda_dynamodb" {
   })
 }
 
+# Lambda Invoke Policy - Stop AI agent when backend stops
+resource "aws_iam_role_policy" "lambda_invoke_ai_agent" {
+  role = aws_iam_role.lambda_backend_control.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "InvokeAIAgentLambda"
+        Effect   = "Allow"
+        Action   = ["lambda:InvokeFunction"]
+        Resource = aws_lambda_function.ai_agent_control.arn
+      }
+    ]
+  })
+}
+
 # CloudWatch Logs Policy - Lambda logging
 resource "aws_iam_role_policy" "lambda_logs" {
   role = aws_iam_role.lambda_backend_control.id

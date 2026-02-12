@@ -17,10 +17,12 @@ logger.setLevel(logging.INFO)
 
 ec2 = boto3.client('ec2')
 dynamodb = boto3.resource('dynamodb')
+lambda_client = boto3.client('lambda')
 
 BACKEND_INSTANCE_ID = os.environ['BACKEND_INSTANCE_ID']
 DYNAMODB_TABLE = os.environ['DYNAMODB_TABLE']
 HEARTBEAT_TIMEOUT = int(os.environ.get('HEARTBEAT_TIMEOUT_MINUTES', '5'))
+AI_AGENT_LAMBDA_NAME = os.environ.get('AI_AGENT_LAMBDA_NAME', '')
 
 def get_table():
     return dynamodb.Table(DYNAMODB_TABLE)
@@ -114,6 +116,18 @@ def stop_backend():
         logger.info(f"Stopping instance {BACKEND_INSTANCE_ID}")
         ec2.stop_instances(InstanceIds=[BACKEND_INSTANCE_ID])
         
+        # Also stop AI agent instance
+        if AI_AGENT_LAMBDA_NAME:
+            try:
+                logger.info(f"Stopping AI agent via {AI_AGENT_LAMBDA_NAME}")
+                lambda_client.invoke(
+                    FunctionName=AI_AGENT_LAMBDA_NAME,
+                    InvocationType='Event',
+                    Payload=json.dumps({'action': 'stop'})
+                )
+            except Exception as e:
+                logger.warning(f"Failed to stop AI agent: {e}")
+        
         try:
             table = get_table()
             table.delete_item(Key={'key': 'heartbeat'})
@@ -124,7 +138,7 @@ def stop_backend():
         return {
             'status': 'stopping',
             'instance_id': BACKEND_INSTANCE_ID,
-            'message': 'Backend is stopping'
+            'message': 'Backend and AI agent are stopping'
         }
     except ClientError as e:
         logger.error(f"Error stopping instance: {e}")
@@ -322,6 +336,7 @@ resource "aws_lambda_function" "backend_control" {
       BACKEND_INSTANCE_ID       = aws_instance.backend.id
       DYNAMODB_TABLE            = aws_dynamodb_table.backend_state.name
       HEARTBEAT_TIMEOUT_MINUTES = tostring(var.heartbeat_timeout_minutes)
+      AI_AGENT_LAMBDA_NAME      = var.lambda_ai_agent_function_name
     }
   }
 
