@@ -654,12 +654,13 @@
                 // If EC2 says running, verify meilisearch is synced before showing 'running'
                 if (data.state === 'running') {
                     try {
-                        const dsRes = await fetch('/api/data/status');
-                        const dsData = await dsRes.json();
-                        const meiliOk = dsData.meilisearch
-                            && dsData.meilisearch.status === 'ok'
-                            && dsData.meilisearch.documents > 0;
-                        if (!meiliOk) {
+                        const msRes = await fetch('/api/meilisearch/status');
+                        if (msRes.ok) {
+                            const msData = await msRes.json();
+                            if (!msData.documents || msData.documents <= 0) {
+                                data.state = 'starting';
+                            }
+                        } else {
                             data.state = 'starting';
                         }
                     } catch (_) {

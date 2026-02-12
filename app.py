@@ -149,6 +149,20 @@ def metrics():
     return metrics_endpoint()
 
 
+@app.route('/api/meilisearch/status')
+def meilisearch_status():
+    """Lightweight direct check — Flask and Meilisearch are on the same EC2."""
+    try:
+        from database.meilisearch_sync import get_meili_client
+        client = get_meili_client()
+        stats = client.get_index('movies').get_stats()
+        doc_count = stats.get('numberOfDocuments', 0) if isinstance(stats, dict) else getattr(stats, 'number_of_documents', 0)
+        return jsonify({'status': 'ok', 'documents': doc_count})
+    except Exception as e:
+        logging.warning(f"Meilisearch status check: {e}")
+        return jsonify({'status': 'unavailable', 'documents': 0}), 503
+
+
 #  Search & Movies API
 
 @app.route('/api/search')
