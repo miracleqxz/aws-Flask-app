@@ -41,3 +41,5 @@ class Config:
     LAMBDA_AI_AGENT_CONTROL = os.getenv('LAMBDA_AI_AGENT_CONTROL', 'ai-agent-control')
 
     LAMBDA_DATA_PIPELINE = os.getenv('LAMBDA_DATA_PIPELINE', 'Flask_project-data-pipeline')
+
+    YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY', '')

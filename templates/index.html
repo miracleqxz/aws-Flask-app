@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Database</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap"
+        rel="stylesheet">
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -78,7 +83,7 @@
 
         .nav-link:hover {
             border-color: #1a1a2e;
-            box-shadow: 0 2px 8px rgba(26,26,46,0.08);
+            box-shadow: 0 2px 8px rgba(26, 26, 46, 0.08);
             transform: translateY(-1px);
         }
 
@@ -90,7 +95,7 @@
 
         .nav-link.primary:hover {
             background: #16213e;
-            box-shadow: 0 4px 14px rgba(26,26,46,0.25);
+            box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
         }
 
         /* ── Backend Control ── */
@@ -125,9 +130,20 @@
             font-weight: 600;
         }
 
-        .status-badge.running { background: rgba(16,185,129,0.12); color: #059669; }
-        .status-badge.stopped { background: rgba(239,68,68,0.1); color: #dc2626; }
-        .status-badge.pending { background: rgba(251,191,36,0.12); color: #b45309; }
+        .status-badge.running {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+        }
+
+        .status-badge.stopped {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+
+        .status-badge.pending {
+            background: rgba(251, 191, 36, 0.12);
+            color: #b45309;
+        }
 
         .status-dot {
             width: 8px;
@@ -135,13 +151,30 @@
             border-radius: 50%;
         }
 
-        .status-dot.running { background: #10b981; animation: pulse-dot 2s infinite; }
-        .status-dot.stopped { background: #ef4444; }
-        .status-dot.pending { background: #fbbf24; animation: pulse-dot 1s infinite; }
+        .status-dot.running {
+            background: #10b981;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .status-dot.stopped {
+            background: #ef4444;
+        }
+
+        .status-dot.pending {
+            background: #fbbf24;
+            animation: pulse-dot 1s infinite;
+        }
 
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
         }
 
         .backend-actions {
@@ -161,7 +194,10 @@
             transition: all 0.2s;
         }
 
-        .btn-control:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-control:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
         .btn-control.start {
             background: #10b981;
@@ -170,7 +206,7 @@
 
         .btn-control.start:hover:not(:disabled) {
             background: #059669;
-            box-shadow: 0 2px 10px rgba(16,185,129,0.3);
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
         }
 
         .btn-control.stop {
@@ -180,7 +216,7 @@
 
         .btn-control.stop:hover:not(:disabled) {
             background: #dc2626;
-            box-shadow: 0 2px 10px rgba(239,68,68,0.3);
+            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
         }
 
         .backend-info-grid {
@@ -225,11 +261,21 @@
             animation: hb 1s infinite;
         }
 
-        .heartbeat-pulse.off { animation: none; opacity: 0.3; }
+        .heartbeat-pulse.off {
+            animation: none;
+            opacity: 0.3;
+        }
 
         @keyframes hb {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
         }
 
         /* ── Search ── */
@@ -278,7 +324,7 @@
 
         .search-submit:hover {
             background: #16213e;
-            box-shadow: 0 2px 8px rgba(26,26,46,0.2);
+            box-shadow: 0 2px 8px rgba(26, 26, 46, 0.2);
         }
 
         .search-meta {
@@ -296,54 +342,9 @@
         }
 
         @media (max-width: 768px) {
-            .dashboard-row { grid-template-columns: 1fr; }
-        }
-
-        /* ── Quick Actions Card ── */
-        .card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 1.5rem 1.75rem;
-        }
-
-        .card h3 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.1rem;
-            font-weight: 400;
-            margin-bottom: 1rem;
-        }
-
-        .action-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .action-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.6rem 0.85rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-
-        .action-row:hover:not(:disabled) {
-            border-color: #1a1a2e;
-            background: #fff;
-        }
-
-        .action-row:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .action-row .status-text {
-            font-size: 0.75rem;
-            color: #9ca3af;
+            .dashboard-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* ── Movie Grid ── */
@@ -373,7 +374,7 @@
 
         .movie-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(26,26,46,0.1);
+            box-shadow: 0 8px 24px rgba(26, 26, 46, 0.1);
             border-color: #d1d5db;
         }
 
@@ -433,7 +434,7 @@
 
         .result-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(26,26,46,0.08);
+            box-shadow: 0 6px 20px rgba(26, 26, 46, 0.08);
         }
 
         .result-card .poster {
@@ -524,7 +525,9 @@
             margin-bottom: 0.5rem;
         }
 
-        .empty-state p { color: #9ca3af; }
+        .empty-state p {
+            color: #9ca3af;
+        }
 
         .loading-text {
             text-align: center;
@@ -534,13 +537,27 @@
 
         /* ── Responsive ── */
         @media (max-width: 640px) {
-            .site-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-            .header-nav { width: 100%; }
-            .site-header h1 { font-size: 2rem; }
-            .movie-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+            .site-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-nav {
+                width: 100%;
+            }
+
+            .site-header h1 {
+                font-size: 2rem;
+            }
+
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="page-wrapper">
 
@@ -591,7 +608,7 @@
                 </div>
                 <div class="info-cell">
                     <div class="label">Services</div>
-                    <div class="value">Redis, Meilisearch, Prometheus, Grafana</div>
+                    <div class="value">Redis, Meilisearch, VictoriaMetrics, Grafana</div>
                 </div>
             </div>
         </section>
@@ -605,33 +622,6 @@
             </div>
             <div class="search-meta" id="searchMeta"></div>
         </section>
-
-        <!-- Quick Actions -->
-        <div class="dashboard-row">
-            <div class="card">
-                <h3>Quick Actions</h3>
-                <div class="action-list">
-                    <button class="action-row" id="btnSyncData" onclick="syncData()">
-                        Sync Data
-                        <span class="status-text" id="syncStatus">Ready</span>
-                    </button>
-                    <button class="action-row" id="btnClearCache" onclick="clearCache()">
-                        Clear Cache
-                        <span class="status-text" id="cacheActionStatus">Ready</span>
-                    </button>
-                    <button class="action-row" id="btnPipelineStatus" onclick="checkPipelineStatus()">
-                        Pipeline Status
-                        <span class="status-text" id="pipelineStatus">Ready</span>
-                    </button>
-                </div>
-            </div>
-            <div class="card" id="analyticsCard">
-                <h3>Popular Searches</h3>
-                <div class="tag-cloud" id="popularSearches">
-                    <span class="loading-text">Loading…</span>
-                </div>
-            </div>
-        </div>
 
         <!-- Search Results (hidden by default) -->
         <div class="results-grid" id="results"></div>
@@ -834,69 +824,10 @@
             } catch (e) { console.error('Featured movies failed:', e); }
         }
 
-        // ── Quick Actions ──
-
-        async function syncData() {
-            const btn = document.getElementById('btnSyncData');
-            const st = document.getElementById('syncStatus');
-            btn.disabled = true; st.textContent = 'Syncing…';
-            try {
-                const res = await fetch('/api/data/sync', { method: 'POST' });
-                const data = await res.json();
-                if (res.status === 429) {
-                    st.textContent = `Wait ${data.retry_after}s`;
-                    setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, data.retry_after * 1000);
-                    return;
-                }
-                st.textContent = 'Done!';
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 300000);
-            } catch (e) {
-                st.textContent = 'Error';
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
-            }
-        }
-
-        async function clearCache() {
-            const btn = document.getElementById('btnClearCache');
-            const st = document.getElementById('cacheActionStatus');
-            btn.disabled = true; st.textContent = 'Clearing…';
-            try {
-                await fetch('/api/cache/clear', { method: 'POST' });
-                st.textContent = 'Cleared!';
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 60000);
-            } catch (e) {
-                st.textContent = 'Error';
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
-            }
-        }
-
-        async function checkPipelineStatus() {
-            const btn = document.getElementById('btnPipelineStatus');
-            const st = document.getElementById('pipelineStatus');
-            btn.disabled = true; st.textContent = 'Checking…';
-            try {
-                const res = await fetch('/api/data/status');
-                const data = await res.json();
-                st.textContent = `PG:${data.postgres?.status || '?'} M:${data.meilisearch?.status || '?'}`;
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 5000);
-            } catch (e) {
-                st.textContent = 'Error';
-                setTimeout(() => { btn.disabled = false; st.textContent = 'Ready'; }, 3000);
-            }
-        }
-
         // ── Analytics ──
 
         async function loadPopularSearches() {
-            try {
-                const res = await fetch('/api/analytics/popular?limit=10');
-                const data = await res.json();
-                const div = document.getElementById('popularSearches');
-                if (data.popular_searches.length === 0) { div.textContent = 'No searches yet'; return; }
-                div.innerHTML = data.popular_searches.map(s =>
-                    `<span class="search-tag" onclick="document.getElementById('searchInput').value='${s.query}';searchMovies();">${s.query} (${s.search_count})</span>`
-                ).join('');
-            } catch (e) { document.getElementById('popularSearches').textContent = 'Error loading'; }
+            // Popular searches card removed
         }
 
         // ── Init ──
@@ -911,4 +842,5 @@
         init();
     </script>
 </body>
+
 </html>

@@ -301,6 +301,13 @@ variable "ai_chat_api_key" {
   sensitive   = true
 }
 
+variable "youtube_api_key" {
+  description = "YouTube Data API v3 key for trailer search"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "ai_chat_max_requests" {
   description = "Maximum requests per user per window for AI chat"
   type        = number

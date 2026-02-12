@@ -145,6 +145,88 @@
             border-top: 1px solid #e5e7eb;
         }
 
+        /* ── YouTube-style Trailer Section ── */
+        .trailer-section {
+            background: #0f0f0f;
+            padding: 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .trailer-player-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+        }
+
+        .trailer-player-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .trailer-info-bar {
+            padding: 16px 20px;
+            background: #0f0f0f;
+        }
+
+        .trailer-title {
+            color: #fff;
+            font-size: 1.15em;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .trailer-meta {
+            color: #aaa;
+            font-size: 0.85em;
+        }
+
+        .trailer-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+            color: #aaa;
+            font-size: 0.95em;
+            gap: 10px;
+        }
+
+        .trailer-loading .spinner-yt {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid #333;
+            border-top-color: #ff0000;
+            border-radius: 50%;
+            animation: yt-spin 0.8s linear infinite;
+        }
+
+        @keyframes yt-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .trailer-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 200px;
+            color: #aaa;
+            text-align: center;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .trailer-error .icon {
+            font-size: 2em;
+            opacity: 0.5;
+        }
+
         .stat-item {
             text-align: center;
             padding: 15px;
@@ -218,6 +300,20 @@
                 <p class="description-text">{{ movie.description }}</p>
             </div>
 
+            <!-- YouTube-style Trailer -->
+            <div class="trailer-section" id="trailerSection">
+                <div class="trailer-player-wrapper" id="trailerPlayerWrapper">
+                    <div class="trailer-loading" id="trailerLoading">
+                        <div class="spinner-yt"></div>
+                        Loading trailer…
+                    </div>
+                </div>
+                <div class="trailer-info-bar" id="trailerInfoBar" style="display:none;">
+                    <div class="trailer-title" id="trailerTitle">Official Trailer</div>
+                    <div class="trailer-meta" id="trailerMeta">{{ movie.title }} ({{ movie.year }})</div>
+                </div>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-label">Movie ID</div>
@@ -238,6 +334,46 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Load YouTube trailer
+        (async function loadTrailer() {
+            const section = document.getElementById('trailerSection');
+            const wrapper = document.getElementById('trailerPlayerWrapper');
+            const loading = document.getElementById('trailerLoading');
+            const infoBar = document.getElementById('trailerInfoBar');
+
+            try {
+                const res = await fetch('/api/youtube/trailer/{{ movie.id }}');
+                if (!res.ok) throw new Error('No trailer');
+                const data = await res.json();
+
+                if (!data.video_id) throw new Error('No video');
+
+                // Use YouTube IFrame embed with mute=1 and autoplay=1
+                wrapper.innerHTML = `
+                    <iframe
+                        src="https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>`;
+
+                // Show info bar
+                if (data.title) {
+                    document.getElementById('trailerTitle').textContent = data.title;
+                }
+                infoBar.style.display = 'block';
+
+            } catch (e) {
+                wrapper.innerHTML = `
+                    <div class="trailer-error">
+                        <span class="icon">🎬</span>
+                        <span>Trailer not available</span>
+                    </div>`;
+                infoBar.style.display = 'none';
+            }
+        })();
+    </script>
 </body>
 
 </html>

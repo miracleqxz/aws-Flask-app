@@ -451,6 +451,55 @@ def ai_by_mood():
     return jsonify({'movies': results, 'count': len(results), 'mood': mood})
 
 
+#  YouTube Trailer API
+
+@app.route('/api/youtube/trailer/<int:movie_id>')
+def youtube_trailer(movie_id):
+    """Search YouTube for an official trailer for the given movie."""
+    import requests as http_requests
+
+    api_key = Config.YOUTUBE_API_KEY
+    if not api_key:
+        return jsonify({'error': 'YouTube API key not configured'}), 503
+
+    movie = get_movie_by_id(movie_id)
+    if not movie:
+        return jsonify({'error': 'Movie not found'}), 404
+
+    movie = dict(movie)
+    query = f"{movie['title']} {movie.get('year', '')} official trailer"
+
+    try:
+        yt_res = http_requests.get(
+            'https://www.googleapis.com/youtube/v3/search',
+            params={
+                'part': 'snippet',
+                'q': query,
+                'type': 'video',
+                'maxResults': 1,
+                'key': api_key,
+                'videoCategoryId': '1',  # Film & Animation
+            },
+            timeout=5
+        )
+        yt_res.raise_for_status()
+        data = yt_res.json()
+
+        items = data.get('items', [])
+        if not items:
+            return jsonify({'error': 'No trailer found'}), 404
+
+        item = items[0]
+        return jsonify({
+            'video_id': item['id']['videoId'],
+            'title': item['snippet']['title'],
+            'thumbnail': item['snippet']['thumbnails'].get('high', {}).get('url', ''),
+        })
+    except Exception as e:
+        logging.error(f"YouTube trailer search error: {e}")
+        return jsonify({'error': 'Trailer search failed'}), 500
+
+
 
 #  Entry point
 

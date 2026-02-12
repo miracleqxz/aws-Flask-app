@@ -73,6 +73,7 @@ resource "aws_ecs_task_definition" "frontend" {
 
         { name = "AI_CHAT_API_URL", value = aws_apigatewayv2_api.ai_chat.api_endpoint },
         { name = "AI_CHAT_API_KEY", value = var.ai_chat_api_key },
+        { name = "YOUTUBE_API_KEY", value = var.youtube_api_key },
 
         { name = "FLASK_HOST", value = "0.0.0.0" },
         { name = "FLASK_PORT", value = "5000" },
