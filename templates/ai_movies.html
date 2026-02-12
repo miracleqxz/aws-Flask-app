@@ -891,12 +891,49 @@
                                 <p class="detail-desc">${m.description || 'No description available.'}</p>
                             </div>
                         </div>
+                        <div class="detail-trailer" id="detailTrailer-${m.id}" style="background:#0f0f0f;border-top:1px solid var(--border);">
+                            <div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--text-muted);gap:8px;">
+                                <div class="spinner"></div> Loading trailer…
+                            </div>
+                        </div>
                         <button class="detail-back" onclick="popView()">← Back</button>
                     </div>`;
+
+                    // Fetch trailer asynchronously
+                    loadDetailTrailer(m.id, m.title, m.year);
                 }
             } catch (e) {
                 console.error('Movie detail error:', e);
                 $detailView.innerHTML = '<div class="loading-state">Error loading details</div>';
+            }
+        }
+
+        async function loadDetailTrailer(movieId, title, year) {
+            const container = document.getElementById(`detailTrailer-${movieId}`);
+            if (!container) return;
+            try {
+                const res = await fetch(`/api/youtube/trailer/${movieId}`);
+                if (!res.ok) throw new Error('No trailer');
+                const data = await res.json();
+                if (!data.video_id) throw new Error('No video');
+
+                container.innerHTML = `
+                    <div style="aspect-ratio:16/9;">
+                        <iframe style="width:100%;height:100%;border:none;"
+                            src="https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                    <div style="padding:10px 16px;color:#fff;font-size:0.85rem;">
+                        <strong>${data.title || title + ' — Trailer'}</strong>
+                        <span style="color:#aaa;margin-left:8px;">${year || ''}</span>
+                    </div>`;
+            } catch (e) {
+                container.innerHTML = `
+                    <div style="aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#666;gap:6px;">
+                        <span style="font-size:1.5em;">🎬</span>
+                        <span>Trailer not available</span>
+                    </div>`;
             }
         }
 

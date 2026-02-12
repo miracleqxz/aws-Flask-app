@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Movie Database</title>
+    <title>Movie-Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -650,6 +650,23 @@
             try {
                 const res = await fetch('/api/backend/status');
                 const data = await res.json();
+
+                // If EC2 says running, verify meilisearch is synced before showing 'running'
+                if (data.state === 'running') {
+                    try {
+                        const dsRes = await fetch('/api/data/status');
+                        const dsData = await dsRes.json();
+                        const meiliOk = dsData.meilisearch
+                            && dsData.meilisearch.status === 'ok'
+                            && dsData.meilisearch.documents > 0;
+                        if (!meiliOk) {
+                            data.state = 'starting';
+                        }
+                    } catch (_) {
+                        data.state = 'starting';
+                    }
+                }
+
                 updateBackendUI(data);
                 return data;
             } catch (e) {
@@ -702,7 +719,7 @@
             btn.textContent = 'Starting…';
             try {
                 await fetch('/api/backend/start', { method: 'POST' });
-                pollUntilState('running', 60000);
+                pollUntilState('running', 300000);
             } catch (e) {
                 alert('Failed to start backend: ' + e.message);
                 btn.disabled = false;
@@ -808,7 +825,7 @@
 
         async function loadFeaturedMovies() {
             try {
-                const res = await fetch('/api/movies/featured');
+                const res = await fetch('/api/movies/featured?limit=6');
                 const data = await res.json();
                 if (data.movies && data.movies.length > 0) {
                     document.getElementById('featuredGrid').innerHTML = data.movies.map(m => `
