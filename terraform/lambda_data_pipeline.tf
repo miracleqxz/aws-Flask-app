@@ -20,6 +20,7 @@ data "archive_file" "lambda_data_pipeline" {
 import json
 import os
 import logging
+import time
 from decimal import Decimal
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
@@ -70,7 +71,7 @@ def ensure_tables(cursor):
             title VARCHAR(255) NOT NULL,
             year INTEGER NOT NULL,
             rating DECIMAL(3, 1) NOT NULL,
-            genre VARCHAR(255) NOT NULL,
+            genres VARCHAR(255) NOT NULL,
             director VARCHAR(255) NOT NULL,
             description TEXT NOT NULL,
             poster_filename VARCHAR(255) NOT NULL,
@@ -99,19 +100,20 @@ def sync_movies_to_postgres(movies):
         values = [
             (
                 m['id'], m['title'], m['year'], m['rating'],
-                m['genre'], m['director'], m['description'], m['poster_filename']
+                 m.get('genres', []),
+                m['director'], m['description'], m['poster_filename']
             )
             for m in movies
         ]
         
         cursor.executemany("""
-            INSERT INTO movies (id, title, year, rating, genre, director, description, poster_filename)
+            INSERT INTO movies (id, title, year, rating, genres, director, description, poster_filename)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (id) DO UPDATE SET
                 title = EXCLUDED.title,
                 year = EXCLUDED.year,
                 rating = EXCLUDED.rating,
-                genre = EXCLUDED.genre,
+                genres = EXCLUDED.genres,
                 director = EXCLUDED.director,
                 description = EXCLUDED.description,
                 poster_filename = EXCLUDED.poster_filename;
@@ -136,7 +138,7 @@ def get_movies_from_postgres():
     
     try:
         cursor.execute("""
-            SELECT id, title, description, poster_filename, year, rating, genre, director
+            SELECT id, title, description, poster_filename, year, rating, genres, director
             FROM movies ORDER BY id;
         """)
         
@@ -149,7 +151,7 @@ def get_movies_from_postgres():
                 'poster_filename': row[3],
                 'year': row[4],
                 'rating': float(row[5]),
-                'genre': row[6],
+                'genres': row[6],
                 'director': row[7]
             })
         
@@ -240,13 +242,28 @@ def get_indexed_movie_ids():
     return existing_ids, True
 
 
+def wait_for_meilisearch(max_wait=90, interval=10):
+    """Wait for Meilisearch to become available after EC2/ECS boot."""
+    logger.info(f"Waiting up to {max_wait}s for Meilisearch at {MEILI_HOST}:{MEILI_PORT}...")
+    elapsed = 0
+    while elapsed < max_wait:
+        if check_meilisearch_health():
+            logger.info(f"Meilisearch is available after {elapsed}s")
+            return True
+        logger.info(f"Meilisearch not ready yet, retrying in {interval}s... ({elapsed}/{max_wait}s)")
+        time.sleep(interval)
+        elapsed += interval
+    logger.warning(f"Meilisearch not available after {max_wait}s")
+    return False
+
+
 def reindex_meilisearch(movies):
     if not MEILI_HOST:
         logger.info("Meilisearch not configured, skipping")
         return {'status': 'skipped', 'reason': 'not_configured'}
     
-    if not check_meilisearch_health():
-        logger.warning("Meilisearch not accessible")
+    if not wait_for_meilisearch():
+        logger.warning("Meilisearch not accessible after waiting")
         return {'status': 'skipped', 'reason': 'not_accessible'}
     
     logger.info("Reindexing Meilisearch...")
@@ -256,7 +273,7 @@ def reindex_meilisearch(movies):
     if not index_exists:
         meili_request('POST', '/indexes', {'uid': 'movies', 'primaryKey': 'id'})
         meili_request('PUT', '/indexes/movies/settings/searchable-attributes',
-                      ['title', 'description', 'director', 'genre'])
+                      ['title', 'description', 'director', 'genres'])
     
     missing_movies = [m for m in movies if m['id'] not in existing_ids]
     
@@ -486,6 +503,43 @@ resource "aws_lambda_function" "data_pipeline" {
     aws_iam_role_policy_attachment.lambda_data_pipeline_basic,
     aws_iam_role_policy_attachment.lambda_data_pipeline_vpc
   ]
+}
+
+resource "aws_cloudwatch_event_rule" "backend_started" {
+  name        = "${var.project_name}-backend-started"
+  description = "Triggers data pipeline when backend EC2 enters running state"
+
+  event_pattern = jsonencode({
+    source      = ["aws.ec2"]
+    detail-type = ["EC2 Instance State-change Notification"]
+    detail = {
+      state       = ["running"]
+      instance-id = [aws_instance.backend.id]
+    }
+  })
+
+  tags = {
+    Name    = "${var.project_name}-backend-started"
+    Project = var.project_name
+  }
+}
+
+resource "aws_cloudwatch_event_target" "sync_on_start" {
+  rule = aws_cloudwatch_event_rule.backend_started.name
+  arn  = aws_lambda_function.data_pipeline.arn
+
+  input = jsonencode({
+    action = "sync"
+    source = "eventbridge"
+  })
+}
+
+resource "aws_lambda_permission" "eventbridge_invoke_pipeline" {
+  statement_id  = "AllowEventBridgeInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.data_pipeline.function_name
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.backend_started.arn
 }
 
 
