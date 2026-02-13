@@ -662,15 +662,10 @@
             if (e.key === 'Enter') searchMovies();
         });
 
-        // ── State Persistence ──
-
         function saveState(data) {
             try {
-                localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
-                    data: data,
-                    timestamp: Date.now()
-                }));
-            } catch (e) { /* quota or private mode */ }
+                localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+            } catch (e) { }
         }
 
         function loadCachedState() {
@@ -678,13 +673,10 @@
                 const raw = localStorage.getItem(STATE_STORAGE_KEY);
                 if (!raw) return null;
                 const cached = JSON.parse(raw);
-                // Use cache if less than 10 minutes old
                 if (Date.now() - cached.timestamp < 600000) return cached.data;
             } catch (e) { }
             return null;
         }
-
-        // ── Backend Control ──
 
         async function checkBackendStatus() {
             try {
@@ -693,8 +685,6 @@
                 updateBackendUI(data, true);
                 return data;
             } catch (e) {
-                console.error('Backend status check failed:', e);
-                // On network error, don't reset to unknown — keep last known state
                 return null;
             }
         }
@@ -731,7 +721,6 @@
                 } else {
                     document.getElementById('infoShutdownTimer').textContent = '-';
                 }
-                // Send heartbeats whenever servers are up (even if meilisearch not ready)
                 if (!heartbeatInterval) startHeartbeat();
                 heartbeat.style.display = state === 'running' ? 'inline-flex' : 'none';
             } else {
@@ -740,7 +729,6 @@
                 stopHeartbeat();
             }
 
-            // Persist to localStorage so state survives page navigation
             if (persist) saveState(data);
         }
 
@@ -789,8 +777,6 @@
             isPolling = true;
             pollingTarget = target;
             const start = Date.now();
-
-            // Show intermediate state right away
             const intermediateState = target === 'running' ? 'starting' : 'stopping';
             updateBackendUI({ state: intermediateState }, true);
 
@@ -804,7 +790,6 @@
                 try {
                     const res = await fetch('/api/backend/status');
                     const data = await res.json();
-
                     if (data.state === target) {
                         isPolling = false;
                         pollingTarget = null;
@@ -812,18 +797,12 @@
                         if (target === 'running') loadFeaturedMovies();
                         return;
                     }
-
-                    // Show real server state (not forced override)
                     updateBackendUI(data, true);
-                } catch (e) {
-                    // Network error during poll – keep polling
-                }
+                } catch (e) { }
                 setTimeout(poll, 4000);
             };
             poll();
         }
-
-        // ── Heartbeat ──
 
         function startHeartbeat() {
             if (heartbeatInterval) return;
@@ -840,12 +819,10 @@
         }
 
         async function sendHeartbeat() {
-            try { await fetch('/api/backend/heartbeat', { method: 'POST' }); } catch (e) { /* silent */ }
+            try { await fetch('/api/backend/heartbeat', { method: 'POST' }); } catch (e) { }
         }
 
         window.addEventListener('beforeunload', stopHeartbeat);
-
-        // ── Search ──
 
         async function searchMovies() {
             const query = document.getElementById('searchInput').value.trim();
@@ -890,8 +867,6 @@
             }
         }
 
-        // ── Featured Movies ──
-
         async function loadFeaturedMovies() {
             try {
                 const res = await fetch('/api/movies/featured?limit=6');
@@ -912,33 +887,26 @@
                         '<div class="loading-text">No movies available</div>';
                 }
             } catch (e) {
-                console.error('Featured movies failed:', e);
                 document.getElementById('featuredGrid').innerHTML =
                     '<div class="loading-text">Failed to load movies. Refresh the page.</div>';
             }
         }
 
-        // ── Analytics ──
-
-        async function loadPopularSearches() {
-            // Popular searches card removed
-        }
-
-        // ── Init ──
+        async function loadPopularSearches() { }
 
         async function init() {
-            // Restore persisted state instantly (no flicker on page navigation)
             const cached = loadCachedState();
-            if (cached) {
-                updateBackendUI(cached, false);
-            }
+            if (cached) updateBackendUI(cached, false);
 
-            // Load movies and check status in parallel (don't block movies behind Lambda calls)
             loadFeaturedMovies();
             checkBackendStatus();
             statusCheckInterval = setInterval(() => {
                 if (!isPolling) checkBackendStatus();
-            }, 30000);
+            }, 10000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && !isPolling) checkBackendStatus();
+            });
         }
 
         init();
