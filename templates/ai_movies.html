@@ -43,6 +43,8 @@
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ═══════════════════════════════════════════
@@ -50,7 +52,8 @@
         ═══════════════════════════════════════════ */
         .split-layout {
             display: flex;
-            height: 100vh;
+            flex: 1;
+            min-height: 0;
         }
 
         /* ── LEFT PANEL: Movies ── */
@@ -62,6 +65,7 @@
             border-right: 1px solid var(--border);
             position: relative;
             overflow: hidden;
+            min-height: 0;
         }
 
         .panel-left-header {
@@ -662,6 +666,40 @@
         }
 
         /* ═══════════════════════════════════════════
+           MOBILE TABS
+        ═══════════════════════════════════════════ */
+        .mobile-tabs {
+            display: none;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .mobile-tabs-inner {
+            display: flex;
+        }
+
+        .mobile-tab {
+            flex: 1;
+            padding: 0.75rem 0;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .mobile-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ═══════════════════════════════════════════
            RESPONSIVE
         ═══════════════════════════════════════════ */
         @media (max-width: 900px) {
@@ -669,14 +707,57 @@
                 flex-direction: column;
             }
 
+            .mobile-tabs {
+                display: block;
+            }
+
             .panel-left {
                 width: 100%;
-                height: 45vh;
+                flex: 1;
+                height: auto;
+                min-height: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
             }
 
             .panel-right {
                 width: 100%;
                 flex: 1;
+                min-height: 0;
+            }
+
+            /* When tab is hidden */
+            .panel-left.mobile-hidden {
+                display: none;
+            }
+
+            .panel-right.mobile-hidden {
+                display: none;
+            }
+
+            .panel-left-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .panel-left-content {
+                padding: 0.75rem;
+            }
+
+            .chat-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .chat-messages {
+                padding: 0.75rem 1rem;
+            }
+
+            .chat-input-bar {
+                padding: 0.65rem 0.75rem;
+            }
+
+            .chat-input {
+                font-size: 16px;
+                /* prevents iOS zoom */
             }
 
             .detail-hero {
@@ -684,13 +765,84 @@
             }
 
             .detail-poster {
-                max-width: 200px;
+                max-width: 180px;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 0.6rem;
+            }
+
+            .movie-thumb img {
+                height: 170px;
+            }
+
+            .movie-thumb .thumb-info {
+                padding: 0.45rem 0.55rem;
+            }
+
+            .movie-thumb .thumb-title {
+                font-size: 0.72rem;
+            }
+
+            .ai-result-poster {
+                width: 80px;
+                min-height: 120px;
+            }
+
+            .ai-result-body {
+                padding: 0.75rem;
+            }
+
+            .ai-result-card h4 {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .panel-left-header h2 {
+                font-size: 1rem;
+            }
+
+            .back-link {
+                font-size: 0.78rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            .chat-send {
+                padding: 0.6rem 1rem;
+                font-size: 0.82rem;
+            }
+
+            .detail-hero {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .detail-info h2 {
+                font-size: 1.2rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.5rem;
+            }
+
+            .movie-thumb img {
+                height: 140px;
             }
         }
     </style>
 </head>
 
 <body>
+
+    <div class="mobile-tabs" id="mobileTabs">
+        <div class="mobile-tabs-inner">
+            <button class="mobile-tab active" data-panel="movies" onclick="switchMobileTab('movies')">Movies</button>
+            <button class="mobile-tab" data-panel="chat" onclick="switchMobileTab('chat')">AI Chat</button>
+        </div>
+    </div>
 
     <div class="split-layout">
 
@@ -1064,11 +1216,45 @@
         }
 
         // ═══════════════════════════════════════════
+        //  MOBILE TABS
+        // ═══════════════════════════════════════════
+
+        function switchMobileTab(panel) {
+            const left = document.querySelector('.panel-left');
+            const right = document.querySelector('.panel-right');
+            const tabs = document.querySelectorAll('.mobile-tab');
+
+            tabs.forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
+
+            if (panel === 'movies') {
+                left.classList.remove('mobile-hidden');
+                right.classList.add('mobile-hidden');
+            } else {
+                left.classList.add('mobile-hidden');
+                right.classList.remove('mobile-hidden');
+                $chatInput.focus();
+            }
+        }
+
+        // On resize, remove mobile-hidden if back to desktop
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 900) {
+                document.querySelector('.panel-left').classList.remove('mobile-hidden');
+                document.querySelector('.panel-right').classList.remove('mobile-hidden');
+            }
+        });
+
+        // ═══════════════════════════════════════════
         //  INIT
         // ═══════════════════════════════════════════
 
         loadMovies();
         $chatInput.focus();
+
+        // Set initial mobile state
+        if (window.innerWidth <= 900) {
+            document.querySelector('.panel-right').classList.add('mobile-hidden');
+        }
     </script>
 
 </body>

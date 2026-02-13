@@ -101,68 +101,71 @@
         /* ── Backend Control ── */
         .backend-panel {
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 1.5rem 1.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
             margin-bottom: 2rem;
+            font-size: 0.875rem;
         }
 
         .backend-panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .backend-panel-header h3 {
-            font-family: 'DM Serif Display', serif;
-            font-size: 1.15rem;
-            font-weight: 400;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            color: #333;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            gap: 6px;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.75rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
         }
 
         .status-badge.running {
-            background: rgba(16, 185, 129, 0.12);
-            color: #059669;
+            background: #e6f4ea;
+            color: #1e7e34;
         }
 
         .status-badge.stopped {
-            background: rgba(239, 68, 68, 0.1);
-            color: #dc2626;
+            background: #fce8e8;
+            color: #c0392b;
         }
 
         .status-badge.pending {
-            background: rgba(251, 191, 36, 0.12);
-            color: #b45309;
+            background: #fff8e1;
+            color: #e67e22;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
         }
 
         .status-dot.running {
-            background: #10b981;
-            animation: pulse-dot 2s infinite;
+            background: #27ae60;
         }
 
         .status-dot.stopped {
-            background: #ef4444;
+            background: #e74c3c;
         }
 
         .status-dot.pending {
-            background: #fbbf24;
-            animation: pulse-dot 1s infinite;
+            background: #f39c12;
+            animation: pulse-dot 1.5s ease infinite;
         }
 
         @keyframes pulse-dot {
@@ -173,97 +176,104 @@
             }
 
             50% {
-                opacity: 0.4;
+                opacity: 0.35;
             }
         }
 
         .backend-actions {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .btn-control {
             flex: 1;
-            padding: 0.6rem 1.25rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.875rem;
+            padding: 7px 16px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            font-size: 0.8rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: background 0.15s, box-shadow 0.15s;
+            letter-spacing: 0.01em;
         }
 
         .btn-control:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+            opacity: 0.35;
+            cursor: default;
         }
 
         .btn-control.start {
-            background: #10b981;
+            background: #27ae60;
             color: #fff;
+            border-color: #219a52;
         }
 
         .btn-control.start:hover:not(:disabled) {
-            background: #059669;
-            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+            background: #219a52;
         }
 
         .btn-control.stop {
-            background: #ef4444;
+            background: #e74c3c;
             color: #fff;
+            border-color: #c0392b;
         }
 
         .btn-control.stop:hover:not(:disabled) {
-            background: #dc2626;
-            box-shadow: 0 2px 10px rgba(239, 68, 68, 0.3);
+            background: #c0392b;
         }
 
         .backend-info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0.75rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #f3f4f6;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #eee;
         }
 
         .info-cell {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
+            flex: 1 1 140px;
+            padding: 0.5rem 0.75rem;
         }
 
         .info-cell .label {
-            font-size: 0.7rem;
-            color: #9ca3af;
+            font-size: 0.65rem;
+            color: #999;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.25rem;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
         }
 
         .info-cell .value {
-            font-weight: 600;
-            font-size: 0.875rem;
+            font-weight: 500;
+            font-size: 0.82rem;
+            color: #333;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+        }
+
+        .info-cell .value:not([style]) {
+            font-family: inherit;
         }
 
         .heartbeat-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-left: 0.75rem;
+            gap: 4px;
+            font-size: 0.7rem;
+            color: #999;
+            margin-left: 0.5rem;
         }
 
         .heartbeat-pulse {
             display: inline-block;
-            animation: hb 1s infinite;
+            font-size: 0.65rem;
+            animation: hb 1.2s ease infinite;
         }
 
         .heartbeat-pulse.off {
             animation: none;
-            opacity: 0.3;
+            opacity: 0.25;
         }
 
         @keyframes hb {
@@ -274,7 +284,7 @@
             }
 
             50% {
-                transform: scale(1.3);
+                transform: scale(1.2);
             }
         }
 
@@ -430,11 +440,16 @@
             border-radius: 12px;
             overflow: hidden;
             transition: all 0.25s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            cursor: pointer;
         }
 
         .result-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(26, 26, 46, 0.08);
+            border-color: #c7c9cc;
         }
 
         .result-card .poster {
@@ -564,7 +579,7 @@
         <!-- Header -->
         <header class="site-header">
             <div>
-                <h1>Movie Database</h1>
+                <h1>Movie Assistant</h1>
                 <p class="subtitle">Search across 200 popular movies with full-text search</p>
             </div>
             <nav class="header-nav">
@@ -576,11 +591,8 @@
         <!-- Backend Control -->
         <section class="backend-panel">
             <div class="backend-panel-header">
-                <div style="display:flex;align-items:center;">
-                    <h3>Backend Services</h3>
-                    <span class="heartbeat-tag" id="heartbeatIndicator" style="display:none;">
-                        <span class="heartbeat-pulse">❤</span> Heartbeat active
-                    </span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <h3>Backend Servers</h3>
                 </div>
                 <span class="status-badge stopped" id="backendStatusBadge">
                     <span class="status-dot stopped" id="statusDot"></span>
@@ -595,20 +607,22 @@
 
             <div class="backend-info-grid" id="backendInfo" style="display:none;">
                 <div class="info-cell">
-                    <div class="label">Instance ID</div>
-                    <div class="value" id="infoInstanceId">-</div>
+                    <div class="label">Instance</div>
+                    <div class="value" id="infoInstanceId"
+                        style="font-family:'SF Mono','Menlo','Consolas',monospace;font-size:0.78rem;">-</div>
                 </div>
                 <div class="info-cell">
-                    <div class="label">Private IP</div>
-                    <div class="value" id="infoPrivateIp">-</div>
+                    <div class="label">IP</div>
+                    <div class="value" id="infoPrivateIp"
+                        style="font-family:'SF Mono','Menlo','Consolas',monospace;font-size:0.78rem;">-</div>
                 </div>
                 <div class="info-cell">
-                    <div class="label">Auto-shutdown in</div>
+                    <div class="label">Auto-stop</div>
                     <div class="value" id="infoShutdownTimer">-</div>
                 </div>
                 <div class="info-cell">
-                    <div class="label">Services</div>
-                    <div class="value">Redis, Meilisearch, VictoriaMetrics, Grafana</div>
+                    <div class="label">Stack</div>
+                    <div class="value" style="font-size:0.78rem;">Redis · Meilisearch · VictoriaMetrics · Grafana</div>
                 </div>
             </div>
         </section>
@@ -805,7 +819,7 @@
                 }
 
                 resultsDiv.innerHTML = data.results.map(m => `
-                    <div class="result-card">
+                    <a href="/movie/${m.id}" class="result-card">
                         <img src="/api/poster/${m.poster_filename}" alt="${m.title}" class="poster">
                         <div class="body">
                             <div class="title">${m.title}</div>
@@ -814,7 +828,7 @@
                             <div class="meta">Director: ${m.director}</div>
                             <p class="desc">${m.description}</p>
                         </div>
-                    </div>`).join('');
+                    </a>`).join('');
 
                 loadPopularSearches();
             } catch (e) {
