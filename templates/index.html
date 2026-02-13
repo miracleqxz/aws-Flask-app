@@ -594,8 +594,8 @@
                 <div style="display:flex;align-items:center;gap:6px;">
                     <h3>Backend Servers</h3>
                 </div>
-                <span class="status-badge stopped" id="backendStatusBadge">
-                    <span class="status-dot stopped" id="statusDot"></span>
+                <span class="status-badge pending" id="backendStatusBadge">
+                    <span class="status-dot pending" id="statusDot"></span>
                     <span id="statusText">Checking…</span>
                 </span>
             </div>
@@ -667,24 +667,6 @@
             try {
                 const res = await fetch('/api/backend/status');
                 const data = await res.json();
-
-                // If EC2 says running, verify meilisearch is synced before showing 'running'
-                if (data.state === 'running') {
-                    try {
-                        const msRes = await fetch('/api/meilisearch/status');
-                        if (msRes.ok) {
-                            const msData = await msRes.json();
-                            if (!msData.documents || msData.documents <= 0) {
-                                data.state = 'starting';
-                            }
-                        } else {
-                            data.state = 'starting';
-                        }
-                    } catch (_) {
-                        data.state = 'starting';
-                    }
-                }
-
                 updateBackendUI(data);
                 return data;
             } catch (e) {
@@ -790,28 +772,6 @@
                     const data = await res.json();
 
                     if (data.state === target) {
-                        // Reached target – for 'running', also verify meilisearch
-                        if (target === 'running') {
-                            try {
-                                const msRes = await fetch('/api/meilisearch/status');
-                                if (msRes.ok) {
-                                    const msData = await msRes.json();
-                                    if (!msData.documents || msData.documents <= 0) {
-                                        updateBackendUI({ ...data, state: 'starting' });
-                                        setTimeout(poll, 4000);
-                                        return;
-                                    }
-                                } else {
-                                    updateBackendUI({ ...data, state: 'starting' });
-                                    setTimeout(poll, 4000);
-                                    return;
-                                }
-                            } catch (_) {
-                                updateBackendUI({ ...data, state: 'starting' });
-                                setTimeout(poll, 4000);
-                                return;
-                            }
-                        }
                         isPolling = false;
                         pollingTarget = null;
                         updateBackendUI(data);
@@ -857,7 +817,7 @@
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
 
-            if (backendState !== 'running') {
+            if (backendState !== 'running' && backendState !== 'starting') {
                 document.getElementById('results').innerHTML = `
                     <div class="empty-state"><h2>Backend Offline</h2><p>Search requires Meilisearch. Start the backend first.</p></div>`;
                 return;
