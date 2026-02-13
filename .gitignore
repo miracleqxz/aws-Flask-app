@@ -52,14 +52,11 @@ terraform/data_pipeline/layer
 terraform/lambda_data_pipeline.zip
 terraform/data_pipeline/psycopg2_layer.zip
 
-# SSH keys (на всякий случай)
+
 *.pem
 *.key
 
-ansible/README.md
 
-aws
-awscliv2.zip
 
 .dockerignore
 posters

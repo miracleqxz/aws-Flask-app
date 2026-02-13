@@ -715,24 +715,20 @@
             btnStart.textContent = 'Start';
             btnStop.textContent = 'Stop';
             btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
-            btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
+            btnStop.disabled = (state === 'stopped' || state === 'stopping');
 
-            if (state === 'running') {
+            if (state === 'running' || (state === 'starting' && data.instance_id)) {
                 info.style.display = 'flex';
                 document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
                 document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
                 if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
                     document.getElementById('infoShutdownTimer').textContent = data.heartbeat.will_stop_in + ' min';
+                } else {
+                    document.getElementById('infoShutdownTimer').textContent = '-';
                 }
+                // Send heartbeats whenever servers are up (even if meilisearch not ready)
                 if (!heartbeatInterval) startHeartbeat();
-                heartbeat.style.display = 'inline-flex';
-            } else if (state === 'starting' && data.instance_id) {
-                // Show partial info during startup
-                info.style.display = 'flex';
-                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
-                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
-                document.getElementById('infoShutdownTimer').textContent = '-';
-                heartbeat.style.display = 'none';
+                heartbeat.style.display = state === 'running' ? 'inline-flex' : 'none';
             } else {
                 info.style.display = 'none';
                 heartbeat.style.display = 'none';
