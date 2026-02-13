@@ -723,7 +723,11 @@
             btn.disabled = true;
             btn.textContent = 'Starting…';
             try {
-                await fetch('/api/backend/start', { method: 'POST' });
+                const res = await fetch('/api/backend/start', { method: 'POST' });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.message || `HTTP ${res.status}`);
+                }
                 pollUntilState('running', 300000);
             } catch (e) {
                 alert('Failed to start backend: ' + e.message);
@@ -738,7 +742,11 @@
             btn.disabled = true;
             btn.textContent = 'Stopping…';
             try {
-                await fetch('/api/backend/stop', { method: 'POST' });
+                const res = await fetch('/api/backend/stop', { method: 'POST' });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    throw new Error(data.message || `HTTP ${res.status}`);
+                }
                 stopHeartbeat();
                 pollUntilState('stopped', 60000);
             } catch (e) {

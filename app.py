@@ -347,28 +347,11 @@ def backend_status():
 @app.route('/api/backend/start', methods=['POST'])
 def backend_start():
     try:
-        # Retry if backend instance is still stopping
-        for attempt in range(5):
-            backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'})
-            if backend.get('status') != 'stopping':
-                break
-            logging.info(f"Backend still stopping, retry {attempt + 1}/5")
-            import time
-            time.sleep(5)
-        
-        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'start'})
-
-        if ai_agent.get('state') not in ('running', 'pending', 'starting'):
-            error_msg = ai_agent.get('message', ai_agent.get('error', str(ai_agent)))
-            logging.warning(f"AI agent not running after start: {ai_agent}")
-            return jsonify({
-                'status': 'error',
-                'message': error_msg or 'AI agent did not start',
-                'backend': backend,
-                'ai_agent': ai_agent
-            }), 500
-
-        return jsonify({'backend': backend, 'ai_agent': ai_agent, 'status': 'started'})
+        # Fire-and-forget: invoke Lambdas asynchronously so the endpoint returns instantly.
+        # The frontend will poll /api/backend/status to track progress.
+        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'}, async_invoke=True)
+        invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'start'}, async_invoke=True)
+        return jsonify({'status': 'starting', 'message': 'Start commands sent'})
     except Exception as e:
         logging.error(f"Backend start error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -377,9 +360,9 @@ def backend_start():
 @app.route('/api/backend/stop', methods=['POST'])
 def backend_stop():
     try:
-        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'stop'})
-        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'stop'})
-        return jsonify({'backend': backend, 'ai_agent': ai_agent, 'status': 'stopped'})
+        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'stop'}, async_invoke=True)
+        invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'stop'}, async_invoke=True)
+        return jsonify({'status': 'stopping', 'message': 'Stop commands sent'})
     except Exception as e:
         logging.error(f"Backend stop error: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
