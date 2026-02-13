@@ -20,14 +20,16 @@ resource "aws_db_parameter_group" "postgres" {
   description = "Custom parameter group for PostgreSQL"
 
   parameter {
-    name  = "log_min_duration_statement"
-    value = "1000"
+    name         = "log_min_duration_statement"
+    value        = "1000"
+    apply_method = "immediate"
   }
 
   # Timezone
   parameter {
-    name  = "timezone"
-    value = "UTC"
+    name         = "timezone"
+    value        = "UTC"
+    apply_method = "pending-reboot"
   }
 
   tags = {
@@ -64,9 +66,9 @@ resource "aws_db_instance" "postgres" {
   multi_az               = false
 
 
-  backup_retention_period   = 0
-  backup_window             = "03:00-04:00"
-  maintenance_window        = "Mon:04:00-Mon:05:00"
+  backup_retention_period = 0
+  backup_window           = "03:00-04:00"
+  maintenance_window      = "Mon:04:00-Mon:05:00"
 
   deletion_protection       = var.environment == "prod" ? true : false
   skip_final_snapshot       = true
