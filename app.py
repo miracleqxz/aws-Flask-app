@@ -210,7 +210,11 @@ def get_poster(filename):
 @app.route('/api/movies/featured')
 def api_featured_movies():
     limit = request.args.get('limit', 8, type=int)
-    movies = get_all_movies()[:limit]
+    try:
+        movies = get_all_movies()[:limit]
+    except Exception as e:
+        logging.error(f"Featured movies error: {e}")
+        return jsonify({'movies': [], 'error': str(e)}), 500
 
     return jsonify({
         'movies': [{
@@ -317,7 +321,15 @@ def backend_status():
 
         backend_state = backend.get('state', 'unknown')
         ai_state = ai_agent.get('state', 'unknown')
-        overall = 'running' if backend_state == 'running' and ai_state == 'running' else 'stopped'
+
+        if backend_state == 'running' and ai_state == 'running':
+            overall = 'running'
+        elif backend_state == 'stopped' and ai_state == 'stopped':
+            overall = 'stopped'
+        elif backend_state in ('stopping', 'shutting-down') or ai_state in ('stopping', 'shutting-down', 'deprovisioning'):
+            overall = 'stopping'
+        else:
+            overall = 'starting'
 
         return jsonify({
             'state': overall,

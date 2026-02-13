@@ -600,6 +600,9 @@
                 </span>
             </div>
 
+            <p style="margin-bottom:0.6rem;font-size:0.8rem;color:#777;">Start the backend servers to enable search,
+                movie browsing, and AI assistant.</p>
+
             <div class="backend-actions">
                 <button class="btn-control start" id="btnStart" onclick="startBackend()" disabled>Start</button>
                 <button class="btn-control stop" id="btnStop" onclick="stopBackend()" disabled>Stop</button>
@@ -709,11 +712,13 @@
             const labels = { running: 'Running', stopped: 'Stopped', pending: 'Pending…', starting: 'Starting…', stopping: 'Stopping…' };
             text.textContent = labels[state] || 'Unknown';
 
+            btnStart.textContent = 'Start';
+            btnStop.textContent = 'Stop';
             btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
             btnStop.disabled = (state === 'stopped' || state === 'stopping' || state === 'unknown');
 
             if (state === 'running') {
-                info.style.display = 'grid';
+                info.style.display = 'flex';
                 document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
                 document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
                 if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
@@ -721,6 +726,13 @@
                 }
                 if (!heartbeatInterval) startHeartbeat();
                 heartbeat.style.display = 'inline-flex';
+            } else if (state === 'starting' && data.instance_id) {
+                // Show partial info during startup
+                info.style.display = 'flex';
+                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
+                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
+                document.getElementById('infoShutdownTimer').textContent = '-';
+                heartbeat.style.display = 'none';
             } else {
                 info.style.display = 'none';
                 heartbeat.style.display = 'none';
@@ -758,13 +770,65 @@
             }
         }
 
+        let isPolling = false;
+        let pollingTarget = null;
+
         async function pollUntilState(target, timeout) {
+            isPolling = true;
+            pollingTarget = target;
             const start = Date.now();
+
+            // Show intermediate state right away
+            const intermediateState = target === 'running' ? 'starting' : 'stopping';
+            updateBackendUI({ state: intermediateState });
+
             const poll = async () => {
-                if (Date.now() - start > timeout) { checkBackendStatus(); return; }
-                const data = await checkBackendStatus();
-                if (data && data.state === target) return;
-                setTimeout(poll, 3000);
+                if (Date.now() - start > timeout) {
+                    isPolling = false;
+                    pollingTarget = null;
+                    checkBackendStatus();
+                    return;
+                }
+                try {
+                    const res = await fetch('/api/backend/status');
+                    const data = await res.json();
+
+                    if (data.state === target) {
+                        // Reached target – for 'running', also verify meilisearch
+                        if (target === 'running') {
+                            try {
+                                const msRes = await fetch('/api/meilisearch/status');
+                                if (msRes.ok) {
+                                    const msData = await msRes.json();
+                                    if (!msData.documents || msData.documents <= 0) {
+                                        updateBackendUI({ ...data, state: 'starting' });
+                                        setTimeout(poll, 4000);
+                                        return;
+                                    }
+                                } else {
+                                    updateBackendUI({ ...data, state: 'starting' });
+                                    setTimeout(poll, 4000);
+                                    return;
+                                }
+                            } catch (_) {
+                                updateBackendUI({ ...data, state: 'starting' });
+                                setTimeout(poll, 4000);
+                                return;
+                            }
+                        }
+                        isPolling = false;
+                        pollingTarget = null;
+                        updateBackendUI(data);
+                        if (target === 'running') loadFeaturedMovies();
+                        return;
+                    }
+
+                    // Not yet at target – keep showing intermediate state
+                    updateBackendUI({ ...data, state: intermediateState });
+                } catch (e) {
+                    // Network error during poll – keep polling
+                }
+                setTimeout(poll, 4000);
             };
             poll();
         }
@@ -841,6 +905,7 @@
         async function loadFeaturedMovies() {
             try {
                 const res = await fetch('/api/movies/featured?limit=6');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
                 if (data.movies && data.movies.length > 0) {
                     document.getElementById('featuredGrid').innerHTML = data.movies.map(m => `
@@ -852,8 +917,15 @@
                                 <div class="meta">${m.year} · ${m.genre}</div>
                             </div>
                         </a>`).join('');
+                } else {
+                    document.getElementById('featuredGrid').innerHTML =
+                        '<div class="loading-text">No movies available</div>';
                 }
-            } catch (e) { console.error('Featured movies failed:', e); }
+            } catch (e) {
+                console.error('Featured movies failed:', e);
+                document.getElementById('featuredGrid').innerHTML =
+                    '<div class="loading-text">Failed to load movies. Refresh the page.</div>';
+            }
         }
 
         // ── Analytics ──
@@ -865,10 +937,12 @@
         // ── Init ──
 
         async function init() {
-            await checkBackendStatus();
+            // Load movies and check status in parallel (don't block movies behind Lambda calls)
             loadFeaturedMovies();
-            loadPopularSearches();
-            statusCheckInterval = setInterval(checkBackendStatus, 30000);
+            checkBackendStatus();
+            statusCheckInterval = setInterval(() => {
+                if (!isPolling) checkBackendStatus();
+            }, 30000);
         }
 
         init();
