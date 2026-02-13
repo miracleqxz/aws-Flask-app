@@ -673,7 +673,10 @@
                 const raw = localStorage.getItem(STATE_STORAGE_KEY);
                 if (!raw) return null;
                 const cached = JSON.parse(raw);
-                if (Date.now() - cached.timestamp < 600000) return cached.data;
+                if (Date.now() - cached.timestamp > 600000) return null;
+                const s = cached.data && cached.data.state;
+                if (s === 'starting' || s === 'stopping' || s === 'pending') return null;
+                return cached.data;
             } catch (e) { }
             return null;
         }
