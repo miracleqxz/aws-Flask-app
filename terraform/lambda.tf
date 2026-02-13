@@ -23,6 +23,7 @@ BACKEND_INSTANCE_ID = os.environ['BACKEND_INSTANCE_ID']
 DYNAMODB_TABLE = os.environ['DYNAMODB_TABLE']
 HEARTBEAT_TIMEOUT = int(os.environ.get('HEARTBEAT_TIMEOUT_MINUTES', '5'))
 AI_AGENT_LAMBDA_NAME = os.environ.get('AI_AGENT_LAMBDA_NAME', '')
+AI_AGENT_INSTANCE_ID = os.environ.get('AI_AGENT_INSTANCE_ID', '')
 
 def get_table():
     return dynamodb.Table(DYNAMODB_TABLE)
@@ -196,6 +197,18 @@ def check_heartbeat():
         result['reason'] = f'Heartbeat timeout ({diff_minutes:.1f} min > {HEARTBEAT_TIMEOUT} min)'
         return result
     
+    if AI_AGENT_INSTANCE_ID:
+        try:
+            ai_resp = ec2.describe_instances(InstanceIds=[AI_AGENT_INSTANCE_ID])
+            ai_state = ai_resp['Reservations'][0]['Instances'][0]['State']['Name'] if ai_resp['Reservations'] else 'unknown'
+            if ai_state == 'stopped':
+                logger.info('AI agent is stopped, stopping backend too')
+                result = stop_backend()
+                result['reason'] = 'AI agent instance is stopped'
+                return result
+        except Exception as e:
+            logger.warning(f'Could not check AI agent state: {e}')
+    
     return {
         'status': 'ok',
         'action': 'none',
@@ -345,6 +358,7 @@ resource "aws_lambda_function" "backend_control" {
       DYNAMODB_TABLE            = aws_dynamodb_table.backend_state.name
       HEARTBEAT_TIMEOUT_MINUTES = tostring(var.heartbeat_timeout_minutes)
       AI_AGENT_LAMBDA_NAME      = var.lambda_ai_agent_function_name
+      AI_AGENT_INSTANCE_ID      = aws_instance.ai_agent.id
     }
   }
 
