@@ -656,10 +656,33 @@
         let backendState = 'unknown';
         let heartbeatInterval = null;
         let statusCheckInterval = null;
+        const STATE_STORAGE_KEY = 'movieAssistantBackendState';
 
         document.getElementById('searchInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') searchMovies();
         });
+
+        // ── State Persistence ──
+
+        function saveState(data) {
+            try {
+                localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
+                    data: data,
+                    timestamp: Date.now()
+                }));
+            } catch (e) { /* quota or private mode */ }
+        }
+
+        function loadCachedState() {
+            try {
+                const raw = localStorage.getItem(STATE_STORAGE_KEY);
+                if (!raw) return null;
+                const cached = JSON.parse(raw);
+                // Use cache if less than 10 minutes old
+                if (Date.now() - cached.timestamp < 600000) return cached.data;
+            } catch (e) { }
+            return null;
+        }
 
         // ── Backend Control ──
 
@@ -667,16 +690,16 @@
             try {
                 const res = await fetch('/api/backend/status');
                 const data = await res.json();
-                updateBackendUI(data);
+                updateBackendUI(data, true);
                 return data;
             } catch (e) {
                 console.error('Backend status check failed:', e);
-                updateBackendUI({ state: 'unknown' });
+                // On network error, don't reset to unknown — keep last known state
                 return null;
             }
         }
 
-        function updateBackendUI(data) {
+        function updateBackendUI(data, persist) {
             const badge = document.getElementById('backendStatusBadge');
             const dot = document.getElementById('statusDot');
             const text = document.getElementById('statusText');
@@ -716,6 +739,9 @@
                 heartbeat.style.display = 'none';
                 stopHeartbeat();
             }
+
+            // Persist to localStorage so state survives page navigation
+            if (persist) saveState(data);
         }
 
         async function startBackend() {
@@ -766,7 +792,7 @@
 
             // Show intermediate state right away
             const intermediateState = target === 'running' ? 'starting' : 'stopping';
-            updateBackendUI({ state: intermediateState });
+            updateBackendUI({ state: intermediateState }, true);
 
             const poll = async () => {
                 if (Date.now() - start > timeout) {
@@ -782,13 +808,13 @@
                     if (data.state === target) {
                         isPolling = false;
                         pollingTarget = null;
-                        updateBackendUI(data);
+                        updateBackendUI(data, true);
                         if (target === 'running') loadFeaturedMovies();
                         return;
                     }
 
-                    // Not yet at target – keep showing intermediate state
-                    updateBackendUI({ ...data, state: intermediateState });
+                    // Show real server state (not forced override)
+                    updateBackendUI(data, true);
                 } catch (e) {
                     // Network error during poll – keep polling
                 }
@@ -901,6 +927,12 @@
         // ── Init ──
 
         async function init() {
+            // Restore persisted state instantly (no flicker on page navigation)
+            const cached = loadCachedState();
+            if (cached) {
+                updateBackendUI(cached, false);
+            }
+
             // Load movies and check status in parallel (don't block movies behind Lambda calls)
             loadFeaturedMovies();
             checkBackendStatus();

@@ -4,6 +4,7 @@ import boto3
 import os
 import logging
 import json
+from concurrent.futures import ThreadPoolExecutor
 
 from database.rate_limiter import check_rate_limit, get_rate_limit_status
 from database.movies_db import (
@@ -316,8 +317,22 @@ def api_sqs_stats():
 @app.route('/api/backend/status')
 def backend_status():
     try:
-        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'status'})
-        ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'status'})
+        # Call both Lambdas in parallel to halve response time
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            backend_future = executor.submit(invoke_lambda, Config.LAMBDA_BACKEND_CONTROL, {'action': 'status'})
+            ai_agent_future = executor.submit(invoke_lambda, Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'status'})
+
+            try:
+                backend = backend_future.result(timeout=15)
+            except Exception as e:
+                logging.warning(f"Backend status Lambda failed: {e}")
+                backend = {'state': 'unknown'}
+
+            try:
+                ai_agent = ai_agent_future.result(timeout=15)
+            except Exception as e:
+                logging.warning(f"AI agent status Lambda failed: {e}")
+                ai_agent = {'state': 'unknown'}
 
         backend_state = backend.get('state', 'unknown')
         ai_state = ai_agent.get('state', 'unknown')
@@ -328,6 +343,9 @@ def backend_status():
             overall = 'stopped'
         elif backend_state in ('stopping', 'shutting-down') or ai_state in ('stopping', 'shutting-down', 'deprovisioning'):
             overall = 'stopping'
+        elif backend_state == 'running':
+            # Backend services are up — search, movies work. AI agent may still be booting.
+            overall = 'running'
         else:
             overall = 'starting'
 
