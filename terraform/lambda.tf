@@ -60,13 +60,21 @@ def start_backend():
                 'message': 'Backend is already running'
             }
         
-        if current_state in ['stopping', 'stopped']:
-            if current_state == 'stopping':
-                logger.warning("Instance is stopping, cannot start")
+        if current_state == 'stopping':
+            logger.info("Instance is stopping, waiting for it to stop before starting...")
+            import time as _time
+            for attempt in range(6):
+                _time.sleep(3)
+                state = get_instance_state()['state']
+                logger.info(f"Wait attempt {attempt+1}/6: state={state}")
+                if state == 'stopped':
+                    break
+            else:
+                logger.warning("Instance still stopping after wait, returning retry status")
                 return {
                     'status': 'stopping',
                     'instance_id': BACKEND_INSTANCE_ID,
-                    'message': 'Backend is currently stopping, please wait'
+                    'message': 'Backend is still stopping, please retry in a few seconds'
                 }
         
         logger.info(f"Starting instance {BACKEND_INSTANCE_ID}")
@@ -325,7 +333,7 @@ resource "aws_lambda_function" "backend_control" {
   role          = aws_iam_role.lambda_backend_control.arn
   handler       = "lambda_function.handler"
   runtime       = "python3.12"
-  timeout       = 60
+  timeout       = 90
   memory_size   = 128
 
   filename         = data.archive_file.lambda_backend_control.output_path

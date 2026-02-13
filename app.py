@@ -335,7 +335,15 @@ def backend_status():
 @app.route('/api/backend/start', methods=['POST'])
 def backend_start():
     try:
-        backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'})
+        # Retry if backend instance is still stopping
+        for attempt in range(5):
+            backend = invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'})
+            if backend.get('status') != 'stopping':
+                break
+            logging.info(f"Backend still stopping, retry {attempt + 1}/5")
+            import time
+            time.sleep(5)
+        
         ai_agent = invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'start'})
 
         if ai_agent.get('state') not in ('running', 'pending', 'starting'):
