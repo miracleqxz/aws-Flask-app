@@ -258,18 +258,6 @@ variable "meilisearch_image" {
   default     = "getmeili/meilisearch:latest"
 }
 
-variable "consul_image" {
-  description = "Docker image for consul"
-  type        = string
-  default     = "hashicorp/consul:latest"
-}
-
-variable "prometheus_image" {
-  description = "Docker image for prometheus"
-  type        = string
-  default     = "prom/prometheus:latest"
-}
-
 variable "grafana_image" {
   description = "Docker image for grafana"
   type        = string
@@ -335,12 +323,6 @@ variable "heartbeat_timeout_minutes" {
     condition     = var.heartbeat_timeout_minutes >= 1 && var.heartbeat_timeout_minutes <= 60
     error_message = "Heartbeat timeout must be between 1 and 60 minutes."
   }
-}
-
-variable "heartbeat_interval_seconds" {
-  description = "Interval between heartbeat checks (EventBridge)"
-  type        = number
-  default     = 60 # Check every minute
 }
 
 variable "dynamodb_table_name" {

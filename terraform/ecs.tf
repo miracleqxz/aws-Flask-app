@@ -55,8 +55,6 @@ resource "aws_ecs_task_definition" "frontend" {
         { name = "MEILISEARCH_PORT", value = "7700" },
         { name = "MEILISEARCH_KEY", value = var.meilisearch_master_key },
 
-        { name = "CONSUL_HOST", value = aws_instance.backend.private_ip },
-        { name = "CONSUL_PORT", value = "8500" },
         { name = "VICTORIAMETRICS_HOST", value = aws_instance.backend.private_ip },
         { name = "VICTORIAMETRICS_PORT", value = "8428" },
         { name = "GRAFANA_HOST", value = aws_instance.backend.private_ip },
@@ -314,7 +312,7 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "POSTGRES_USER", value = var.db_username },
         { name = "POSTGRES_PASSWORD", value = var.db_password },
 
-        { name = "REDIS_HOST", value = "172.17.0.1" },
+        { name = "REDIS_HOST", value = "127.0.0.1" },
         { name = "REDIS_PORT", value = "6379" },
 
         { name = "AWS_REGION", value = var.aws_region },

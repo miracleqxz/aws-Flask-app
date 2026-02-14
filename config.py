@@ -25,9 +25,6 @@ class Config:
 
     S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'service-checker-movie-posters')
 
-    CONSUL_HOST = os.getenv('CONSUL_HOST', 'localhost')
-    CONSUL_PORT = int(os.getenv('CONSUL_PORT', '8500'))
-
     NGINX_HOST = os.getenv('NGINX_HOST', 'localhost')
     NGINX_PORT = int(os.getenv('NGINX_PORT', '80'))
 
