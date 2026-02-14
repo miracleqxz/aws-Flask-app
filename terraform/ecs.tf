@@ -68,8 +68,8 @@ resource "aws_ecs_task_definition" "frontend" {
         { name = "S3_BUCKET_NAME", value = aws_s3_bucket.posters.id },
         { name = "SQS_QUEUE_URL", value = aws_sqs_queue.analytics.url },
 
-        { name = "LAMBDA_BACKEND_CONTROL", value = var.lambda_function_name },
         { name = "LAMBDA_AI_AGENT_CONTROL", value = var.lambda_ai_agent_function_name },
+        { name = "LAMBDA_SCHEDULER", value = aws_lambda_function.instance_scheduler.function_name },
 
         { name = "AI_CHAT_API_URL", value = aws_apigatewayv2_api.ai_chat.api_endpoint },
         { name = "AI_CHAT_API_KEY", value = var.ai_chat_api_key },

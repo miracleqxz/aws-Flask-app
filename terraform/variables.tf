@@ -88,7 +88,7 @@ variable "backend_instance_type" {
 variable "ai_agent_instance_type" {
   description = "EC2 instance type for AI agent"
   type        = string
-  default     = "t3.small"
+  default     = "t2.micro"
 }
 
 #variable "backend_key_name" {
@@ -430,4 +430,16 @@ variable "gemini_model" {
   description = "Model name for Google Gemini API"
   type        = string
   default     = ""
+}
+
+variable "scheduler_start_hour_utc" {
+  description = "UTC hour to start instances (08:00 local = adjust for your timezone)"
+  type        = number
+  default     = 5 # 08:00 MSK (UTC+3)
+}
+
+variable "scheduler_stop_hour_utc" {
+  description = "UTC hour to stop instances (00:00 local = adjust for your timezone)"
+  type        = number
+  default     = 21 # 00:00 MSK (UTC+3)
 }

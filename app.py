@@ -152,7 +152,6 @@ def metrics():
 
 @app.route('/api/meilisearch/status')
 def meilisearch_status():
-    """Lightweight direct check — Flask and Meilisearch are on the same EC2."""
     try:
         from database.meilisearch_sync import get_meili_client
         client = get_meili_client()
@@ -162,6 +161,19 @@ def meilisearch_status():
     except Exception as e:
         logging.warning(f"Meilisearch status check: {e}")
         return jsonify({'status': 'unavailable', 'documents': 0}), 503
+
+
+@app.route('/api/meilisearch/reindex', methods=['POST'])
+def meilisearch_reindex():
+    try:
+        from database.meilisearch_sync import index_all_movies
+        result = index_all_movies()
+        if result:
+            return jsonify({'status': 'ok', 'message': 'Reindex started'})
+        return jsonify({'status': 'error', 'message': 'Reindex failed'}), 500
+    except Exception as e:
+        logging.error(f"Reindex error: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 #  Search & Movies API
@@ -310,90 +322,6 @@ def api_sqs_stats():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-
-#  Backend Control (Lambda orchestration)
-
-@app.route('/api/backend/status')
-def backend_status():
-    try:
-        # Call both Lambdas in parallel to halve response time
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            backend_future = executor.submit(invoke_lambda, Config.LAMBDA_BACKEND_CONTROL, {'action': 'status'})
-            ai_agent_future = executor.submit(invoke_lambda, Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'status'})
-
-            try:
-                backend = backend_future.result(timeout=15)
-            except Exception as e:
-                logging.warning(f"Backend status Lambda failed: {e}")
-                backend = {'state': 'unknown'}
-
-            try:
-                ai_agent = ai_agent_future.result(timeout=15)
-            except Exception as e:
-                logging.warning(f"AI agent status Lambda failed: {e}")
-                ai_agent = {'state': 'unknown'}
-
-        backend_state = backend.get('state', 'unknown')
-        ai_state = ai_agent.get('state', 'unknown')
-
-        if backend_state == 'running' and ai_state == 'running':
-            overall = 'running'
-        elif backend_state == 'stopped' and ai_state == 'stopped':
-            overall = 'stopped'
-        elif backend_state in ('stopping', 'shutting-down') or ai_state in ('stopping', 'shutting-down', 'deprovisioning'):
-            overall = 'stopping'
-        elif backend_state == 'running':
-            # Backend services are up — search, movies work. AI agent may still be booting.
-            overall = 'running'
-        else:
-            overall = 'starting'
-
-        return jsonify({
-            'state': overall,
-            'instance_id': backend.get('instance_id'),
-            'private_ip': backend.get('private_ip'),
-            'heartbeat': backend.get('heartbeat'),
-            'backend': backend,
-            'ai_agent': ai_agent
-        })
-    except Exception as e:
-        logging.error(f"Backend status error: {e}")
-        return jsonify({'status': 'error', 'state': 'unknown', 'message': str(e)}), 500
-
-
-@app.route('/api/backend/start', methods=['POST'])
-def backend_start():
-    try:
-        # Fire-and-forget: invoke Lambdas asynchronously so the endpoint returns instantly.
-        # The frontend will poll /api/backend/status to track progress.
-        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'start'}, async_invoke=True)
-        invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'start'}, async_invoke=True)
-        return jsonify({'status': 'starting', 'message': 'Start commands sent'})
-    except Exception as e:
-        logging.error(f"Backend start error: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-@app.route('/api/backend/stop', methods=['POST'])
-def backend_stop():
-    try:
-        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'stop'}, async_invoke=True)
-        invoke_lambda(Config.LAMBDA_AI_AGENT_CONTROL, {'action': 'stop'}, async_invoke=True)
-        return jsonify({'status': 'stopping', 'message': 'Stop commands sent'})
-    except Exception as e:
-        logging.error(f"Backend stop error: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-@app.route('/api/backend/heartbeat', methods=['POST'])
-def backend_heartbeat():
-    try:
-        invoke_lambda(Config.LAMBDA_BACKEND_CONTROL, {'action': 'heartbeat'}, async_invoke=True)
-        return jsonify({'status': 'ok'})
-    except Exception as e:
-        logging.error(f"Heartbeat error: {e}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 #  Data Pipeline

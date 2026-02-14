@@ -85,9 +85,9 @@ resource "aws_iam_role_policy" "ecs_task_lambda" {
           "lambda:InvokeFunction"
         ]
         Resource = [
-          "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:${var.lambda_function_name}",
           aws_lambda_function.data_pipeline.arn,
-          aws_lambda_function.ai_agent_control.arn
+          aws_lambda_function.ai_agent_control.arn,
+          aws_lambda_function.instance_scheduler.arn
         ]
       }
     ]
@@ -233,28 +233,6 @@ resource "aws_iam_instance_profile" "ai_agent" {
 
 # 4. Lambda Roles
 
-resource "aws_iam_role" "lambda_backend_control" {
-  name = "${var.project_name}-lambda-backend-control-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name = "${var.project_name}-lambda-backend-control-role"
-  }
-}
-
-
 resource "aws_iam_role" "lambda_data_pipeline" {
   name = "${var.project_name}-lambda-data-pipeline"
 
@@ -305,103 +283,6 @@ resource "aws_iam_role_policy" "lambda_data_pipeline_s3" {
           aws_s3_bucket.posters.arn,
           "${aws_s3_bucket.posters.arn}/*"
         ]
-      }
-    ]
-  })
-}
-
-# EC2 Control Policy - Start/Stop backend instance
-resource "aws_iam_role_policy" "lambda_ec2_control" {
-  role = aws_iam_role.lambda_backend_control.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "EC2Control"
-        Effect = "Allow"
-        Action = [
-          "ec2:StartInstances",
-          "ec2:StopInstances",
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceStatus"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "ec2:ResourceTag/Project" = var.project_name
-          }
-        }
-      },
-      {
-        Sid    = "EC2Describe"
-        Effect = "Allow"
-        Action = [
-          "ec2:DescribeInstances",
-          "ec2:DescribeInstanceStatus"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# DynamoDB Policy - Store backend state and heartbeat
-resource "aws_iam_role_policy" "lambda_dynamodb" {
-  role = aws_iam_role.lambda_backend_control.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "DynamoDBAccess"
-        Effect = "Allow"
-        Action = [
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem",
-          "dynamodb:Query"
-        ]
-        Resource = "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.dynamodb_table_name}"
-      }
-    ]
-  })
-}
-
-# Lambda Invoke Policy - Stop AI agent when backend stops
-resource "aws_iam_role_policy" "lambda_invoke_ai_agent" {
-  role = aws_iam_role.lambda_backend_control.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid      = "InvokeAIAgentLambda"
-        Effect   = "Allow"
-        Action   = ["lambda:InvokeFunction"]
-        Resource = aws_lambda_function.ai_agent_control.arn
-      }
-    ]
-  })
-}
-
-# CloudWatch Logs Policy - Lambda logging
-resource "aws_iam_role_policy" "lambda_logs" {
-  role = aws_iam_role.lambda_backend_control.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "CloudWatchLogs"
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.lambda_function_name}*"
       }
     ]
   })

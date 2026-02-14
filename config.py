@@ -37,8 +37,8 @@ class Config:
     GRAFANA_HOST = os.getenv('GRAFANA_HOST', 'localhost')
     GRAFANA_PORT = int(os.getenv('GRAFANA_PORT', '3000'))
 
-    LAMBDA_BACKEND_CONTROL = os.getenv('LAMBDA_BACKEND_CONTROL', 'backend-control')
     LAMBDA_AI_AGENT_CONTROL = os.getenv('LAMBDA_AI_AGENT_CONTROL', 'ai-agent-control')
+    LAMBDA_SCHEDULER = os.getenv('LAMBDA_SCHEDULER', 'Flask_project-instance-scheduler')
 
     LAMBDA_DATA_PIPELINE = os.getenv('LAMBDA_DATA_PIPELINE', 'Flask_project-data-pipeline')
 

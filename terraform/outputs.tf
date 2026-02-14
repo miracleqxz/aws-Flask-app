@@ -109,22 +109,21 @@ output "backend_service_name" {
 }
 
 output "lambda_function_name" {
-  description = "Lambda function name for backend control"
-  value       = aws_lambda_function.backend_control.function_name
+  description = "Instance scheduler Lambda name"
+  value       = aws_lambda_function.instance_scheduler.function_name
 }
 
 output "api_gateway_url" {
-  description = "API Gateway base URL"
-  value       = aws_apigatewayv2_api.backend_control.api_endpoint
+  description = "Scheduler API Gateway URL"
+  value       = aws_apigatewayv2_api.scheduler.api_endpoint
 }
 
 output "api_endpoints" {
-  description = "API endpoints for backend control"
+  description = "Scheduler API endpoints"
   value = {
-    start     = "${aws_apigatewayv2_api.backend_control.api_endpoint}/start"
-    stop      = "${aws_apigatewayv2_api.backend_control.api_endpoint}/stop"
-    heartbeat = "${aws_apigatewayv2_api.backend_control.api_endpoint}/heartbeat"
-    status    = "${aws_apigatewayv2_api.backend_control.api_endpoint}/status"
+    start  = "${aws_apigatewayv2_api.scheduler.api_endpoint}/start"
+    stop   = "${aws_apigatewayv2_api.scheduler.api_endpoint}/stop"
+    status = "${aws_apigatewayv2_api.scheduler.api_endpoint}/status"
   }
 }
 
