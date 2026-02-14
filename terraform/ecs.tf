@@ -355,17 +355,15 @@ resource "aws_ecs_task_definition" "ai_agent" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
-  cpu    = 128
-  memory = 384
-
   container_definitions = jsonencode([
     {
       name              = "ai-agent"
       image             = var.ai_agent_image
       essential         = true
       cpu               = 128
-      memory            = 384
-      memoryReservation = 192
+      memoryReservation = 128
+
+      command = ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "app:app"]
 
       portMappings = [
         {
