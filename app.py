@@ -4,6 +4,7 @@ import boto3
 import os
 import logging
 import json
+import requests as http_requests
 from concurrent.futures import ThreadPoolExecutor
 
 from database.rate_limiter import check_rate_limit, get_rate_limit_status
@@ -359,8 +360,6 @@ def api_movie_detail(movie_id):
 @app.route('/api/youtube/trailer/<int:movie_id>')
 def youtube_trailer(movie_id):
     """Search YouTube for an official trailer for the given movie."""
-    import requests as http_requests
-
     api_key = Config.YOUTUBE_API_KEY
     if not api_key:
         return jsonify({'error': 'YouTube API key not configured'}), 503
