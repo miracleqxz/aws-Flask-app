@@ -88,7 +88,7 @@ variable "backend_instance_type" {
 variable "ai_agent_instance_type" {
   description = "EC2 instance type for AI agent"
   type        = string
-  default     = "t2.micro"
+  default     = "t2.small"
 }
 
 #variable "backend_key_name" {

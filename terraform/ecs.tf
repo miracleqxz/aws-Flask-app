@@ -360,8 +360,9 @@ resource "aws_ecs_task_definition" "ai_agent" {
       name              = "ai-agent"
       image             = var.ai_agent_image
       essential         = true
-      cpu               = 128
-      memoryReservation = 128
+      cpu               = 256
+      memory            = 1024
+      memoryReservation = 512
 
       command = ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "120", "app:app"]
 
