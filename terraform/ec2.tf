@@ -60,7 +60,7 @@ resource "aws_instance" "frontend" {
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 30  # ECS-optimized AMI snapshot requires >= 30GB
+    volume_size           = 30 # ECS-optimized AMI snapshot requires >= 30GB
     delete_on_termination = true
     encrypted             = true
   }
@@ -103,7 +103,7 @@ resource "aws_instance" "backend" {
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 30  # ECS-optimized AMI snapshot requires >= 30GB
+    volume_size           = 30 # ECS-optimized AMI snapshot requires >= 30GB
     delete_on_termination = true
     encrypted             = true
   }
@@ -141,7 +141,7 @@ resource "aws_instance" "ai_agent" {
 
   root_block_device {
     volume_type           = "gp2"
-    volume_size           = 30  # cannot shrink EBS; keep >= existing size
+    volume_size           = 30 # cannot shrink EBS; keep >= existing size
     delete_on_termination = true
     encrypted             = true
   }
@@ -157,10 +157,6 @@ resource "aws_instance" "ai_agent" {
 
   lifecycle {
     ignore_changes = [ami]
-  }
-
-  provisioner "local-exec" {
-    command = "aws ec2 stop-instances --instance-ids ${self.id}"
   }
 }
 
