@@ -64,16 +64,25 @@
             align-items: center;
         }
 
-        .nav-link {
-            display: inline-flex;
+        /* ── Nav Buttons ── */
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-btn {
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.625rem 1.25rem;
-            border-radius: 8px;
-            border: 1.5px solid #d1d5db;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 1.25rem 2rem;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
             background: #fff;
             color: #1a1a2e;
-            font-size: 0.875rem;
+            font-size: 1.1rem;
             font-weight: 600;
             text-decoration: none;
             cursor: pointer;
@@ -81,211 +90,29 @@
             font-family: inherit;
         }
 
-        .nav-link:hover {
+        .nav-btn:hover {
             border-color: #1a1a2e;
-            box-shadow: 0 2px 8px rgba(26, 26, 46, 0.08);
-            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 26, 46, 0.1);
+            transform: translateY(-2px);
         }
 
-        .nav-link.primary {
+        .nav-btn.primary {
             background: #1a1a2e;
             color: #fff;
             border-color: #1a1a2e;
         }
 
-        .nav-link.primary:hover {
+        .nav-btn.primary:hover {
             background: #16213e;
-            box-shadow: 0 4px 14px rgba(26, 26, 46, 0.25);
+            box-shadow: 0 4px 16px rgba(26, 26, 46, 0.3);
         }
 
-        /* ── Backend Control ── */
-        .backend-panel {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 1rem 1.25rem;
-            margin-bottom: 2rem;
-            font-size: 0.875rem;
+        .nav-btn-icon {
+            font-size: 1.5rem;
         }
 
-        .backend-panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .backend-panel-header h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            font-family: inherit;
-            color: #333;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 3px 10px;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .status-badge.running {
-            background: #e6f4ea;
-            color: #1e7e34;
-        }
-
-        .status-badge.stopped {
-            background: #fce8e8;
-            color: #c0392b;
-        }
-
-        .status-badge.pending {
-            background: #fff8e1;
-            color: #e67e22;
-        }
-
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-        }
-
-        .status-dot.running {
-            background: #27ae60;
-        }
-
-        .status-dot.stopped {
-            background: #e74c3c;
-        }
-
-        .status-dot.pending {
-            background: #f39c12;
-            animation: pulse-dot 1.5s ease infinite;
-        }
-
-        @keyframes pulse-dot {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.35;
-            }
-        }
-
-        .backend-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-control {
-            flex: 1;
-            padding: 7px 16px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background 0.15s, box-shadow 0.15s;
-            letter-spacing: 0.01em;
-        }
-
-        .btn-control:disabled {
-            opacity: 0.35;
-            cursor: default;
-        }
-
-        .btn-control.start {
-            background: #27ae60;
-            color: #fff;
-            border-color: #219a52;
-        }
-
-        .btn-control.start:hover:not(:disabled) {
-            background: #219a52;
-        }
-
-        .btn-control.stop {
-            background: #e74c3c;
-            color: #fff;
-            border-color: #c0392b;
-        }
-
-        .btn-control.stop:hover:not(:disabled) {
-            background: #c0392b;
-        }
-
-        .backend-info-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0;
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid #eee;
-        }
-
-        .info-cell {
-            flex: 1 1 140px;
-            padding: 0.5rem 0.75rem;
-        }
-
-        .info-cell .label {
-            font-size: 0.65rem;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 2px;
-        }
-
-        .info-cell .value {
-            font-weight: 500;
-            font-size: 0.82rem;
-            color: #333;
-            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-        }
-
-        .info-cell .value:not([style]) {
-            font-family: inherit;
-        }
-
-        .heartbeat-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
-            color: #999;
-            margin-left: 0.5rem;
-        }
-
-        .heartbeat-pulse {
-            display: inline-block;
-            font-size: 0.65rem;
-            animation: hb 1.2s ease infinite;
-        }
-
-        .heartbeat-pulse.off {
-            animation: none;
-            opacity: 0.25;
-        }
-
-        @keyframes hb {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
+        .nav-btn-label {
+            font-size: 1.1rem;
         }
 
         /* ── Search ── */
@@ -569,6 +396,10 @@
             .movie-grid {
                 grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             }
+
+            .nav-buttons {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -582,53 +413,7 @@
                 <h1>Movie Assistant</h1>
                 <p class="subtitle">Search across 200 popular movies with full-text search</p>
             </div>
-            <nav class="header-nav">
-                <a href="/movies" class="nav-link">Browse all movies</a>
-                <a href="/movies?ai=1" class="nav-link primary">AI Movie Assistant</a>
-            </nav>
         </header>
-
-        <!-- Backend Control -->
-        <section class="backend-panel">
-            <div class="backend-panel-header">
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <h3>Backend Servers</h3>
-                </div>
-                <span class="status-badge pending" id="backendStatusBadge">
-                    <span class="status-dot pending" id="statusDot"></span>
-                    <span id="statusText">Checking…</span>
-                </span>
-            </div>
-
-            <p style="margin-bottom:0.6rem;font-size:0.8rem;color:#777;">Start the backend servers to enable search,
-                movie browsing, and AI assistant.</p>
-
-            <div class="backend-actions">
-                <button class="btn-control start" id="btnStart" onclick="startBackend()" disabled>Start</button>
-                <button class="btn-control stop" id="btnStop" onclick="stopBackend()" disabled>Stop</button>
-            </div>
-
-            <div class="backend-info-grid" id="backendInfo" style="display:none;">
-                <div class="info-cell">
-                    <div class="label">Instance</div>
-                    <div class="value" id="infoInstanceId"
-                        style="font-family:'SF Mono','Menlo','Consolas',monospace;font-size:0.78rem;">-</div>
-                </div>
-                <div class="info-cell">
-                    <div class="label">IP</div>
-                    <div class="value" id="infoPrivateIp"
-                        style="font-family:'SF Mono','Menlo','Consolas',monospace;font-size:0.78rem;">-</div>
-                </div>
-                <div class="info-cell">
-                    <div class="label">Auto-stop</div>
-                    <div class="value" id="infoShutdownTimer">-</div>
-                </div>
-                <div class="info-cell">
-                    <div class="label">Stack</div>
-                    <div class="value" style="font-size:0.78rem;">Redis · Meilisearch · VictoriaMetrics · Grafana</div>
-                </div>
-            </div>
-        </section>
 
         <!-- Search -->
         <section class="search-section">
@@ -639,6 +424,12 @@
             </div>
             <div class="search-meta" id="searchMeta"></div>
         </section>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <a href="/movies" class="nav-btn">Browse All Movies</a>
+            <a href="/movies?ai=1" class="nav-btn primary">AI Movie Assistant</a>
+        </div>
 
         <!-- Search Results (hidden by default) -->
         <div class="results-grid" id="results"></div>
@@ -653,189 +444,13 @@
     </div>
 
     <script>
-        let backendState = 'unknown';
-        let heartbeatInterval = null;
-        let statusCheckInterval = null;
-        const STATE_STORAGE_KEY = 'movieAssistantBackendState';
-
         document.getElementById('searchInput').addEventListener('keypress', e => {
             if (e.key === 'Enter') searchMovies();
         });
 
-        function saveState(data) {
-            try {
-                localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
-            } catch (e) { }
-        }
-
-        function loadCachedState() {
-            try {
-                const raw = localStorage.getItem(STATE_STORAGE_KEY);
-                if (!raw) return null;
-                const cached = JSON.parse(raw);
-                if (Date.now() - cached.timestamp > 600000) return null;
-                const s = cached.data && cached.data.state;
-                if (s === 'starting' || s === 'stopping' || s === 'pending') return null;
-                return cached.data;
-            } catch (e) { }
-            return null;
-        }
-
-        async function checkBackendStatus() {
-            try {
-                const res = await fetch('/api/backend/status');
-                const data = await res.json();
-                updateBackendUI(data, true);
-                return data;
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function updateBackendUI(data, persist) {
-            const badge = document.getElementById('backendStatusBadge');
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            const btnStart = document.getElementById('btnStart');
-            const btnStop = document.getElementById('btnStop');
-            const info = document.getElementById('backendInfo');
-            const heartbeat = document.getElementById('heartbeatIndicator');
-            const state = data.state || 'unknown';
-            backendState = state;
-
-            const cls = state === 'running' ? 'running' : (state === 'stopped' || state === 'unknown') ? 'stopped' : 'pending';
-            badge.className = 'status-badge ' + cls;
-            dot.className = 'status-dot ' + cls;
-
-            const labels = { running: 'Running', stopped: 'Stopped', pending: 'Pending…', starting: 'Starting…', stopping: 'Stopping…' };
-            text.textContent = labels[state] || 'Unknown';
-
-            btnStart.textContent = 'Start';
-            btnStop.textContent = 'Stop';
-            btnStart.disabled = (state === 'running' || state === 'pending' || state === 'starting');
-            btnStop.disabled = (state === 'stopped' || state === 'stopping');
-
-            if (state === 'running' || (state === 'starting' && data.instance_id)) {
-                info.style.display = 'flex';
-                document.getElementById('infoInstanceId').textContent = data.instance_id || '-';
-                document.getElementById('infoPrivateIp').textContent = data.private_ip || '-';
-                if (data.heartbeat && data.heartbeat.will_stop_in !== undefined) {
-                    document.getElementById('infoShutdownTimer').textContent = data.heartbeat.will_stop_in + ' min';
-                } else {
-                    document.getElementById('infoShutdownTimer').textContent = '-';
-                }
-                if (!heartbeatInterval) startHeartbeat();
-                heartbeat.style.display = state === 'running' ? 'inline-flex' : 'none';
-            } else {
-                info.style.display = 'none';
-                heartbeat.style.display = 'none';
-                stopHeartbeat();
-            }
-
-            if (persist) saveState(data);
-        }
-
-        async function startBackend() {
-            const btn = document.getElementById('btnStart');
-            btn.disabled = true;
-            btn.textContent = 'Starting…';
-            try {
-                const res = await fetch('/api/backend/start', { method: 'POST' });
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(data.message || `HTTP ${res.status}`);
-                }
-                pollUntilState('running', 300000);
-            } catch (e) {
-                alert('Failed to start backend: ' + e.message);
-                btn.disabled = false;
-                btn.textContent = 'Start';
-            }
-        }
-
-        async function stopBackend() {
-            if (!confirm('Stop backend services?')) return;
-            const btn = document.getElementById('btnStop');
-            btn.disabled = true;
-            btn.textContent = 'Stopping…';
-            try {
-                const res = await fetch('/api/backend/stop', { method: 'POST' });
-                if (!res.ok) {
-                    const data = await res.json().catch(() => ({}));
-                    throw new Error(data.message || `HTTP ${res.status}`);
-                }
-                stopHeartbeat();
-                pollUntilState('stopped', 60000);
-            } catch (e) {
-                alert('Failed to stop backend: ' + e.message);
-                btn.disabled = false;
-                btn.textContent = 'Stop';
-            }
-        }
-
-        let isPolling = false;
-        let pollingTarget = null;
-
-        async function pollUntilState(target, timeout) {
-            isPolling = true;
-            pollingTarget = target;
-            const start = Date.now();
-            const intermediateState = target === 'running' ? 'starting' : 'stopping';
-            updateBackendUI({ state: intermediateState }, true);
-
-            const poll = async () => {
-                if (Date.now() - start > timeout) {
-                    isPolling = false;
-                    pollingTarget = null;
-                    checkBackendStatus();
-                    return;
-                }
-                try {
-                    const res = await fetch('/api/backend/status');
-                    const data = await res.json();
-                    if (data.state === target) {
-                        isPolling = false;
-                        pollingTarget = null;
-                        updateBackendUI(data, true);
-                        if (target === 'running') loadFeaturedMovies();
-                        return;
-                    }
-                    updateBackendUI(data, true);
-                } catch (e) { }
-                setTimeout(poll, 4000);
-            };
-            poll();
-        }
-
-        function startHeartbeat() {
-            if (heartbeatInterval) return;
-            sendHeartbeat();
-            heartbeatInterval = setInterval(sendHeartbeat, 30000);
-            const icon = document.querySelector('.heartbeat-pulse');
-            if (icon) icon.classList.remove('off');
-        }
-
-        function stopHeartbeat() {
-            if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-            const icon = document.querySelector('.heartbeat-pulse');
-            if (icon) icon.classList.add('off');
-        }
-
-        async function sendHeartbeat() {
-            try { await fetch('/api/backend/heartbeat', { method: 'POST' }); } catch (e) { }
-        }
-
-        window.addEventListener('beforeunload', stopHeartbeat);
-
         async function searchMovies() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
-
-            if (backendState !== 'running' && backendState !== 'starting') {
-                document.getElementById('results').innerHTML = `
-                    <div class="empty-state"><h2>Backend Offline</h2><p>Search requires Meilisearch. Start the backend first.</p></div>`;
-                return;
-            }
 
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '<div class="loading-text">Searching…</div>';
@@ -863,8 +478,6 @@
                             <p class="desc">${m.description}</p>
                         </div>
                     </a>`).join('');
-
-                loadPopularSearches();
             } catch (e) {
                 resultsDiv.innerHTML = `<div class="empty-state"><h2>Error</h2><p>${e.message}</p></div>`;
             }
@@ -895,24 +508,7 @@
             }
         }
 
-        async function loadPopularSearches() { }
-
-        async function init() {
-            const cached = loadCachedState();
-            if (cached) updateBackendUI(cached, false);
-
-            loadFeaturedMovies();
-            checkBackendStatus();
-            statusCheckInterval = setInterval(() => {
-                if (!isPolling) checkBackendStatus();
-            }, 10000);
-
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden && !isPolling) checkBackendStatus();
-            });
-        }
-
-        init();
+        loadFeaturedMovies();
     </script>
 </body>
 
