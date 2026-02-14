@@ -210,7 +210,7 @@ def search_movies(query, limit=10):
 def get_movie_details(movie_id):
     try:
         response = requests.get(
-            f"{MOVIE_API_BASE_URL}/api/ai/movie/{movie_id}",
+            f"{MOVIE_API_BASE_URL}/api/movie/{movie_id}",
             timeout=10
         )
         if response.status_code == 200:

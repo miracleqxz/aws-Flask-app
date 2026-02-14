@@ -8,8 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from database.rate_limiter import check_rate_limit, get_rate_limit_status
 from database.movies_db import (
-    get_movies_paginated, get_all_genres, get_movies_by_genre,
-    get_movies_by_genres, get_similar_movies, get_movie_by_id,
+    get_movies_paginated, get_movie_by_id,
     get_all_movies, log_search_query
 )
 from database.redis_cache import get_cached_search, set_cached_search, get_cache_stats, clear_search_cache
@@ -55,20 +54,6 @@ def invoke_lambda(function_name, payload, async_invoke=False):
     if 'body' in result:
         result = json.loads(result['body'])
     return result
-
-
-MOOD_TO_GENRES = {
-    "uplifting": ["Comedy", "Romance", "Adventure"],
-    "dark": ["Thriller", "Crime", "Drama"],
-    "intense": ["Action", "Thriller", "War"],
-    "romantic": ["Romance", "Drama"],
-    "funny": ["Comedy"],
-    "thought-provoking": ["Sci-Fi", "Drama", "Mystery"],
-    "scary": ["Horror", "Thriller"],
-    "epic": ["Action", "Adventure", "Fantasy"],
-    "emotional": ["Drama", "Romance"],
-    "nostalgic": ["Adventure", "Fantasy", "Family"],
-}
 
 
 #  Pages
@@ -359,59 +344,14 @@ def data_rate_limit_status():
     return jsonify(get_rate_limit_status('data_sync', cooldown_seconds=300))
 
 
-#  AI Agent API (consumed by AI Flask app)
+#  Movie Detail API
 
-@app.route('/api/ai/search')
-def ai_search():
-    query = request.args.get('q', '')
-    limit = request.args.get('limit', 5, type=int)
-    if not query:
-        return jsonify({'error': 'Query parameter "q" is required'}), 400
-    results = search_movies_meili(query, limit)
-    return jsonify({'movies': results, 'count': len(results)})
-
-
-@app.route('/api/ai/genres')
-def ai_genres():
-    genres = get_all_genres()
-    return jsonify({'genres': genres, 'count': len(genres)})
-
-
-@app.route('/api/ai/by-genre')
-def ai_by_genre():
-    genre = request.args.get('genre', '')
-    limit = request.args.get('limit', 5, type=int)
-    if not genre:
-        return jsonify({'error': 'Query parameter "genre" is required'}), 400
-    results = get_movies_by_genre(genre, limit)
-    return jsonify({'movies': results, 'count': len(results)})
-
-
-@app.route('/api/ai/similar/<int:movie_id>')
-def ai_similar(movie_id):
-    limit = request.args.get('limit', 5, type=int)
-    results = get_similar_movies(movie_id, limit)
-    return jsonify({'movies': results, 'count': len(results)})
-
-
-@app.route('/api/ai/movie/<int:movie_id>')
-def ai_movie_detail(movie_id):
+@app.route('/api/movie/<int:movie_id>')
+def api_movie_detail(movie_id):
     movie = get_movie_by_id(movie_id)
     if not movie:
         return jsonify({'error': 'Movie not found'}), 404
     return jsonify({'movie': dict(movie)})
-
-
-@app.route('/api/ai/by-mood')
-def ai_by_mood():
-    mood = request.args.get('mood', '')
-    limit = request.args.get('limit', 5, type=int)
-    if not mood:
-        return jsonify({'error': 'Query parameter "mood" is required'}), 400
-
-    genres = MOOD_TO_GENRES.get(mood.lower(), ["Drama"])
-    results = get_movies_by_genres(genres, limit)
-    return jsonify({'movies': results, 'count': len(results), 'mood': mood})
 
 
 #  YouTube Trailer API
