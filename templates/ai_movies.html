@@ -1022,7 +1022,7 @@
             $detailView.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading…</div>';
 
             try {
-                const res = await fetch(`/api/ai/movie/${movieId}`);
+                const res = await fetch(`/api/movie/${movieId}`);
                 const data = await res.json();
 
                 if (data.movie) {
