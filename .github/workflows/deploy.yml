@@ -11,6 +11,7 @@ on:
       - "templates/**"
       - "ai_agent/**"
       - "monitoring/**"
+      - "nginx/**"
       - "requirements.txt"
       - "startup.sh"
       - "Dockerfile"
@@ -25,6 +26,7 @@ on:
       - "services/**"
       - "templates/**"
       - "monitoring/**"
+      - "nginx/**"
       - "requirements.txt"
       - "startup.sh"
       - "Dockerfile"
@@ -150,7 +152,52 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Detect changed files
+        id: changes
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "all")
+          if [ "$CHANGED" = "all" ]; then
+            echo "flask=true" >> $GITHUB_OUTPUT
+            echo "nginx=true" >> $GITHUB_OUTPUT
+            echo "ai_agent=true" >> $GITHUB_OUTPUT
+            echo "victoriametrics=true" >> $GITHUB_OUTPUT
+            echo "grafana=true" >> $GITHUB_OUTPUT
+          else
+            echo "$CHANGED"
+            # Flask app: root py files, database/, templates/, requirements.txt, Dockerfile, startup.sh
+            if echo "$CHANGED" | grep -qE "^(app\.py|config\.py|metrics\.py|init_data\.py|analytics_worker\.py|upload_posters_to_s3\.py|database/|templates/|requirements\.txt|startup\.sh|Dockerfile|\.dockerignore)"; then
+              echo "flask=true" >> $GITHUB_OUTPUT
+            else
+              echo "flask=false" >> $GITHUB_OUTPUT
+            fi
+            # Nginx
+            if echo "$CHANGED" | grep -qE "^nginx/"; then
+              echo "nginx=true" >> $GITHUB_OUTPUT
+            else
+              echo "nginx=false" >> $GITHUB_OUTPUT
+            fi
+            # AI Agent
+            if echo "$CHANGED" | grep -qE "^ai_agent/"; then
+              echo "ai_agent=true" >> $GITHUB_OUTPUT
+            else
+              echo "ai_agent=false" >> $GITHUB_OUTPUT
+            fi
+            # VictoriaMetrics
+            if echo "$CHANGED" | grep -qE "^monitoring/victoriametrics/"; then
+              echo "victoriametrics=true" >> $GITHUB_OUTPUT
+            else
+              echo "victoriametrics=false" >> $GITHUB_OUTPUT
+            fi
+            # Grafana
+            if echo "$CHANGED" | grep -qE "^monitoring/grafana/"; then
+              echo "grafana=true" >> $GITHUB_OUTPUT
+            else
+              echo "grafana=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - name: Build Docker image
+        if: steps.changes.outputs.flask == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -160,6 +207,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Scan Docker image with Trivy
+        if: steps.changes.outputs.flask == 'true'
         continue-on-error: true
         uses: aquasecurity/trivy-action@master
         with:
@@ -169,6 +217,7 @@ jobs:
           severity: "CRITICAL,HIGH"
 
       - name: Push Docker image
+        if: steps.changes.outputs.flask == 'true'
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -179,6 +228,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push AI Agent Docker image
+        if: steps.changes.outputs.ai_agent == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./ai_agent
@@ -188,6 +238,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push VictoriaMetrics image
+        if: steps.changes.outputs.victoriametrics == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./monitoring/victoriametrics
@@ -197,11 +248,22 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push Grafana image
+        if: steps.changes.outputs.grafana == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./monitoring/grafana
           push: true
           tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-grafana:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Nginx image
+        if: steps.changes.outputs.nginx == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./nginx
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-nginx:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -213,6 +275,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Force ECS deployment - Frontend
+        if: steps.changes.outputs.flask == 'true' || steps.changes.outputs.nginx == 'true'
         run: |
           aws ecs update-service \
             --cluster ${{ secrets.ECS_CLUSTER }} \
@@ -220,6 +283,7 @@ jobs:
             --force-new-deployment
 
       - name: Force ECS deployment - Backend
+        if: steps.changes.outputs.victoriametrics == 'true' || steps.changes.outputs.grafana == 'true' || steps.changes.outputs.flask == 'true'
         continue-on-error: true
         run: |
           aws ecs update-service \
@@ -228,6 +292,7 @@ jobs:
             --force-new-deployment
 
       - name: Force ECS deployment - AI Agent
+        if: steps.changes.outputs.ai_agent == 'true'
         continue-on-error: true
         run: |
           aws ecs update-service \
