@@ -1,0 +1,284 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: email
+    receivers:
+      - uid: email-receiver
+        type: email
+        disableResolveMessage: false
+        settings:
+          addresses: ${GF_ALERTING_EMAIL_TO}
+          singleEmail: true
+
+policies:
+  - orgId: 1
+    receiver: email
+    group_by:
+      - grafana_folder
+      - alertname
+    routes:
+      - receiver: email
+        group_by:
+          - alertname
+          - service
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        matchers:
+          - severity =~ "warning|critical"
+
+groups:
+  - orgId: 1
+    name: flask-alerts
+    folder: Service Checker
+    interval: 1m
+    rules:
+      - uid: flask-app-down
+        title: Flask App Down
+        condition: B
+        for: 1m
+        labels:
+          severity: critical
+          service: flask
+        annotations:
+          summary: Flask application is DOWN
+          description: "Flask target has been unreachable for over 1 minute."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: up{job="flask-app"}
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
+
+      - uid: flask-high-error-rate
+        title: Flask High Error Rate
+        condition: B
+        for: 5m
+        labels:
+          severity: critical
+          service: flask
+        annotations:
+          summary: "High 5xx error rate on Flask app"
+          description: "Error rate exceeded 5% for 5 minutes."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: |
+                (
+                  sum(rate(flask_request_count{http_status=~"5.."}[5m]))
+                  /
+                  sum(rate(flask_request_count[5m]))
+                ) * 100
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [5]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
+
+      - uid: flask-high-latency
+        title: Flask High p95 Latency
+        condition: B
+        for: 5m
+        labels:
+          severity: warning
+          service: flask
+        annotations:
+          summary: "High p95 latency on Flask app"
+          description: "p95 latency exceeded 2 seconds for 5 minutes."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: |
+                histogram_quantile(0.95,
+                  sum(rate(flask_request_duration_seconds_bucket[5m])) by (le)
+                )
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [2]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
+
+      - uid: flask-high-request-rate
+        title: Flask High Request Rate
+        condition: B
+        for: 5m
+        labels:
+          severity: warning
+          service: flask
+        annotations:
+          summary: "Unusually high request rate"
+          description: "Request rate exceeded 100 req/s for 5 minutes."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: sum(rate(flask_request_count[1m]))
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [100]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
+
+  - orgId: 1
+    name: cache-alerts
+    folder: Service Checker
+    interval: 1m
+    rules:
+      - uid: low-cache-hit-rate
+        title: Low Cache Hit Rate
+        condition: B
+        for: 15m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Cache hit rate is low"
+          description: "Cache hit rate is below 30% for 15 minutes."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: |
+                rate(flask_cache_hits_total[10m])
+                /
+                (rate(flask_cache_hits_total[10m]) + rate(flask_cache_misses_total[10m]))
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 900
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [0.3]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
+
+  - orgId: 1
+    name: victoriametrics-alerts
+    folder: Service Checker
+    interval: 1m
+    rules:
+      - uid: victoriametrics-down
+        title: VictoriaMetrics Down
+        condition: B
+        for: 1m
+        labels:
+          severity: critical
+          service: victoriametrics
+        annotations:
+          summary: "VictoriaMetrics is DOWN"
+          description: "VictoriaMetrics has been unreachable for over 1 minute."
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: victoriametrics
+            model:
+              expr: up{job="victoriametrics"}
+              instant: true
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: lt
+                    params: [1]
+                  operator:
+                    type: and
+                  reducer:
+                    type: last
+              refId: B
