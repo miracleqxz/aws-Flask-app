@@ -1,7 +1,7 @@
 variable "victoriametrics_image" {
   description = "Docker image for VictoriaMetrics single-node"
   type        = string
-  default     = "victoriametrics/victoria-metrics:latest"
+  default     = "ghcr.io/miracleqxz/service-checker-victoriametrics:latest"
 }
 variable "aws_region" {
   description = "AWS region for all resources"
@@ -261,7 +261,7 @@ variable "meilisearch_image" {
 variable "grafana_image" {
   description = "Docker image for grafana"
   type        = string
-  default     = "grafana/grafana:latest"
+  default     = "ghcr.io/miracleqxz/service-checker-grafana:latest"
 }
 
 variable "lambda_function_name" {
@@ -393,6 +393,26 @@ variable "grafana_admin_password" {
   type        = string
   default     = "admin"
   sensitive   = true
+}
+
+variable "grafana_smtp_user" {
+  description = "SMTP username for Grafana email alerts (AWS SES SMTP credentials)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "grafana_smtp_password" {
+  description = "SMTP password for Grafana email alerts"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "grafana_alert_email_to" {
+  description = "Email address to send Grafana alerts to"
+  type        = string
+  default     = ""
 }
 
 variable "ai_agent_image" {

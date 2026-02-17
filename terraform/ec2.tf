@@ -95,6 +95,9 @@ resource "aws_instance" "backend" {
     echo "ECS_ENABLE_TASK_IAM_ROLE=true" >> /etc/ecs/ecs.config
     echo "ECS_ENABLE_TASK_IAM_ROLE_NETWORK_HOST=true" >> /etc/ecs/ecs.config
     
+    # Create data directory for VictoriaMetrics persistence
+    mkdir -p /opt/victoriametrics-data
+    
     # Tag instance for identification
     echo "ECS_INSTANCE_ATTRIBUTES={\"role\": \"backend\"}" >> /etc/ecs/ecs.config
   EOF

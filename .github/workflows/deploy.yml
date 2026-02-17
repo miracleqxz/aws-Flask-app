@@ -10,6 +10,7 @@ on:
       - "services/**"
       - "templates/**"
       - "ai_agent/**"
+      - "monitoring/**"
       - "requirements.txt"
       - "startup.sh"
       - "Dockerfile"
@@ -23,6 +24,7 @@ on:
       - "database/**"
       - "services/**"
       - "templates/**"
+      - "monitoring/**"
       - "requirements.txt"
       - "startup.sh"
       - "Dockerfile"
@@ -185,6 +187,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push VictoriaMetrics image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./monitoring/victoriametrics
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-victoriametrics:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Grafana image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./monitoring/grafana
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-grafana:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -277,12 +297,12 @@ jobs:
             --region ${{ secrets.AWS_REGION }} \
             --query "Functions[?FunctionName=='ai-agent-deploy'].FunctionName" \
             --output text)
-          
+
           if [ -z "$LAMBDA_NAME" ]; then
             echo "Error: Lambda function ai-agent-deploy not found"
             exit 1
           fi
-          
+
           echo "lambda_name=$LAMBDA_NAME" >> $GITHUB_OUTPUT
           echo "Found Lambda function: $LAMBDA_NAME"
 
@@ -300,22 +320,22 @@ jobs:
           MEILISEARCH_PORT: ${{ secrets.MEILISEARCH_PORT }}
         run: |
           echo "Deploying AI Agent via Lambda function"
-          
+
           if [ -z "$CURSOR_API_KEY" ]; then
             echo "Error: CURSOR_API_KEY GitHub secret is not configured"
             exit 1
           fi
-          
+
           if [ -z "$POSTGRES_HOST" ] || [ -z "$POSTGRES_DB" ] || [ -z "$POSTGRES_USER" ] || [ -z "$POSTGRES_PASSWORD" ]; then
             echo "Error: PostgreSQL secrets are not configured"
             exit 1
           fi
-          
+
           if [ -z "$MEILISEARCH_HOST" ]; then
             echo "Error: MEILISEARCH_HOST GitHub secret is not configured"
             exit 1
           fi
-          
+
           PAYLOAD=$(jq -n \
             --arg cursor_key "$CURSOR_API_KEY" \
             --arg youtube_key "$YOUTUBE_API_KEY" \
@@ -343,7 +363,7 @@ jobs:
                 REDIS_PORT: "6379"
               } + (if $youtube_key != "" then {YOUTUBE_API_KEY: $youtube_key} else {} end)
             }')
-          
+
           echo "Invoking Lambda function..."
           RESPONSE=$(aws lambda invoke \
             --function-name ${{ steps.get_lambda.outputs.lambda_name }} \
@@ -351,24 +371,24 @@ jobs:
             --payload "$PAYLOAD" \
             --cli-binary-format raw-in-base64-out \
             /tmp/lambda-response.json)
-          
+
           cat /tmp/lambda-response.json
-          
+
           EXIT_CODE=$(jq -r '.statusCode' /tmp/lambda-response.json)
           RESPONSE_BODY=$(jq -r '.body' /tmp/lambda-response.json)
-          
+
           if [ "$EXIT_CODE" != "200" ]; then
             echo "Lambda deployment failed with status code: $EXIT_CODE"
             echo "Response: $RESPONSE_BODY"
             exit 1
           fi
-          
+
           SUCCESS=$(echo "$RESPONSE_BODY" | jq -r '.success')
           if [ "$SUCCESS" != "true" ]; then
             echo "Deployment failed"
             echo "Response: $RESPONSE_BODY"
             exit 1
           fi
-          
+
           echo "Deployment completed successfully"
           echo "$RESPONSE_BODY" | jq '.'

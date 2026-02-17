@@ -104,14 +104,9 @@ resource "aws_ecs_task_definition" "frontend" {
       memory            = 128
       memoryReservation = 64
 
-      #portMappings = [
-      #  {
-      #    containerPort = 80
-      #    hostPort      = 80
-      #    protocol      = "tcp"
-      #  }
-      #]
-
+      environment = [
+        { name = "BACKEND_HOST", value = aws_instance.backend.private_ip }
+      ]
 
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
@@ -239,6 +234,18 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
 
+      environment = [
+        { name = "FLASK_SCRAPE_TARGET", value = "${aws_instance.frontend.private_ip}:5000" }
+      ]
+
+      mountPoints = [
+        {
+          sourceVolume  = "victoriametrics-data"
+          containerPath = "/victoria-metrics-data"
+          readOnly      = false
+        }
+      ]
+
       healthCheck = {
         command     = ["CMD-SHELL", "wget -q --spider http://localhost:8428/metrics || exit 1"]
         interval    = 30
@@ -274,7 +281,12 @@ resource "aws_ecs_task_definition" "backend" {
       ]
 
       environment = [
-        { name = "GF_SECURITY_ADMIN_PASSWORD", value = var.grafana_admin_password }
+        { name = "GF_SECURITY_ADMIN_PASSWORD", value = var.grafana_admin_password },
+        { name = "GF_SERVER_ROOT_URL", value = "%(protocol)s://%(domain)s/grafana/" },
+        { name = "GF_SERVER_SERVE_FROM_SUB_PATH", value = "true" },
+        { name = "GF_SMTP_USER", value = var.grafana_smtp_user },
+        { name = "GF_SMTP_PASSWORD", value = var.grafana_smtp_password },
+        { name = "GF_ALERTING_EMAIL_TO", value = var.grafana_alert_email_to }
       ]
 
       healthCheck = {
@@ -343,6 +355,11 @@ resource "aws_ecs_task_definition" "backend" {
     Name        = "${var.project_name}-backend-task"
     Project     = var.project_name
     Environment = var.environment
+  }
+
+  volume {
+    name      = "victoriametrics-data"
+    host_path = "/opt/victoriametrics-data"
   }
 }
 
