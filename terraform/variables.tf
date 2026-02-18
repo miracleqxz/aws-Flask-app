@@ -1,7 +1,7 @@
 variable "victoriametrics_image" {
   description = "Docker image for VictoriaMetrics single-node"
   type        = string
-  default     = "ghcr.io/miracleqxz/service-checker-victoriametrics:latest"
+  default     = "ghcr.io/miracleqxz/k8s-flask-app:victoriametrics"
 }
 variable "aws_region" {
   description = "AWS region for all resources"
@@ -243,7 +243,7 @@ variable "flask_app_image" {
 variable "nginx_image" {
   description = "Docker image for nginx"
   type        = string
-  default     = "ghcr.io/miracleqxz/service-checker-nginx:latest"
+  default     = "ghcr.io/miracleqxz/k8s-flask-app:nginx"
 }
 
 variable "redis_image" {
@@ -261,7 +261,7 @@ variable "meilisearch_image" {
 variable "grafana_image" {
   description = "Docker image for grafana"
   type        = string
-  default     = "ghcr.io/miracleqxz/service-checker-grafana:latest"
+  default     = "ghcr.io/miracleqxz/k8s-flask-app:grafana"
 }
 
 variable "lambda_function_name" {

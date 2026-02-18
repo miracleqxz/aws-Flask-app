@@ -243,7 +243,7 @@ jobs:
         with:
           context: ./monitoring/victoriametrics
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-victoriametrics:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:victoriametrics
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -253,7 +253,7 @@ jobs:
         with:
           context: ./monitoring/grafana
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-grafana:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:grafana
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -263,7 +263,7 @@ jobs:
         with:
           context: ./nginx
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/service-checker-nginx:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:nginx
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

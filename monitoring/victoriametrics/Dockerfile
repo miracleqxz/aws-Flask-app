@@ -1,9 +1,9 @@
 FROM victoriametrics/victoria-metrics:latest
 
-COPY scrape.yml /etc/victoriametrics/scrape.yml
+RUN apk add --no-cache gettext
 
-ENTRYPOINT ["/victoria-metrics-prod"]
-CMD ["-promscrape.config=/etc/victoriametrics/scrape.yml", \
-    "-promscrape.config.expandEnvVars=true", \
-    "-storageDataPath=/victoria-metrics-data", \
-    "-httpListenAddr=:8428"]
+COPY scrape.yml /etc/victoriametrics/scrape.yml.template
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
