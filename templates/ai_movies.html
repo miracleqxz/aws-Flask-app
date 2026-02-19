@@ -20,21 +20,21 @@
         }
 
         :root {
-            --bg: #0b0b0f;
-            --surface: rgba(16, 16, 22, 0.88);
-            --surface-solid: #10101a;
-            --card: rgba(20, 20, 30, 0.92);
-            --card-hover: rgba(30, 30, 42, 0.95);
-            --border: rgba(255, 255, 255, 0.06);
-            --border-light: rgba(255, 255, 255, 0.1);
-            --text: #eaeaee;
-            --text-secondary: #9a9aa8;
-            --text-muted: #5c5c6a;
-            --accent: #6366f1;
-            --accent-hover: #5558e6;
-            --accent-glow: rgba(99, 102, 241, 0.15);
-            --gold: #f0b429;
-            --search-bg: rgba(12, 12, 18, 0.8);
+            --bg: #0a1118;
+            --surface: rgba(10, 20, 30, 0.88);
+            --surface-solid: #0c1620;
+            --card: rgba(12, 22, 35, 0.9);
+            --card-hover: rgba(18, 32, 50, 0.95);
+            --border: rgba(130, 180, 220, 0.08);
+            --border-light: rgba(130, 180, 220, 0.14);
+            --text: #dce8f0;
+            --text-secondary: #8aa8c0;
+            --text-muted: #4a6a82;
+            --accent: #4a90d9;
+            --accent-hover: #3d7ec4;
+            --accent-glow: rgba(74, 144, 217, 0.18);
+            --gold: #e8b84a;
+            --search-bg: rgba(8, 16, 24, 0.85);
             --chat-max-width: 720px;
         }
 
@@ -63,9 +63,9 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(to bottom,
-                    rgba(11, 11, 15, 0.15) 0%,
-                    rgba(11, 11, 15, 0.4) 50%,
-                    rgba(11, 11, 15, 0.85) 75%,
+                    rgba(10, 17, 24, 0.1) 0%,
+                    rgba(10, 17, 24, 0.35) 50%,
+                    rgba(10, 17, 24, 0.8) 75%,
                     var(--bg) 100%);
         }
 
@@ -83,19 +83,19 @@
         }
 
         .brand-name {
-            font-size: 1.4rem;
+            font-size: 2.2rem;
             font-weight: 800;
             letter-spacing: -0.04em;
             color: #fff;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
         }
 
         .brand-sub {
-            font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.82rem;
+            color: rgba(200, 220, 240, 0.6);
             font-weight: 400;
-            margin-left: 0.15rem;
-            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+            margin-left: 0.25rem;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
         }
 
         /* ═══════════════════════════════════════════
@@ -121,21 +121,7 @@
         }
 
         .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-        }
-
-        .movie-count {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+            display: none;
         }
 
         /* ═══════════════════════════════════════════
@@ -143,7 +129,7 @@
         ═══════════════════════════════════════════ */
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(6, 1fr);
             gap: 1.2rem;
         }
 
@@ -743,6 +729,10 @@
                 flex-direction: column;
             }
 
+            .movies-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
             .split-left {
                 width: 100%;
                 max-height: 55vh;
@@ -763,7 +753,7 @@
 
         @media (max-width: 500px) {
             .movies-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                grid-template-columns: repeat(2, 1fr);
             }
 
             .movie-card img {
@@ -779,7 +769,7 @@
             }
 
             .brand-name {
-                font-size: 1.15rem;
+                font-size: 1.5rem;
             }
 
             .brand-sub {
@@ -856,7 +846,6 @@
         const $grid = document.getElementById('moviesGrid');
         const $pagination = document.getElementById('pagination');
         const $pageInfo = document.getElementById('pageInfo');
-        const $movieCount = document.getElementById('movieCount');
         const $searchInput = document.getElementById('searchInput');
         const $splitOverlay = document.getElementById('splitOverlay');
         const $splitContent = document.getElementById('splitContent');
@@ -881,7 +870,7 @@
         async function loadMovies(page) {
             $grid.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading movies…</div>';
             try {
-                const res = await fetch(`/api/movies?page=${page}&per_page=20`);
+                const res = await fetch(`/api/movies?page=${page}&per_page=24`);
                 const data = await res.json();
                 renderGrid(data.movies);
                 renderPagination(data.page, data.pages, data.total);
@@ -909,7 +898,6 @@
         }
 
         function renderPagination(page, pages, total) {
-            $movieCount.textContent = `${total} movies`;
             if (pages <= 1) { $pagination.innerHTML = ''; $pageInfo.innerHTML = ''; return; }
 
             let html = '';
@@ -937,8 +925,8 @@
             html += `<button ${page >= pages ? 'disabled' : ''} onclick="loadMovies(${pages})">»</button>`;
             $pagination.innerHTML = html;
 
-            const from = (page - 1) * 20 + 1;
-            const to = Math.min(page * 20, total);
+            const from = (page - 1) * 24 + 1;
+            const to = Math.min(page * 24, total);
             $pageInfo.textContent = `Showing ${from}–${to} of ${total} movies`;
         }
 
@@ -967,17 +955,7 @@
 
                 if (data.message) chatHistory.push({ role: 'assistant', content: data.message });
 
-                if (data.movie_detail) {
-                    window.location.href = `/movie/${data.movie_detail.id}`;
-                    return;
-                }
-
-                if (data.movie_results && data.movie_results.length > 0) {
-                    openSplit(text, data);
-                    return;
-                }
-
-                if (data.message) {
+                if (data.movie_detail || (data.movie_results && data.movie_results.length > 0) || data.message) {
                     openSplit(text, data);
                 }
 
@@ -998,7 +976,11 @@
             addSplitMsg(userText, 'user');
             if (data.message) addSplitMsg(data.message, 'assistant');
 
-            if (data.movie_results && data.movie_results.length > 0) {
+            if (data.movie_detail) {
+                renderSplitDetail(data.movie_detail);
+            } else if (data.movie_results && data.movie_results.length === 1) {
+                renderSplitDetail(data.movie_results[0]);
+            } else if (data.movie_results && data.movie_results.length > 1) {
                 renderSplitGrid(data.movie_results);
             } else {
                 $splitContent.innerHTML = '<div class="loading-state">No results to show yet</div>';
@@ -1065,17 +1047,75 @@
                 }
 
                 if (data.movie_detail) {
-                    window.location.href = `/movie/${data.movie_detail.id}`;
-                    return;
-                }
-
-                if (data.movie_results && data.movie_results.length > 0) {
+                    renderSplitDetail(data.movie_detail);
+                } else if (data.movie_results && data.movie_results.length === 1) {
+                    renderSplitDetail(data.movie_results[0]);
+                } else if (data.movie_results && data.movie_results.length > 0) {
                     renderSplitGrid(data.movie_results);
                 }
 
             } catch (e) {
                 removeSplitTyping();
                 addSplitMsg('Something went wrong. Try again.', 'assistant');
+            }
+        }
+
+        function renderSplitDetail(movie) {
+            $splitTitle.textContent = movie.title || 'Movie Detail';
+            const poster = movie.poster_filename ? `/api/poster/${movie.poster_filename}` : '';
+            const genres = Array.isArray(movie.genres) ? movie.genres : [];
+            const desc = movie.description || '';
+
+            $splitContent.innerHTML = `
+                <div class="detail-card">
+                    <div class="detail-hero">
+                        ${poster ? `<img src="${poster}" alt="${movie.title}" class="detail-poster">` : ''}
+                        <div class="detail-info">
+                            <h2>${movie.title}</h2>
+                            <div class="detail-meta">
+                                <span class="tag rating">${movie.rating}/10</span>
+                                <span class="tag">${movie.year || ''}</span>
+                                ${movie.director ? `<span class="tag">${movie.director}</span>` : ''}
+                            </div>
+                            ${genres.length ? `<div class="detail-genres">${genres.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
+                            ${desc ? `<p class="detail-desc">${desc}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="detail-trailer" id="inlineTrailer">
+                        <div class="trailer-placeholder" style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--text-muted);gap:8px;font-size:0.85rem;">
+                            <div class="spinner" style="border-top-color:#c33;"></div>
+                            Loading trailer…
+                        </div>
+                    </div>
+                </div>`;
+
+            if (movie.id) loadInlineTrailer(movie.id, movie.title, movie.year);
+        }
+
+        async function loadInlineTrailer(movieId, title, year) {
+            const container = document.getElementById('inlineTrailer');
+            if (!container) return;
+            try {
+                const res = await fetch(`/api/youtube/trailer/${movieId}`);
+                if (!res.ok) throw new Error('No trailer');
+                const data = await res.json();
+                if (!data.video_id) throw new Error('No video');
+                container.innerHTML = `
+                    <div style="aspect-ratio:16/9;background:#000;">
+                        <iframe src="https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
+                            style="width:100%;height:100%;border:none;"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen></iframe>
+                    </div>
+                    <div style="padding:0.6rem 1rem;border-top:1px solid var(--border);">
+                        <div style="color:var(--text);font-size:0.85rem;font-weight:600;">${data.title || 'Official Trailer'}</div>
+                        <div style="color:var(--text-muted);font-size:0.75rem;">${title} (${year || ''})</div>
+                    </div>`;
+            } catch (e) {
+                container.innerHTML = `
+                    <div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.85rem;background:rgba(0,0,0,0.3);">
+                        Trailer not available
+                    </div>`;
             }
         }
 
