@@ -4,13 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Movie Assistant</title>
-    <meta name="description" content="AI-powered movie discovery. Describe what you want to watch and get personalized recommendations.">
+    <title>Guidy — AI Movie Assistant</title>
+    <meta name="description"
+        content="Guidy — your personal guide to endless movie lists. Describe what you want to watch and get personalized recommendations.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -50,7 +53,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           LEFT PANEL — Movie Content (hidden initially)
+           LEFT PANEL — Movie Content
         ═══════════════════════════════════════════ */
         .panel-movie {
             width: 0;
@@ -65,7 +68,7 @@
         }
 
         .app.split .panel-movie {
-            width: 50%;
+            width: 65%;
             min-width: 420px;
         }
 
@@ -125,12 +128,21 @@
             opacity: 1;
         }
 
-        .panel-movie-content::-webkit-scrollbar { width: 5px; }
-        .panel-movie-content::-webkit-scrollbar-track { background: transparent; }
-        .panel-movie-content::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        .panel-movie-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .panel-movie-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .panel-movie-content::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 3px;
+        }
 
         /* ═══════════════════════════════════════════
-           RIGHT PANEL — Chat (always visible)
+           RIGHT PANEL — Chat
         ═══════════════════════════════════════════ */
         .panel-chat {
             flex: 1;
@@ -153,23 +165,25 @@
             transition: opacity 0.3s ease;
         }
 
-        .chat-welcome-screen.hidden { display: none; }
+        .chat-welcome-screen.hidden {
+            display: none;
+        }
 
         .welcome-icon {
-            width: 56px;
-            height: 56px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, var(--accent), #818cf8);
-            border-radius: 16px;
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             margin-bottom: 1.5rem;
             box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25);
         }
 
         .welcome-title {
-            font-size: 1.85rem;
+            font-size: 2rem;
             font-weight: 700;
             letter-spacing: -0.03em;
             margin-bottom: 0.5rem;
@@ -181,10 +195,10 @@
 
         .welcome-subtitle {
             color: var(--text-muted);
-            font-size: 0.95rem;
-            max-width: 420px;
+            font-size: 1rem;
+            max-width: 460px;
             line-height: 1.6;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .welcome-chips {
@@ -192,16 +206,16 @@
             flex-wrap: wrap;
             gap: 0.5rem;
             justify-content: center;
-            max-width: 500px;
+            max-width: 520px;
         }
 
         .welcome-chip {
-            padding: 0.5rem 1rem;
+            padding: 0.55rem 1.1rem;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             border-radius: 20px;
             color: var(--text-secondary);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
             font-family: inherit;
@@ -221,30 +235,46 @@
             padding: 1.5rem 1.5rem 0.5rem;
             display: none;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.85rem;
         }
 
         .chat-messages.active {
             display: flex;
         }
 
-        .chat-messages::-webkit-scrollbar { width: 5px; }
-        .chat-messages::-webkit-scrollbar-track { background: transparent; }
-        .chat-messages::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 3px;
+        }
 
         .msg {
-            max-width: 75%;
-            padding: 0.8rem 1.1rem;
+            max-width: 80%;
+            padding: 0.9rem 1.2rem;
             border-radius: 18px;
             word-wrap: break-word;
-            line-height: 1.55;
-            font-size: 0.9rem;
+            line-height: 1.6;
+            font-size: 1rem;
             animation: msgIn 0.25s ease-out;
         }
 
         @keyframes msgIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .msg.user {
@@ -274,34 +304,53 @@
         }
 
         .msg.typing .dots span {
-            width: 5px;
-            height: 5px;
+            width: 6px;
+            height: 6px;
             background: var(--text-muted);
             border-radius: 50%;
             animation: dotPulse 1.4s ease-in-out infinite;
         }
 
-        .msg.typing .dots span:nth-child(2) { animation-delay: 0.2s; }
-        .msg.typing .dots span:nth-child(3) { animation-delay: 0.4s; }
+        .msg.typing .dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .msg.typing .dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
 
         @keyframes dotPulse {
-            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-            40% { opacity: 1; transform: scale(1); }
+
+            0%,
+            80%,
+            100% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+
+            40% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         /* ── Chat Input ── */
         .chat-input-wrap {
-            padding: 0.75rem 1.25rem 1.25rem;
+            padding: 1.5rem 1.5rem 2rem;
             flex-shrink: 0;
             display: flex;
             justify-content: center;
         }
 
+        .chat-welcome-screen~.chat-input-wrap:not(.chat-welcome-screen.hidden ~ .chat-input-wrap) {
+            padding-bottom: 25vh;
+        }
+
         .chat-input-inner {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             width: 100%;
-            max-width: 680px;
+            max-width: 620px;
             transition: max-width var(--transition-layout);
         }
 
@@ -311,10 +360,10 @@
 
         .chat-input {
             flex: 1;
-            padding: 0.75rem 1.15rem;
+            padding: 0.9rem 1.3rem;
             border: 1.5px solid var(--border);
             border-radius: 24px;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-family: inherit;
             outline: none;
             background: var(--bg-input);
@@ -322,7 +371,9 @@
             transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
 
-        .chat-input::placeholder { color: var(--text-muted); }
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
 
         .chat-input:focus {
             border-color: var(--accent);
@@ -331,12 +382,12 @@
         }
 
         .chat-send {
-            padding: 0.75rem 1.3rem;
+            padding: 0.9rem 1.5rem;
             background: var(--accent);
             color: #fff;
             border: none;
             border-radius: 24px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
@@ -375,7 +426,7 @@
 
         .movie-hero {
             display: grid;
-            grid-template-columns: 200px 1fr;
+            grid-template-columns: 220px 1fr;
             gap: 1.25rem;
             padding: 1.25rem;
         }
@@ -387,7 +438,7 @@
         }
 
         .movie-info h2 {
-            font-size: 1.35rem;
+            font-size: 1.4rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.65rem;
@@ -405,7 +456,7 @@
             background: var(--bg-elevated);
             color: var(--text-secondary);
             border-radius: 6px;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
 
@@ -427,14 +478,14 @@
             background: rgba(99, 102, 241, 0.12);
             color: #a5b4fc;
             border-radius: 10px;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 500;
         }
 
         .movie-desc {
             color: var(--text-secondary);
             line-height: 1.6;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .movie-trailer {
@@ -466,95 +517,67 @@
         }
 
         /* ═══════════════════════════════════════════
-           AI RESULT CARDS (multiple movies)
+           MOVIE GRID (poster-based, like Browse All)
         ═══════════════════════════════════════════ */
-        .ai-results-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.1rem;
         }
 
-        .ai-result-card {
+        .movie-card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             border-radius: 12px;
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
+            transition: all 0.25s ease;
         }
 
-        .ai-result-card:hover {
+        .movie-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
             border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent), 0 4px 16px rgba(99, 102, 241, 0.1);
-            transform: translateY(-2px);
         }
 
-        .ai-result-poster {
-            width: 90px;
-            min-height: 135px;
+        .movie-card img {
+            width: 100%;
+            height: 270px;
             object-fit: cover;
-            flex-shrink: 0;
+            display: block;
         }
 
-        .ai-result-body {
-            padding: 0.85rem 1rem;
-            flex: 1;
-            min-width: 0;
+        .movie-card .card-info {
+            padding: 0.7rem 0.8rem;
         }
 
-        .ai-result-body h4 {
-            font-size: 1rem;
+        .movie-card .card-title {
+            font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 0.4rem;
-            letter-spacing: -0.01em;
-        }
-
-        .ai-result-body .tag-row {
-            display: flex;
-            gap: 0.4rem;
-            flex-wrap: wrap;
+            line-height: 1.3;
             margin-bottom: 0.35rem;
-        }
-
-        .ai-result-body .tag {
-            background: var(--bg-elevated);
-            color: var(--text-secondary);
-            padding: 0.15rem 0.5rem;
-            border-radius: 5px;
-            font-size: 0.72rem;
-        }
-
-        .ai-result-body .tag.gold {
-            background: var(--gold);
-            color: #1a1a2e;
-            font-weight: 700;
-        }
-
-        .ai-result-body .genre-row {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-            margin-top: 0.3rem;
-        }
-
-        .ai-result-body .genre-pill {
-            background: rgba(99, 102, 241, 0.12);
-            color: #a5b4fc;
-            padding: 0.15rem 0.5rem;
-            border-radius: 10px;
-            font-size: 0.68rem;
-        }
-
-        .ai-result-body .desc {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            line-height: 1.5;
-            margin-top: 0.4rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+
+        .movie-card .card-rating {
+            display: inline-block;
+            background: var(--gold);
+            color: #1a1a2e;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.72rem;
+            margin-right: 0.4rem;
+        }
+
+        .movie-card .card-meta {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
         }
 
         /* ═══════════════════════════════════════════
@@ -573,7 +596,9 @@
             padding: 2rem;
         }
 
-        .trailer-overlay.visible { display: flex; }
+        .trailer-overlay.visible {
+            display: flex;
+        }
 
         .trailer-close {
             position: absolute;
@@ -594,7 +619,9 @@
             z-index: 101;
         }
 
-        .trailer-close:hover { background: rgba(255, 255, 255, 0.15); }
+        .trailer-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
 
         .trailer-player {
             width: 100%;
@@ -629,7 +656,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           LOADING SPINNER
+           SPINNER & STATES
         ═══════════════════════════════════════════ */
         .spinner {
             width: 18px;
@@ -640,7 +667,11 @@
             animation: spin 0.7s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .loading-state {
             display: flex;
@@ -685,12 +716,14 @@
            RESPONSIVE
         ═══════════════════════════════════════════ */
         @media (max-width: 900px) {
-            .app.split { flex-direction: column; }
+            .app.split {
+                flex-direction: column;
+            }
 
             .app.split .panel-movie {
                 width: 100%;
                 min-width: 0;
-                max-height: 50vh;
+                max-height: 55vh;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
             }
@@ -701,7 +734,18 @@
                 padding: 1rem;
             }
 
-            .chat-input { font-size: 16px; }
+            .chat-input {
+                font-size: 16px;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 0.7rem;
+            }
+
+            .movie-card img {
+                height: 200px;
+            }
         }
 
         @media (max-width: 500px) {
@@ -713,11 +757,21 @@
                 max-width: 160px;
             }
 
-            .welcome-title { font-size: 1.4rem; }
-            .welcome-subtitle { font-size: 0.85rem; }
+            .welcome-title {
+                font-size: 1.5rem;
+            }
 
-            .ai-result-card { flex-direction: column; }
-            .ai-result-poster { width: 100%; height: 160px; min-height: auto; }
+            .welcome-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+
+            .movie-card img {
+                height: 170px;
+            }
         }
     </style>
 </head>
@@ -725,47 +779,65 @@
 <body>
 
     <a href="/movies" class="nav-link" id="navLink">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+            <line x1="7" y1="2" x2="7" y2="22" />
+            <line x1="17" y1="2" x2="17" y2="22" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <line x1="2" y1="7" x2="7" y2="7" />
+            <line x1="2" y1="17" x2="7" y2="17" />
+            <line x1="17" y1="7" x2="22" y2="7" />
+            <line x1="17" y1="17" x2="22" y2="17" />
+        </svg>
         Browse All Movies
     </a>
 
     <div class="app" id="app">
 
-        <!-- LEFT PANEL — Movie Content -->
         <div class="panel-movie" id="panelMovie">
             <div class="panel-movie-header">
                 <h2 id="panelTitle">Movie Details</h2>
                 <button class="panel-close-btn" onclick="closePanel()">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                     Close
                 </button>
             </div>
             <div class="panel-movie-content" id="panelContent"></div>
         </div>
 
-        <!-- RIGHT PANEL — Chat -->
         <div class="panel-chat" id="panelChat">
 
             <div class="chat-welcome-screen" id="welcomeScreen">
                 <div class="welcome-icon">🎬</div>
-                <h1 class="welcome-title">What do you want to watch?</h1>
-                <p class="welcome-subtitle">Describe a mood, genre, or ask about a specific movie — I'll find exactly what you need.</p>
+                <h1 class="welcome-title">Guidy</h1>
+                <p class="welcome-subtitle">Your personal guide to endless movie lists. Tell me what you're in the mood
+                    for.</p>
                 <div class="welcome-chips">
-                    <button class="welcome-chip" onclick="quickSend('Recommend something like Inception')">🧠 Like Inception</button>
-                    <button class="welcome-chip" onclick="quickSend('I want a feel-good comedy')">😄 Feel-good comedy</button>
+                    <button class="welcome-chip" onclick="quickSend('Recommend something like Inception')">🧠 Like
+                        Inception</button>
+                    <button class="welcome-chip" onclick="quickSend('I want a feel-good comedy')">😄 Feel-good
+                        comedy</button>
                     <button class="welcome-chip" onclick="quickSend('Best thriller movies')">🔪 Best thrillers</button>
-                    <button class="welcome-chip" onclick="quickSend('Something dark and psychological')">🌑 Dark & psychological</button>
+                    <button class="welcome-chip" onclick="quickSend('Something dark and psychological')">🌑 Dark &
+                        psychological</button>
                 </div>
             </div>
 
             <div class="chat-messages" id="chatMessages"></div>
 
-            <div class="chat-input-wrap">
+            <div class="chat-input-wrap" id="chatInputWrap">
                 <div class="chat-input-inner">
-                    <input type="text" class="chat-input" id="chatInput"
-                        placeholder="Describe what you want to watch…" autocomplete="off">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Describe what you want to watch…"
+                        autocomplete="off">
                     <button class="chat-send" id="chatSend" onclick="sendMessage()">
-                        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                        <svg viewBox="0 0 24 24">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
                         Send
                     </button>
                 </div>
@@ -773,7 +845,6 @@
         </div>
     </div>
 
-    <!-- Trailer Overlay -->
     <div class="trailer-overlay" id="trailerOverlay">
         <button class="trailer-close" id="trailerCloseBtn" title="Close">✕</button>
         <div class="trailer-player" id="trailerPlayer"></div>
@@ -789,6 +860,7 @@
         const $chatMessages = document.getElementById('chatMessages');
         const $chatInput = document.getElementById('chatInput');
         const $chatSend = document.getElementById('chatSend');
+        const $chatInputWrap = document.getElementById('chatInputWrap');
         const $panelMovie = document.getElementById('panelMovie');
         const $panelContent = document.getElementById('panelContent');
         const $panelTitle = document.getElementById('panelTitle');
@@ -798,23 +870,24 @@
 
         let chatHistory = [];
         let isSplit = false;
+        let welcomeActive = true;
 
         $chatInput.addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
 
         function activateChat() {
-            if ($welcomeScreen.classList.contains('hidden')) return;
+            if (!welcomeActive) return;
+            welcomeActive = false;
             $welcomeScreen.classList.add('hidden');
             $chatMessages.classList.add('active');
+            $chatInputWrap.style.paddingBottom = '1.25rem';
         }
 
         function quickSend(text) {
             $chatInput.value = text;
             sendMessage();
         }
-
-        // ── Layout Control ──
 
         function openSplit() {
             if (isSplit) return;
@@ -827,8 +900,6 @@
             $app.classList.remove('split');
             $panelContent.innerHTML = '';
         }
-
-        // ── Messages ──
 
         function addMessage(text, role) {
             activateChat();
@@ -853,8 +924,6 @@
             const el = document.getElementById('typingIndicator');
             if (el) el.remove();
         }
-
-        // ── Send Message ──
 
         async function sendMessage() {
             const text = $chatInput.value.trim();
@@ -890,7 +959,7 @@
                 removeTyping();
 
                 if (data.error === 'Rate limit exceeded') {
-                    addMessage(`Rate limit exceeded. ${data.message || 'Please try again later.'}`, 'assistant');
+                    addMessage(`Rate limit exceeded. ${data.message || 'Try again later.'}`, 'assistant');
                     return;
                 }
 
@@ -904,20 +973,18 @@
                 } else if (data.movie_detail) {
                     showMovieDetail(data.movie_detail);
                 } else if (data.movie_results && data.movie_results.length > 0) {
-                    showMovieResults(data.movie_results);
+                    showMovieGrid(data.movie_results);
                 }
 
             } catch (e) {
                 removeTyping();
                 console.error('Chat error:', e);
-                addMessage('Sorry, something went wrong. Please try again.', 'assistant');
+                addMessage('Sorry, something went wrong. Try again.', 'assistant');
             } finally {
                 $chatSend.disabled = false;
                 $chatInput.focus();
             }
         }
-
-        // ── Movie Detail ──
 
         function showMovieDetail(movie) {
             openSplit();
@@ -980,32 +1047,26 @@
             }
         }
 
-        // ── Movie Results (multiple) ──
-
-        function showMovieResults(movies) {
+        function showMovieGrid(movies) {
             if (!movies || movies.length === 0) return;
             openSplit();
             $panelTitle.textContent = 'Recommendations';
 
-            $panelContent.innerHTML = `<div class="ai-results-list">
+            $panelContent.innerHTML = `<div class="movies-grid">
                 ${movies.map(m => {
-                    const genres = Array.isArray(m.genres) ? m.genres : [];
-                    const posterSrc = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
-                    return `
-                    <div class="ai-result-card" onclick="openDetailById(${m.id})">
-                        ${posterSrc ? `<img class="ai-result-poster" src="${posterSrc}" alt="${m.title}" loading="lazy">` : ''}
-                        <div class="ai-result-body">
-                            <h4>${m.title}</h4>
-                            <div class="tag-row">
-                                <span class="tag gold">${m.rating}</span>
-                                <span class="tag">${m.year}</span>
-                                ${m.director ? `<span class="tag">${m.director}</span>` : ''}
-                            </div>
-                            ${genres.length > 0 ? `<div class="genre-row">${genres.map(g => `<span class="genre-pill">${g}</span>`).join('')}</div>` : ''}
-                            ${m.description ? `<p class="desc">${m.description}</p>` : ''}
+                const genres = Array.isArray(m.genres) ? m.genres : [];
+                const genreText = genres.join(', ') || '';
+                const posterSrc = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                return `
+                    <div class="movie-card" onclick="openDetailById(${m.id})">
+                        ${posterSrc ? `<img src="${posterSrc}" alt="${m.title}" loading="lazy">` : '<div style="height:270px;background:var(--bg-elevated);"></div>'}
+                        <div class="card-info">
+                            <div class="card-title">${m.title}</div>
+                            <span class="card-rating">${m.rating}/10</span>
+                            <div class="card-meta">${m.year}${genreText ? ' · ' + genreText : ''}</div>
                         </div>
                     </div>`;
-                }).join('')}
+            }).join('')}
             </div>`;
         }
 
@@ -1015,15 +1076,11 @@
             try {
                 const res = await fetch(`/api/movie/${movieId}`);
                 const data = await res.json();
-                if (data.movie) {
-                    showMovieDetail(data.movie);
-                }
+                if (data.movie) showMovieDetail(data.movie);
             } catch (e) {
                 $panelContent.innerHTML = '<div class="loading-state">Failed to load movie details</div>';
             }
         }
-
-        // ── Trailer Overlay ──
 
         function openTrailer(trailer) {
             if (!trailer || !trailer.video_id) return;
@@ -1050,7 +1107,6 @@
             if (e.key === 'Escape') closeTrailer();
         });
 
-        // ── Init ──
         $chatInput.focus();
     </script>
 
