@@ -297,3 +297,24 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
+# CI/CD deployer — allow Lambda invoke for post-deploy sync
+data "aws_iam_user" "github_actions" {
+  user_name = "github-actions-deployer"
+}
+
+resource "aws_iam_user_policy" "github_actions_lambda" {
+  name = "${var.project_name}-github-actions-lambda-invoke"
+  user = data.aws_iam_user.github_actions.user_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowDataPipelineLambdaInvoke"
+        Effect = "Allow"
+        Action = ["lambda:InvokeFunction"]
+        Resource = [aws_lambda_function.data_pipeline.arn]
+      }
+    ]
+  })
+}
