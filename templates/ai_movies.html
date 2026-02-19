@@ -4,11 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guidy — AI Movie Assistant</title>
+    <title>Guidy — Your Personal Movie Guide</title>
     <meta name="description" content="Guidy — your personal guide to endless movie lists.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         *,
         *::before,
@@ -19,87 +20,375 @@
         }
 
         :root {
-            --bg-primary: #0d0d0d;
-            --bg-secondary: #141416;
-            --bg-tertiary: #1c1c20;
-            --bg-elevated: #242428;
-            --bg-input: #1a1a1e;
-            --bg-hover: #2a2a2f;
-            --border: #2a2a2e;
-            --border-light: #36363c;
-            --text-primary: #ececee;
-            --text-secondary: #a0a0a6;
-            --text-muted: #6c6c72;
+            --bg: #0b0b0f;
+            --surface: rgba(16, 16, 22, 0.88);
+            --surface-solid: #10101a;
+            --card: rgba(20, 20, 30, 0.92);
+            --card-hover: rgba(30, 30, 42, 0.95);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.1);
+            --text: #eaeaee;
+            --text-secondary: #9a9aa8;
+            --text-muted: #5c5c6a;
             --accent: #6366f1;
             --accent-hover: #5558e6;
-            --accent-glow: rgba(99, 102, 241, 0.12);
+            --accent-glow: rgba(99, 102, 241, 0.15);
             --gold: #f0b429;
-            --transition-layout: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --search-bg: rgba(12, 12, 18, 0.8);
             --chat-max-width: 720px;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .app {
-            display: flex;
-            height: 100vh;
-            position: relative;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
         }
 
         /* ═══════════════════════════════════════════
-           LEFT PANEL — Movie Content
+           HERO BACKGROUND
         ═══════════════════════════════════════════ */
-        .panel-movie {
-            width: 0;
-            min-width: 0;
-            overflow: hidden;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70vh;
+            background: url('/static/background.webp') center top / cover no-repeat;
+            z-index: 0;
+        }
+
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                    rgba(11, 11, 15, 0.15) 0%,
+                    rgba(11, 11, 15, 0.4) 50%,
+                    rgba(11, 11, 15, 0.85) 75%,
+                    var(--bg) 100%);
+        }
+
+        /* ═══════════════════════════════════════════
+           BRANDING (top-left)
+        ═══════════════════════════════════════════ */
+        .brand {
+            position: fixed;
+            top: 1.2rem;
+            left: 1.5rem;
+            z-index: 60;
             display: flex;
-            flex-direction: column;
-            transition: width var(--transition-layout), min-width var(--transition-layout);
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #fff;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-sub {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 400;
+            margin-left: 0.15rem;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ═══════════════════════════════════════════
+           MAIN CONTENT
+        ═══════════════════════════════════════════ */
+        .page {
             position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-bottom: 90px;
         }
 
-        .app.split .panel-movie {
-            width: 65%;
-            min-width: 420px;
+        .hero-spacer {
+            height: 55vh;
         }
 
-        .panel-movie-header {
+        .content-area {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.85rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-primary);
-            flex-shrink: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease 0.2s;
+            margin-bottom: 1.5rem;
         }
 
-        .app.split .panel-movie-header {
-            opacity: 1;
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
         }
 
-        .panel-movie-header h2 {
-            font-size: 0.95rem;
+        .movie-count {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           MOVIE GRID
+        ═══════════════════════════════════════════ */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.2rem;
+        }
+
+        .movie-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            backdrop-filter: blur(8px);
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+            border-color: var(--border-light);
+            background: var(--card-hover);
+        }
+
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .movie-card .card-body {
+            padding: 0.85rem;
+        }
+
+        .movie-card .card-title {
+            font-size: 0.92rem;
             font-weight: 600;
-            color: var(--text-primary);
+            line-height: 1.35;
+            margin-bottom: 0.4rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .panel-close-btn {
+        .movie-card .card-rating {
+            display: inline-block;
+            background: var(--gold);
+            color: #1a1a2e;
+            padding: 0.12rem 0.45rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.72rem;
+        }
+
+        .movie-card .card-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.2rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           PAGINATION
+        ═══════════════════════════════════════════ */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--surface);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            backdrop-filter: blur(6px);
+        }
+
+        .pagination button:hover:not(:disabled):not(.active) {
+            background: var(--card-hover);
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .pagination button.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .pagination button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination .ellipsis {
+            color: var(--text-muted);
+            min-width: 30px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .page-info {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           FIXED SEARCH BAR
+        ═══════════════════════════════════════════ */
+        .search-dock {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 70;
+            padding: 0.75rem 1.5rem 1rem;
+            background: linear-gradient(to top, var(--bg) 60%, transparent);
+            pointer-events: none;
+        }
+
+        .search-dock-inner {
+            max-width: var(--chat-max-width);
+            margin: 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            pointer-events: all;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.9rem 1.3rem;
+            border: 1.5px solid var(--border-light);
+            border-radius: 14px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            background: var(--search-bg);
+            color: var(--text);
+            backdrop-filter: blur(20px);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow), 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .search-send {
+            padding: 0.9rem 1.4rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .search-send:hover:not(:disabled) {
+            background: var(--accent-hover);
+        }
+
+        .search-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .search-send svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
+        }
+
+        /* ═══════════════════════════════════════════
+           SPLIT VIEW (when AI returns multiple results)
+        ═══════════════════════════════════════════ */
+        .split-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: var(--bg);
+        }
+
+        .split-overlay.visible {
+            display: flex;
+        }
+
+        .split-left {
+            width: 65%;
+            overflow-y: auto;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .split-left-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface-solid);
+            flex-shrink: 0;
+        }
+
+        .split-left-header h2 {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .split-close {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
             padding: 0.3rem 0.65rem;
-            background: var(--bg-elevated);
+            background: rgba(255, 255, 255, 0.06);
             color: var(--text-secondary);
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -109,171 +398,113 @@
             transition: all 0.15s;
         }
 
-        .panel-close-btn:hover {
-            color: var(--text-primary);
-            background: var(--bg-hover);
+        .split-close:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .panel-movie-content {
+        .split-left-content {
             flex: 1;
             overflow-y: auto;
             padding: 1.25rem;
-            opacity: 0;
-            transition: opacity 0.3s ease 0.3s;
         }
 
-        .app.split .panel-movie-content {
-            opacity: 1;
-        }
-
-        .panel-movie-content::-webkit-scrollbar {
+        .split-left-content::-webkit-scrollbar {
             width: 5px;
         }
 
-        .panel-movie-content::-webkit-scrollbar-track {
+        .split-left-content::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        .panel-movie-content::-webkit-scrollbar-thumb {
+        .split-left-content::-webkit-scrollbar-thumb {
             background: var(--border-light);
             border-radius: 3px;
+        }
+
+        .split-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-solid);
+        }
+
+        .split-chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .split-chat::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .split-chat::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .split-chat::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 3px;
+        }
+
+        .split-input-wrap {
+            padding: 0.75rem 1rem 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .split-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border-light);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            outline: none;
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .split-input:focus {
+            border-color: var(--accent);
+        }
+
+        .split-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .split-send {
+            padding: 0.75rem 1.1rem;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .split-send:hover {
+            background: var(--accent-hover);
         }
 
         /* ═══════════════════════════════════════════
-           RIGHT PANEL — Chat
+           CHAT MESSAGES
         ═══════════════════════════════════════════ */
-        .panel-chat {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: var(--bg-primary);
-            transition: all var(--transition-layout);
-        }
-
-        /* ── Welcome ── */
-        .chat-welcome-screen {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .chat-welcome-screen.hidden {
-            display: none;
-        }
-
-        .welcome-icon {
-            width: 52px;
-            height: 52px;
-            background: linear-gradient(135deg, var(--accent), #818cf8);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.2);
-        }
-
-        .welcome-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: #fff;
-        }
-
-        .welcome-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            margin-bottom: 0.4rem;
-            color: var(--text-primary);
-        }
-
-        .welcome-subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            max-width: 400px;
-            line-height: 1.5;
-            margin-bottom: 2rem;
-        }
-
-        .welcome-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.45rem;
-            justify-content: center;
-            max-width: 480px;
-        }
-
-        .welcome-chip {
-            padding: 0.5rem 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        .welcome-chip:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-            border-color: var(--border-light);
-        }
-
-        /* ── Chat Messages ── */
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            display: none;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .chat-messages.active {
-            display: flex;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--border-light);
-            border-radius: 3px;
-        }
-
-        .chat-messages-inner {
-            width: 100%;
-            max-width: var(--chat-max-width);
-            margin: 0 auto;
-            padding: 1.5rem 1.5rem 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .app.split .chat-messages-inner {
-            max-width: 100%;
-            padding: 1rem 1.25rem 0.5rem;
-        }
-
         .msg {
             max-width: 85%;
-            padding: 0.85rem 1.15rem;
-            border-radius: 18px;
+            padding: 0.8rem 1.1rem;
+            border-radius: 16px;
             word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 0.95rem;
+            line-height: 1.55;
+            font-size: 0.92rem;
             animation: msgIn 0.2s ease-out;
         }
 
@@ -293,21 +524,21 @@
             align-self: flex-end;
             background: var(--accent);
             color: #fff;
-            border-bottom-right-radius: 6px;
+            border-bottom-right-radius: 5px;
         }
 
         .msg.assistant {
             align-self: flex-start;
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-bottom-left-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+            border-bottom-left-radius: 5px;
             border: 1px solid var(--border);
         }
 
         .msg.typing {
             color: var(--text-muted);
             font-style: italic;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .msg.typing .dots {
@@ -348,142 +579,75 @@
             }
         }
 
-        /* ── Chat Input ── */
-        .chat-input-wrap {
-            flex-shrink: 0;
-            display: flex;
-            justify-content: center;
-            padding: 0 1.5rem 1.5rem;
-        }
-
-        .chat-input-inner {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-            max-width: var(--chat-max-width);
-            transition: max-width var(--transition-layout);
-        }
-
-        .app.split .chat-input-inner {
-            max-width: 100%;
-            padding: 0 0.25rem;
-        }
-
-        .chat-input {
-            flex: 1;
-            padding: 0.85rem 1.2rem;
-            border: 1.5px solid var(--border);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            outline: none;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-        }
-
-        .chat-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .chat-input:focus {
-            border-color: var(--accent);
-            background: var(--bg-tertiary);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .chat-send {
-            padding: 0.85rem 1.3rem;
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .chat-send:hover:not(:disabled) {
-            background: var(--accent-hover);
-        }
-
-        .chat-send:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .chat-send svg {
-            width: 15px;
-            height: 15px;
-            fill: currentColor;
+        /* ═══════════════════════════════════════════
+           AI RESULTS GRID (inside split)
+        ═══════════════════════════════════════════ */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 1rem;
         }
 
         /* ═══════════════════════════════════════════
-           MOVIE DETAIL CARD
+           MOVIE DETAIL CARD (inside split)
         ═══════════════════════════════════════════ */
-        .movie-detail-card {
-            background: var(--bg-tertiary);
+        .detail-card {
+            background: var(--card);
             border-radius: 14px;
             border: 1px solid var(--border);
             overflow: hidden;
         }
 
-        .movie-hero {
+        .detail-hero {
             display: grid;
             grid-template-columns: 220px 1fr;
             gap: 1.25rem;
             padding: 1.25rem;
         }
 
-        .movie-poster {
+        .detail-poster {
             width: 100%;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        .movie-info h2 {
+        .detail-info h2 {
             font-size: 1.35rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.65rem;
         }
 
-        .movie-meta {
+        .detail-meta {
             display: flex;
             gap: 0.4rem;
             flex-wrap: wrap;
             margin-bottom: 0.65rem;
         }
 
-        .movie-meta .tag {
+        .detail-meta .tag {
             padding: 0.2rem 0.6rem;
-            background: var(--bg-elevated);
+            background: rgba(255, 255, 255, 0.07);
             color: var(--text-secondary);
             border-radius: 6px;
             font-size: 0.78rem;
             font-weight: 500;
         }
 
-        .movie-meta .tag.rating {
+        .detail-meta .tag.rating {
             background: var(--gold);
             color: #1a1a2e;
             font-weight: 700;
         }
 
-        .movie-genres {
+        .detail-genres {
             display: flex;
             gap: 0.35rem;
             flex-wrap: wrap;
             margin-bottom: 0.75rem;
         }
 
-        .movie-genres span {
+        .detail-genres span {
             padding: 0.2rem 0.55rem;
             background: rgba(99, 102, 241, 0.12);
             color: #a5b4fc;
@@ -492,18 +656,18 @@
             font-weight: 500;
         }
 
-        .movie-desc {
+        .detail-desc {
             color: var(--text-secondary);
             line-height: 1.6;
             font-size: 0.88rem;
         }
 
-        .movie-trailer {
+        .detail-trailer {
             border-top: 1px solid var(--border);
             background: #000;
         }
 
-        .movie-trailer .trailer-inner {
+        .detail-trailer .trailer-placeholder {
             aspect-ratio: 16/9;
             display: flex;
             align-items: center;
@@ -513,13 +677,13 @@
             font-size: 0.85rem;
         }
 
-        .movie-trailer iframe {
+        .detail-trailer iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
 
-        .movie-trailer .trailer-label {
+        .detail-trailer .trailer-label {
             padding: 0.5rem 1rem;
             font-size: 0.8rem;
             color: var(--text-secondary);
@@ -527,145 +691,7 @@
         }
 
         /* ═══════════════════════════════════════════
-           MOVIE GRID
-        ═══════════════════════════════════════════ */
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-            gap: 1rem;
-        }
-
-        .movie-card {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .movie-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-            border-color: var(--border-light);
-        }
-
-        .movie-card img {
-            width: 100%;
-            height: 255px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .movie-card .card-info {
-            padding: 0.65rem 0.75rem;
-        }
-
-        .movie-card .card-title {
-            font-size: 0.82rem;
-            font-weight: 600;
-            line-height: 1.3;
-            margin-bottom: 0.3rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .movie-card .card-rating {
-            display: inline-block;
-            background: var(--gold);
-            color: #1a1a2e;
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
-            font-weight: 700;
-            font-size: 0.7rem;
-        }
-
-        .movie-card .card-meta {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 0.15rem;
-        }
-
-        /* ═══════════════════════════════════════════
-           TRAILER OVERLAY
-        ═══════════════════════════════════════════ */
-        .trailer-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.92);
-            backdrop-filter: blur(12px);
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        .trailer-overlay.visible {
-            display: flex;
-        }
-
-        .trailer-close {
-            position: absolute;
-            top: 1.25rem;
-            right: 1.25rem;
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 101;
-        }
-
-        .trailer-close:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .trailer-player {
-            width: 100%;
-            max-width: 720px;
-            aspect-ratio: 16/9;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-        }
-
-        .trailer-player iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .trailer-caption {
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .trailer-caption h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-        }
-
-        .trailer-caption p {
-            color: var(--text-secondary);
-            font-size: 0.82rem;
-            margin-top: 0.15rem;
-        }
-
-        /* ═══════════════════════════════════════════
-           SPINNER
+           LOADING
         ═══════════════════════════════════════════ */
         .spinner {
             width: 18px;
@@ -693,88 +719,71 @@
         }
 
         /* ═══════════════════════════════════════════
-           NAV LINK
-        ═══════════════════════════════════════════ */
-        .nav-link {
-            position: fixed;
-            top: 0.85rem;
-            right: 0.85rem;
-            z-index: 50;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.4rem 0.75rem;
-            background: var(--bg-elevated);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.78rem;
-            font-weight: 500;
-            text-decoration: none;
-            font-family: inherit;
-            transition: all 0.15s;
-        }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-            background: var(--bg-hover);
-        }
-
-        /* ═══════════════════════════════════════════
            RESPONSIVE
         ═══════════════════════════════════════════ */
         @media (max-width: 900px) {
-            .app.split {
+            .hero-spacer {
+                height: 40vh;
+            }
+
+            .hero-bg {
+                height: 50vh;
+            }
+
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.8rem;
+            }
+
+            .movie-card img {
+                height: 225px;
+            }
+
+            .split-overlay.visible {
                 flex-direction: column;
             }
 
-            .app.split .panel-movie {
+            .split-left {
                 width: 100%;
-                min-width: 0;
                 max-height: 55vh;
                 border-right: none;
                 border-bottom: 1px solid var(--border);
             }
 
-            .movie-hero {
+            .detail-hero {
                 grid-template-columns: 140px 1fr;
                 gap: 1rem;
                 padding: 1rem;
             }
 
-            .chat-input {
+            .search-input {
                 font-size: 16px;
-            }
-
-            .movies-grid {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-                gap: 0.7rem;
-            }
-
-            .movie-card img {
-                height: 200px;
             }
         }
 
         @media (max-width: 500px) {
-            .movie-hero {
-                grid-template-columns: 1fr;
-            }
-
-            .movie-poster {
-                max-width: 160px;
-            }
-
-            .welcome-title {
-                font-size: 1.4rem;
-            }
-
             .movies-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
 
             .movie-card img {
-                height: 165px;
+                height: 180px;
+            }
+
+            .detail-hero {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-poster {
+                max-width: 160px;
+            }
+
+            .brand-name {
+                font-size: 1.15rem;
+            }
+
+            .brand-sub {
+                display: none;
             }
         }
     </style>
@@ -782,27 +791,45 @@
 
 <body>
 
-    <a href="/movies" class="nav-link">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-            <line x1="7" y1="2" x2="7" y2="22" />
-            <line x1="17" y1="2" x2="17" y2="22" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <line x1="2" y1="7" x2="7" y2="7" />
-            <line x1="2" y1="17" x2="7" y2="17" />
-            <line x1="17" y1="7" x2="22" y2="7" />
-            <line x1="17" y1="17" x2="22" y2="17" />
-        </svg>
-        Browse All Movies
-    </a>
+    <div class="hero-bg"></div>
 
-    <div class="app" id="app">
+    <div class="brand">
+        <span class="brand-name">Guidy</span>
+        <span class="brand-sub">your personal movie guide</span>
+    </div>
 
-        <div class="panel-movie" id="panelMovie">
-            <div class="panel-movie-header">
-                <h2 id="panelTitle">Movie Details</h2>
-                <button class="panel-close-btn" onclick="closePanel()">
+    <div class="page" id="page">
+        <div class="hero-spacer"></div>
+
+        <div class="content-area">
+            <div class="section-header">
+                <h1 class="section-title">All Movies</h1>
+                <span class="movie-count" id="movieCount"></span>
+            </div>
+            <div class="movies-grid" id="moviesGrid"></div>
+            <nav class="pagination" id="pagination"></nav>
+            <div class="page-info" id="pageInfo"></div>
+        </div>
+    </div>
+
+    <div class="search-dock">
+        <div class="search-dock-inner">
+            <input type="text" class="search-input" id="searchInput"
+                placeholder="Search a movie or describe what you want to watch…" autocomplete="off">
+            <button class="search-send" id="searchSend" onclick="sendQuery()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                </svg>
+                Send
+            </button>
+        </div>
+    </div>
+
+    <div class="split-overlay" id="splitOverlay">
+        <div class="split-left">
+            <div class="split-left-header">
+                <h2 id="splitTitle">Results</h2>
+                <button class="split-close" onclick="closeSplit()">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -811,143 +838,119 @@
                     Close
                 </button>
             </div>
-            <div class="panel-movie-content" id="panelContent"></div>
+            <div class="split-left-content" id="splitContent"></div>
         </div>
-
-        <div class="panel-chat" id="panelChat">
-
-            <div class="chat-welcome-screen" id="welcomeScreen">
-                <div class="welcome-icon">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#fff" />
-                    </svg>
-                </div>
-                <h1 class="welcome-title">Guidy</h1>
-                <p class="welcome-subtitle">Your personal guide to endless movie lists. Tell me what you're in the mood
-                    for.</p>
-                <div class="welcome-chips">
-                    <button class="welcome-chip" onclick="quickSend('Recommend something like Inception')">Like
-                        Inception</button>
-                    <button class="welcome-chip" onclick="quickSend('I want a feel-good comedy')">Feel-good
-                        comedy</button>
-                    <button class="welcome-chip" onclick="quickSend('Best thriller movies')">Best thrillers</button>
-                    <button class="welcome-chip" onclick="quickSend('Something dark and psychological')">Dark &
-                        psychological</button>
-                </div>
-            </div>
-
-            <div class="chat-messages" id="chatMessages">
-                <div class="chat-messages-inner" id="chatMessagesInner"></div>
-            </div>
-
-            <div class="chat-input-wrap" id="chatInputWrap">
-                <div class="chat-input-inner">
-                    <input type="text" class="chat-input" id="chatInput" placeholder="Describe what you want to watch…"
-                        autocomplete="off">
-                    <button class="chat-send" id="chatSend" onclick="sendMessage()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                        </svg>
-                        Send
-                    </button>
-                </div>
+        <div class="split-right">
+            <div class="split-chat" id="splitChat"></div>
+            <div class="split-input-wrap">
+                <input type="text" class="split-input" id="splitInput" placeholder="Continue chatting…"
+                    autocomplete="off">
+                <button class="split-send" onclick="sendSplitMessage()">Send</button>
             </div>
         </div>
-    </div>
-
-    <div class="trailer-overlay" id="trailerOverlay">
-        <button class="trailer-close" id="trailerCloseBtn" title="Close">&#x2715;</button>
-        <div class="trailer-player" id="trailerPlayer"></div>
-        <div class="trailer-caption" id="trailerCaption"></div>
     </div>
 
     <script>
         const API_URL = '{{ ai_chat_api_url }}' || '';
         const API_KEY = '{{ ai_chat_api_key }}' || '';
+        const $grid = document.getElementById('moviesGrid');
+        const $pagination = document.getElementById('pagination');
+        const $pageInfo = document.getElementById('pageInfo');
+        const $movieCount = document.getElementById('movieCount');
+        const $searchInput = document.getElementById('searchInput');
+        const $splitOverlay = document.getElementById('splitOverlay');
+        const $splitContent = document.getElementById('splitContent');
+        const $splitTitle = document.getElementById('splitTitle');
+        const $splitChat = document.getElementById('splitChat');
+        const $splitInput = document.getElementById('splitInput');
 
-        const $app = document.getElementById('app');
-        const $welcomeScreen = document.getElementById('welcomeScreen');
-        const $chatMessages = document.getElementById('chatMessages');
-        const $chatMessagesInner = document.getElementById('chatMessagesInner');
-        const $chatInput = document.getElementById('chatInput');
-        const $chatSend = document.getElementById('chatSend');
-        const $chatInputWrap = document.getElementById('chatInputWrap');
-        const $panelContent = document.getElementById('panelContent');
-        const $panelTitle = document.getElementById('panelTitle');
-        const $trailerOverlay = document.getElementById('trailerOverlay');
-        const $trailerPlayer = document.getElementById('trailerPlayer');
-        const $trailerCaption = document.getElementById('trailerCaption');
-
+        let currentPage = 1;
         let chatHistory = [];
-        let isSplit = false;
-        let welcomeActive = true;
 
-        $chatInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        $searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+        });
+        $splitInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSplitMessage(); }
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeSplit();
         });
 
-        function activateChat() {
-            if (!welcomeActive) return;
-            welcomeActive = false;
-            $welcomeScreen.classList.add('hidden');
-            $chatMessages.classList.add('active');
+        /* ── Movie Grid ── */
+        async function loadMovies(page) {
+            $grid.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading movies…</div>';
+            try {
+                const res = await fetch(`/api/movies?page=${page}&per_page=20`);
+                const data = await res.json();
+                renderGrid(data.movies);
+                renderPagination(data.page, data.pages, data.total);
+                currentPage = data.page;
+                window.scrollTo({ top: document.querySelector('.content-area').offsetTop - 20, behavior: 'smooth' });
+            } catch (e) {
+                $grid.innerHTML = '<div class="loading-state">Failed to load movies</div>';
+            }
         }
 
-        function quickSend(text) {
-            $chatInput.value = text;
-            sendMessage();
+        function renderGrid(movies) {
+            $grid.innerHTML = movies.map(m => {
+                const poster = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                const genres = Array.isArray(m.genres) ? m.genres.join(', ') : (m.genres || '');
+                return `
+                <a href="/movie/${m.id}" class="movie-card">
+                    ${poster ? `<img src="${poster}" alt="${m.title}" loading="lazy">` : '<div style="height:300px;background:var(--card);"></div>'}
+                    <div class="card-body">
+                        <div class="card-title">${m.title}</div>
+                        <span class="card-rating">${m.rating}/10</span>
+                        <div class="card-meta">${m.year}${genres ? ' · ' + genres : ''}</div>
+                    </div>
+                </a>`;
+            }).join('');
         }
 
-        function openSplit() {
-            if (isSplit) return;
-            isSplit = true;
-            $app.classList.add('split');
-        }
+        function renderPagination(page, pages, total) {
+            $movieCount.textContent = `${total} movies`;
+            if (pages <= 1) { $pagination.innerHTML = ''; $pageInfo.innerHTML = ''; return; }
 
-        function closePanel() {
-            isSplit = false;
-            $app.classList.remove('split');
-            $panelContent.innerHTML = '';
-        }
+            let html = '';
+            html += `<button ${page <= 1 ? 'disabled' : ''} onclick="loadMovies(1)">«</button>`;
+            html += `<button ${page <= 1 ? 'disabled' : ''} onclick="loadMovies(${page - 1})">‹</button>`;
 
-        function addMessage(text, role) {
-            activateChat();
-            const div = document.createElement('div');
-            div.className = `msg ${role}`;
-            div.textContent = text;
-            $chatMessagesInner.appendChild(div);
-            $chatMessages.scrollTop = $chatMessages.scrollHeight;
-        }
+            const start = Math.max(1, page - 2);
+            const end = Math.min(pages, page + 2);
 
-        function showTyping() {
-            activateChat();
-            const div = document.createElement('div');
-            div.className = 'msg assistant typing';
-            div.id = 'typingIndicator';
-            div.innerHTML = 'Thinking<span class="dots"><span></span><span></span><span></span></span>';
-            $chatMessagesInner.appendChild(div);
-            $chatMessages.scrollTop = $chatMessages.scrollHeight;
-        }
-
-        function removeTyping() {
-            const el = document.getElementById('typingIndicator');
-            if (el) el.remove();
-        }
-
-        async function sendMessage() {
-            const text = $chatInput.value.trim();
-            if (!text) return;
-
-            if (!API_URL) {
-                addMessage('AI service is not available right now.', 'assistant');
-                return;
+            if (start > 1) {
+                html += `<button onclick="loadMovies(1)">1</button>`;
+                if (start > 2) html += `<span class="ellipsis">…</span>`;
             }
 
-            $chatInput.value = '';
-            $chatSend.disabled = true;
-            addMessage(text, 'user');
-            chatHistory.push({ role: 'user', content: text });
-            showTyping();
+            for (let p = start; p <= end; p++) {
+                html += `<button class="${p === page ? 'active' : ''}" onclick="loadMovies(${p})">${p}</button>`;
+            }
+
+            if (end < pages) {
+                if (end < pages - 1) html += `<span class="ellipsis">…</span>`;
+                html += `<button onclick="loadMovies(${pages})">${pages}</button>`;
+            }
+
+            html += `<button ${page >= pages ? 'disabled' : ''} onclick="loadMovies(${page + 1})">›</button>`;
+            html += `<button ${page >= pages ? 'disabled' : ''} onclick="loadMovies(${pages})">»</button>`;
+            $pagination.innerHTML = html;
+
+            const from = (page - 1) * 20 + 1;
+            const to = Math.min(page * 20, total);
+            $pageInfo.textContent = `Showing ${from}–${to} of ${total} movies`;
+        }
+
+        /* ── Search / AI Chat ── */
+        async function sendQuery() {
+            const text = $searchInput.value.trim();
+            if (!text) return;
+            if (!API_URL) return;
+
+            $searchInput.value = '';
+            document.getElementById('searchSend').disabled = true;
+            chatHistory = [{ role: 'user', content: text }];
 
             try {
                 const res = await fetch(`${API_URL}/chat`, {
@@ -956,150 +959,147 @@
                         'Content-Type': 'application/json',
                         ...(API_KEY && { 'X-Api-Key': API_KEY })
                     },
-                    body: JSON.stringify({
-                        message: text,
-                        history: chatHistory.slice(-10)
-                    })
+                    body: JSON.stringify({ message: text, history: [] })
                 });
 
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                removeTyping();
 
-                if (data.error === 'Rate limit exceeded') {
-                    addMessage(`Rate limit exceeded. ${data.message || 'Try again later.'}`, 'assistant');
+                if (data.message) chatHistory.push({ role: 'assistant', content: data.message });
+
+                if (data.movie_detail) {
+                    window.location.href = `/movie/${data.movie_detail.id}`;
+                    return;
+                }
+
+                if (data.movie_results && data.movie_results.length > 0) {
+                    openSplit(text, data);
                     return;
                 }
 
                 if (data.message) {
-                    addMessage(data.message, 'assistant');
-                    chatHistory.push({ role: 'assistant', content: data.message });
-                }
-
-                if (data.youtube_trailer && data.youtube_trailer.video_id) {
-                    openTrailer(data.youtube_trailer);
-                } else if (data.movie_detail) {
-                    showMovieDetail(data.movie_detail);
-                } else if (data.movie_results && data.movie_results.length > 0) {
-                    showMovieGrid(data.movie_results);
+                    openSplit(text, data);
                 }
 
             } catch (e) {
-                removeTyping();
-                addMessage('Sorry, something went wrong. Try again.', 'assistant');
+                console.error(e);
             } finally {
-                $chatSend.disabled = false;
-                $chatInput.focus();
+                document.getElementById('searchSend').disabled = false;
+                $searchInput.focus();
             }
         }
 
-        function showMovieDetail(movie) {
-            openSplit();
-            $panelTitle.textContent = movie.title || 'Movie Details';
-            const genres = Array.isArray(movie.genres) ? movie.genres : [];
-            const posterSrc = movie.poster_filename ? `/api/poster/${movie.poster_filename}` : '';
+        /* ── Split View ── */
+        function openSplit(userText, data) {
+            $splitOverlay.classList.add('visible');
+            document.body.style.overflow = 'hidden';
 
-            $panelContent.innerHTML = `
-                <div class="movie-detail-card">
-                    <div class="movie-hero">
-                        ${posterSrc ? `<img src="${posterSrc}" alt="${movie.title}" class="movie-poster">` : '<div></div>'}
-                        <div class="movie-info">
-                            <h2>${movie.title}</h2>
-                            <div class="movie-meta">
-                                <span class="tag rating">${movie.rating}/10</span>
-                                <span class="tag">${movie.year}</span>
-                                ${movie.director ? `<span class="tag">${movie.director}</span>` : ''}
-                            </div>
-                            ${genres.length > 0 ? `<div class="movie-genres">${genres.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
-                            <p class="movie-desc">${movie.description || ''}</p>
-                        </div>
-                    </div>
-                    <div class="movie-trailer" id="movieTrailer-${movie.id}">
-                        <div class="trailer-inner"><div class="spinner"></div> Loading trailer…</div>
-                    </div>
-                </div>`;
-            loadTrailerForDetail(movie.id, movie.title, movie.year);
+            $splitChat.innerHTML = '';
+            addSplitMsg(userText, 'user');
+            if (data.message) addSplitMsg(data.message, 'assistant');
+
+            if (data.movie_results && data.movie_results.length > 0) {
+                renderSplitGrid(data.movie_results);
+            } else {
+                $splitContent.innerHTML = '<div class="loading-state">No results to show yet</div>';
+                $splitTitle.textContent = 'Chat';
+            }
+
+            $splitInput.focus();
         }
 
-        async function loadTrailerForDetail(movieId, title, year) {
-            const container = document.getElementById(`movieTrailer-${movieId}`);
-            if (!container) return;
+        function closeSplit() {
+            $splitOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+            chatHistory = [];
+        }
+
+        function addSplitMsg(text, role) {
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            div.textContent = text;
+            $splitChat.appendChild(div);
+            $splitChat.scrollTop = $splitChat.scrollHeight;
+        }
+
+        function showSplitTyping() {
+            const div = document.createElement('div');
+            div.className = 'msg assistant typing';
+            div.id = 'splitTyping';
+            div.innerHTML = 'Thinking<span class="dots"><span></span><span></span><span></span></span>';
+            $splitChat.appendChild(div);
+            $splitChat.scrollTop = $splitChat.scrollHeight;
+        }
+
+        function removeSplitTyping() {
+            const el = document.getElementById('splitTyping');
+            if (el) el.remove();
+        }
+
+        async function sendSplitMessage() {
+            const text = $splitInput.value.trim();
+            if (!text || !API_URL) return;
+
+            $splitInput.value = '';
+            addSplitMsg(text, 'user');
+            chatHistory.push({ role: 'user', content: text });
+            showSplitTyping();
+
             try {
-                const res = await fetch(`/api/youtube/trailer/${movieId}`);
-                if (!res.ok) throw new Error('No trailer');
+                const res = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(API_KEY && { 'X-Api-Key': API_KEY })
+                    },
+                    body: JSON.stringify({ message: text, history: chatHistory.slice(-10) })
+                });
+
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-                if (!data.video_id) throw new Error('No video');
-                container.innerHTML = `
-                    <div style="aspect-ratio:16/9;">
-                        <iframe src="https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen></iframe>
-                    </div>
-                    <div class="trailer-label">
-                        <strong>${data.title || title + ' — Trailer'}</strong>
-                        <span style="color:var(--text-muted);margin-left:6px;">${year || ''}</span>
-                    </div>`;
-            } catch {
-                container.innerHTML = '<div class="trailer-inner">Trailer not available</div>';
+                removeSplitTyping();
+
+                if (data.message) {
+                    addSplitMsg(data.message, 'assistant');
+                    chatHistory.push({ role: 'assistant', content: data.message });
+                }
+
+                if (data.movie_detail) {
+                    window.location.href = `/movie/${data.movie_detail.id}`;
+                    return;
+                }
+
+                if (data.movie_results && data.movie_results.length > 0) {
+                    renderSplitGrid(data.movie_results);
+                }
+
+            } catch (e) {
+                removeSplitTyping();
+                addSplitMsg('Something went wrong. Try again.', 'assistant');
             }
         }
 
-        function showMovieGrid(movies) {
-            if (!movies || movies.length === 0) return;
-            openSplit();
-            $panelTitle.textContent = 'Recommendations';
-            $panelContent.innerHTML = `<div class="movies-grid">
+        function renderSplitGrid(movies) {
+            $splitTitle.textContent = 'Recommendations';
+            $splitContent.innerHTML = `<div class="ai-grid">
                 ${movies.map(m => {
-                const genres = Array.isArray(m.genres) ? m.genres : [];
-                const genreText = genres.join(', ') || '';
-                const posterSrc = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                const poster = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                const genres = Array.isArray(m.genres) ? m.genres.join(', ') : '';
                 return `
-                    <div class="movie-card" onclick="openDetailById(${m.id})">
-                        ${posterSrc ? `<img src="${posterSrc}" alt="${m.title}" loading="lazy">` : '<div style="height:255px;background:var(--bg-elevated);"></div>'}
-                        <div class="card-info">
+                    <a href="/movie/${m.id}" class="movie-card">
+                        ${poster ? `<img src="${poster}" alt="${m.title}" loading="lazy">` : '<div style="height:255px;background:var(--card);"></div>'}
+                        <div class="card-body">
                             <div class="card-title">${m.title}</div>
                             <span class="card-rating">${m.rating}/10</span>
-                            <div class="card-meta">${m.year}${genreText ? ' · ' + genreText : ''}</div>
+                            <div class="card-meta">${m.year}${genres ? ' · ' + genres : ''}</div>
                         </div>
-                    </div>`;
+                    </a>`;
             }).join('')}
             </div>`;
         }
 
-        async function openDetailById(movieId) {
-            $panelContent.innerHTML = '<div class="loading-state"><div class="spinner"></div> Loading…</div>';
-            $panelTitle.textContent = 'Movie Details';
-            try {
-                const res = await fetch(`/api/movie/${movieId}`);
-                const data = await res.json();
-                if (data.movie) showMovieDetail(data.movie);
-            } catch {
-                $panelContent.innerHTML = '<div class="loading-state">Failed to load details</div>';
-            }
-        }
-
-        function openTrailer(trailer) {
-            if (!trailer || !trailer.video_id) return;
-            $trailerPlayer.innerHTML = `
-                <iframe src="https://www.youtube.com/embed/${trailer.video_id}?autoplay=1&rel=0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen></iframe>`;
-            $trailerCaption.innerHTML = `
-                <h3>${trailer.movie_title || 'Trailer'}</h3>
-                ${trailer.year ? `<p>${trailer.year}</p>` : ''}`;
-            $trailerOverlay.classList.add('visible');
-        }
-
-        function closeTrailer() {
-            $trailerOverlay.classList.remove('visible');
-            $trailerPlayer.innerHTML = '';
-        }
-
-        $trailerOverlay.addEventListener('click', e => { if (e.target === $trailerOverlay) closeTrailer(); });
-        document.getElementById('trailerCloseBtn').addEventListener('click', closeTrailer);
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTrailer(); });
-
-        $chatInput.focus();
+        loadMovies(1);
+        $searchInput.focus();
     </script>
 
 </body>

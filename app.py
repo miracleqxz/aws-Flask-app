@@ -69,23 +69,17 @@ def home():
     )
 
 
-@app.route('/movies')
-@track_request
-def movies_page():
+@app.route('/api/movies')
+def api_movies():
     page = request.args.get('page', 1, type=int)
-    per_page = 20
+    per_page = request.args.get('per_page', 20, type=int)
     if page < 1:
         page = 1
+    if per_page > 50:
+        per_page = 50
 
     result = get_movies_paginated(page, per_page)
-    return render_template(
-        'movies.html',
-        movies=result['movies'],
-        page=result['page'],
-        pages=result['pages'],
-        total=result['total'],
-        per_page=per_page
-    )
+    return jsonify(result)
 
 
 @app.route('/movie/<int:movie_id>')
