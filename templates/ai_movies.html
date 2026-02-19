@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guidy — AI Movie Assistant</title>
-    <meta name="description"
-        content="Guidy — your personal guide to endless movie lists. Describe what you want to watch and get personalized recommendations.">
+    <meta name="description" content="Guidy — your personal guide to endless movie lists.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -20,22 +19,23 @@
         }
 
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #111113;
-            --bg-tertiary: #1a1a1e;
-            --bg-elevated: #222226;
-            --bg-input: #1e1e22;
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #141416;
+            --bg-tertiary: #1c1c20;
+            --bg-elevated: #242428;
+            --bg-input: #1a1a1e;
+            --bg-hover: #2a2a2f;
             --border: #2a2a2e;
-            --border-light: #333338;
-            --text-primary: #eaeaec;
-            --text-secondary: #8e8e93;
-            --text-muted: #5e5e63;
+            --border-light: #36363c;
+            --text-primary: #ececee;
+            --text-secondary: #a0a0a6;
+            --text-muted: #6c6c72;
             --accent: #6366f1;
             --accent-hover: #5558e6;
-            --accent-glow: rgba(99, 102, 241, 0.15);
+            --accent-glow: rgba(99, 102, 241, 0.12);
             --gold: #f0b429;
-            --green: #10b981;
             --transition-layout: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            --chat-max-width: 720px;
         }
 
         body {
@@ -89,22 +89,21 @@
         }
 
         .panel-movie-header h2 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-primary);
-            letter-spacing: -0.01em;
         }
 
         .panel-close-btn {
             display: flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0.35rem 0.7rem;
+            padding: 0.3rem 0.65rem;
             background: var(--bg-elevated);
             color: var(--text-secondary);
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             font-family: inherit;
             cursor: pointer;
             transition: all 0.15s;
@@ -112,8 +111,7 @@
 
         .panel-close-btn:hover {
             color: var(--text-primary);
-            background: var(--bg-tertiary);
-            border-color: var(--border-light);
+            background: var(--bg-hover);
         }
 
         .panel-movie-content {
@@ -153,7 +151,7 @@
             transition: all var(--transition-layout);
         }
 
-        /* ── Welcome State ── */
+        /* ── Welcome ── */
         .chat-welcome-screen {
             flex: 1;
             display: flex;
@@ -162,7 +160,6 @@
             align-items: center;
             padding: 2rem;
             text-align: center;
-            transition: opacity 0.3s ease;
         }
 
         .chat-welcome-screen.hidden {
@@ -170,72 +167,72 @@
         }
 
         .welcome-icon {
-            width: 60px;
-            height: 60px;
+            width: 52px;
+            height: 52px;
             background: linear-gradient(135deg, var(--accent), #818cf8);
-            border-radius: 18px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.6rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.25);
+            margin-bottom: 1.25rem;
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.2);
+        }
+
+        .welcome-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #fff;
         }
 
         .welcome-title {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             letter-spacing: -0.03em;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 0.4rem;
+            color: var(--text-primary);
         }
 
         .welcome-subtitle {
             color: var(--text-muted);
-            font-size: 1rem;
-            max-width: 460px;
-            line-height: 1.6;
-            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
+            max-width: 400px;
+            line-height: 1.5;
+            margin-bottom: 2rem;
         }
 
         .welcome-chips {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.45rem;
             justify-content: center;
-            max-width: 520px;
+            max-width: 480px;
         }
 
         .welcome-chip {
-            padding: 0.55rem 1.1rem;
+            padding: 0.5rem 1rem;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             border-radius: 20px;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
             font-family: inherit;
         }
 
         .welcome-chip:hover {
-            background: var(--bg-elevated);
+            background: var(--bg-hover);
             color: var(--text-primary);
-            border-color: var(--accent);
-            box-shadow: 0 0 0 1px var(--accent-glow);
+            border-color: var(--border-light);
         }
 
         /* ── Chat Messages ── */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 1.5rem 1.5rem 0.5rem;
             display: none;
             flex-direction: column;
-            gap: 0.85rem;
+            gap: 0.6rem;
         }
 
         .chat-messages.active {
@@ -255,20 +252,35 @@
             border-radius: 3px;
         }
 
+        .chat-messages-inner {
+            width: 100%;
+            max-width: var(--chat-max-width);
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .app.split .chat-messages-inner {
+            max-width: 100%;
+            padding: 1rem 1.25rem 0.5rem;
+        }
+
         .msg {
-            max-width: 80%;
-            padding: 0.9rem 1.2rem;
+            max-width: 85%;
+            padding: 0.85rem 1.15rem;
             border-radius: 18px;
             word-wrap: break-word;
             line-height: 1.6;
-            font-size: 1rem;
-            animation: msgIn 0.25s ease-out;
+            font-size: 0.95rem;
+            animation: msgIn 0.2s ease-out;
         }
 
         @keyframes msgIn {
             from {
                 opacity: 0;
-                transform: translateY(6px);
+                transform: translateY(4px);
             }
 
             to {
@@ -295,17 +307,19 @@
         .msg.typing {
             color: var(--text-muted);
             font-style: italic;
+            font-size: 0.9rem;
         }
 
         .msg.typing .dots {
             display: inline-flex;
             gap: 3px;
-            margin-left: 2px;
+            margin-left: 4px;
+            vertical-align: middle;
         }
 
         .msg.typing .dots span {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
             background: var(--text-muted);
             border-radius: 50%;
             animation: dotPulse 1.4s ease-in-out infinite;
@@ -336,34 +350,31 @@
 
         /* ── Chat Input ── */
         .chat-input-wrap {
-            padding: 1.5rem 1.5rem 2rem;
             flex-shrink: 0;
             display: flex;
             justify-content: center;
-        }
-
-        .chat-welcome-screen~.chat-input-wrap:not(.chat-welcome-screen.hidden ~ .chat-input-wrap) {
-            padding-bottom: 25vh;
+            padding: 0 1.5rem 1.5rem;
         }
 
         .chat-input-inner {
             display: flex;
-            gap: 0.6rem;
+            gap: 0.5rem;
             width: 100%;
-            max-width: 620px;
+            max-width: var(--chat-max-width);
             transition: max-width var(--transition-layout);
         }
 
         .app.split .chat-input-inner {
             max-width: 100%;
+            padding: 0 0.25rem;
         }
 
         .chat-input {
             flex: 1;
-            padding: 0.9rem 1.3rem;
+            padding: 0.85rem 1.2rem;
             border: 1.5px solid var(--border);
-            border-radius: 24px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
             font-family: inherit;
             outline: none;
             background: var(--bg-input);
@@ -382,12 +393,12 @@
         }
 
         .chat-send {
-            padding: 0.9rem 1.5rem;
+            padding: 0.85rem 1.3rem;
             background: var(--accent);
             color: #fff;
             border: none;
-            border-radius: 24px;
-            font-size: 0.9rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
@@ -395,12 +406,11 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
         }
 
         .chat-send:hover:not(:disabled) {
             background: var(--accent-hover);
-            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
 
         .chat-send:disabled {
@@ -409,8 +419,8 @@
         }
 
         .chat-send svg {
-            width: 16px;
-            height: 16px;
+            width: 15px;
+            height: 15px;
             fill: currentColor;
         }
 
@@ -438,7 +448,7 @@
         }
 
         .movie-info h2 {
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.65rem;
@@ -456,7 +466,7 @@
             background: var(--bg-elevated);
             color: var(--text-secondary);
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
         }
 
@@ -478,14 +488,14 @@
             background: rgba(99, 102, 241, 0.12);
             color: #a5b4fc;
             border-radius: 10px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 500;
         }
 
         .movie-desc {
             color: var(--text-secondary);
             line-height: 1.6;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
 
         .movie-trailer {
@@ -517,45 +527,45 @@
         }
 
         /* ═══════════════════════════════════════════
-           MOVIE GRID (poster-based, like Browse All)
+           MOVIE GRID
         ═══════════════════════════════════════════ */
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1.1rem;
+            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            gap: 1rem;
         }
 
         .movie-card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
             cursor: pointer;
             transition: all 0.25s ease;
         }
 
         .movie-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
-            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            border-color: var(--border-light);
         }
 
         .movie-card img {
             width: 100%;
-            height: 270px;
+            height: 255px;
             object-fit: cover;
             display: block;
         }
 
         .movie-card .card-info {
-            padding: 0.7rem 0.8rem;
+            padding: 0.65rem 0.75rem;
         }
 
         .movie-card .card-title {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
             line-height: 1.3;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.3rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             line-clamp: 2;
@@ -567,17 +577,16 @@
             display: inline-block;
             background: var(--gold);
             color: #1a1a2e;
-            padding: 0.12rem 0.45rem;
+            padding: 0.1rem 0.4rem;
             border-radius: 4px;
             font-weight: 700;
-            font-size: 0.72rem;
-            margin-right: 0.4rem;
+            font-size: 0.7rem;
         }
 
         .movie-card .card-meta {
-            font-size: 0.72rem;
-            color: var(--text-secondary);
-            margin-top: 0.2rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
         }
 
         /* ═══════════════════════════════════════════
@@ -607,10 +616,10 @@
             background: rgba(255, 255, 255, 0.08);
             color: #fff;
             border: none;
-            width: 42px;
-            height: 42px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: background 0.2s;
             display: flex;
@@ -627,9 +636,9 @@
             width: 100%;
             max-width: 720px;
             aspect-ratio: 16/9;
-            border-radius: 14px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
         }
 
         .trailer-player iframe {
@@ -644,19 +653,19 @@
         }
 
         .trailer-caption h3 {
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: #fff;
         }
 
         .trailer-caption p {
             color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 0.2rem;
+            font-size: 0.82rem;
+            margin-top: 0.15rem;
         }
 
         /* ═══════════════════════════════════════════
-           SPINNER & STATES
+           SPINNER
         ═══════════════════════════════════════════ */
         .spinner {
             width: 18px;
@@ -688,28 +697,27 @@
         ═══════════════════════════════════════════ */
         .nav-link {
             position: fixed;
-            top: 1rem;
-            right: 1rem;
+            top: 0.85rem;
+            right: 0.85rem;
             z-index: 50;
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.45rem 0.85rem;
+            gap: 0.35rem;
+            padding: 0.4rem 0.75rem;
             background: var(--bg-elevated);
-            color: var(--text-secondary);
+            color: var(--text-muted);
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 500;
             text-decoration: none;
             font-family: inherit;
-            transition: all 0.2s;
+            transition: all 0.15s;
         }
 
         .nav-link:hover {
             color: var(--text-primary);
-            background: var(--bg-tertiary);
-            border-color: var(--border-light);
+            background: var(--bg-hover);
         }
 
         /* ═══════════════════════════════════════════
@@ -758,11 +766,7 @@
             }
 
             .welcome-title {
-                font-size: 1.5rem;
-            }
-
-            .welcome-subtitle {
-                font-size: 0.9rem;
+                font-size: 1.4rem;
             }
 
             .movies-grid {
@@ -770,7 +774,7 @@
             }
 
             .movie-card img {
-                height: 170px;
+                height: 165px;
             }
         }
     </style>
@@ -778,8 +782,8 @@
 
 <body>
 
-    <a href="/movies" class="nav-link" id="navLink">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+    <a href="/movies" class="nav-link">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
             <line x1="7" y1="2" x2="7" y2="22" />
@@ -799,7 +803,7 @@
             <div class="panel-movie-header">
                 <h2 id="panelTitle">Movie Details</h2>
                 <button class="panel-close-btn" onclick="closePanel()">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round">
                         <line x1="18" y1="6" x2="6" y2="18" />
                         <line x1="6" y1="6" x2="18" y2="18" />
@@ -813,22 +817,28 @@
         <div class="panel-chat" id="panelChat">
 
             <div class="chat-welcome-screen" id="welcomeScreen">
-                <div class="welcome-icon">🎬</div>
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="#fff" />
+                    </svg>
+                </div>
                 <h1 class="welcome-title">Guidy</h1>
                 <p class="welcome-subtitle">Your personal guide to endless movie lists. Tell me what you're in the mood
                     for.</p>
                 <div class="welcome-chips">
-                    <button class="welcome-chip" onclick="quickSend('Recommend something like Inception')">🧠 Like
+                    <button class="welcome-chip" onclick="quickSend('Recommend something like Inception')">Like
                         Inception</button>
-                    <button class="welcome-chip" onclick="quickSend('I want a feel-good comedy')">😄 Feel-good
+                    <button class="welcome-chip" onclick="quickSend('I want a feel-good comedy')">Feel-good
                         comedy</button>
-                    <button class="welcome-chip" onclick="quickSend('Best thriller movies')">🔪 Best thrillers</button>
-                    <button class="welcome-chip" onclick="quickSend('Something dark and psychological')">🌑 Dark &
+                    <button class="welcome-chip" onclick="quickSend('Best thriller movies')">Best thrillers</button>
+                    <button class="welcome-chip" onclick="quickSend('Something dark and psychological')">Dark &
                         psychological</button>
                 </div>
             </div>
 
-            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-messages-inner" id="chatMessagesInner"></div>
+            </div>
 
             <div class="chat-input-wrap" id="chatInputWrap">
                 <div class="chat-input-inner">
@@ -846,7 +856,7 @@
     </div>
 
     <div class="trailer-overlay" id="trailerOverlay">
-        <button class="trailer-close" id="trailerCloseBtn" title="Close">✕</button>
+        <button class="trailer-close" id="trailerCloseBtn" title="Close">&#x2715;</button>
         <div class="trailer-player" id="trailerPlayer"></div>
         <div class="trailer-caption" id="trailerCaption"></div>
     </div>
@@ -858,10 +868,10 @@
         const $app = document.getElementById('app');
         const $welcomeScreen = document.getElementById('welcomeScreen');
         const $chatMessages = document.getElementById('chatMessages');
+        const $chatMessagesInner = document.getElementById('chatMessagesInner');
         const $chatInput = document.getElementById('chatInput');
         const $chatSend = document.getElementById('chatSend');
         const $chatInputWrap = document.getElementById('chatInputWrap');
-        const $panelMovie = document.getElementById('panelMovie');
         const $panelContent = document.getElementById('panelContent');
         const $panelTitle = document.getElementById('panelTitle');
         const $trailerOverlay = document.getElementById('trailerOverlay');
@@ -881,7 +891,6 @@
             welcomeActive = false;
             $welcomeScreen.classList.add('hidden');
             $chatMessages.classList.add('active');
-            $chatInputWrap.style.paddingBottom = '1.25rem';
         }
 
         function quickSend(text) {
@@ -906,7 +915,7 @@
             const div = document.createElement('div');
             div.className = `msg ${role}`;
             div.textContent = text;
-            $chatMessages.appendChild(div);
+            $chatMessagesInner.appendChild(div);
             $chatMessages.scrollTop = $chatMessages.scrollHeight;
         }
 
@@ -916,7 +925,7 @@
             div.className = 'msg assistant typing';
             div.id = 'typingIndicator';
             div.innerHTML = 'Thinking<span class="dots"><span></span><span></span><span></span></span>';
-            $chatMessages.appendChild(div);
+            $chatMessagesInner.appendChild(div);
             $chatMessages.scrollTop = $chatMessages.scrollHeight;
         }
 
@@ -955,7 +964,6 @@
 
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
-
                 removeTyping();
 
                 if (data.error === 'Rate limit exceeded') {
@@ -978,7 +986,6 @@
 
             } catch (e) {
                 removeTyping();
-                console.error('Chat error:', e);
                 addMessage('Sorry, something went wrong. Try again.', 'assistant');
             } finally {
                 $chatSend.disabled = false;
@@ -989,7 +996,6 @@
         function showMovieDetail(movie) {
             openSplit();
             $panelTitle.textContent = movie.title || 'Movie Details';
-
             const genres = Array.isArray(movie.genres) ? movie.genres : [];
             const posterSrc = movie.poster_filename ? `/api/poster/${movie.poster_filename}` : '';
 
@@ -1009,13 +1015,9 @@
                         </div>
                     </div>
                     <div class="movie-trailer" id="movieTrailer-${movie.id}">
-                        <div class="trailer-inner">
-                            <div class="spinner"></div>
-                            Loading trailer…
-                        </div>
+                        <div class="trailer-inner"><div class="spinner"></div> Loading trailer…</div>
                     </div>
                 </div>`;
-
             loadTrailerForDetail(movie.id, movie.title, movie.year);
         }
 
@@ -1027,7 +1029,6 @@
                 if (!res.ok) throw new Error('No trailer');
                 const data = await res.json();
                 if (!data.video_id) throw new Error('No video');
-
                 container.innerHTML = `
                     <div style="aspect-ratio:16/9;">
                         <iframe src="https://www.youtube.com/embed/${data.video_id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1"
@@ -1039,11 +1040,7 @@
                         <span style="color:var(--text-muted);margin-left:6px;">${year || ''}</span>
                     </div>`;
             } catch {
-                container.innerHTML = `
-                    <div class="trailer-inner">
-                        <span style="font-size:1.3em;">🎬</span>
-                        Trailer not available
-                    </div>`;
+                container.innerHTML = '<div class="trailer-inner">Trailer not available</div>';
             }
         }
 
@@ -1051,7 +1048,6 @@
             if (!movies || movies.length === 0) return;
             openSplit();
             $panelTitle.textContent = 'Recommendations';
-
             $panelContent.innerHTML = `<div class="movies-grid">
                 ${movies.map(m => {
                 const genres = Array.isArray(m.genres) ? m.genres : [];
@@ -1059,7 +1055,7 @@
                 const posterSrc = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
                 return `
                     <div class="movie-card" onclick="openDetailById(${m.id})">
-                        ${posterSrc ? `<img src="${posterSrc}" alt="${m.title}" loading="lazy">` : '<div style="height:270px;background:var(--bg-elevated);"></div>'}
+                        ${posterSrc ? `<img src="${posterSrc}" alt="${m.title}" loading="lazy">` : '<div style="height:255px;background:var(--bg-elevated);"></div>'}
                         <div class="card-info">
                             <div class="card-title">${m.title}</div>
                             <span class="card-rating">${m.rating}/10</span>
@@ -1077,8 +1073,8 @@
                 const res = await fetch(`/api/movie/${movieId}`);
                 const data = await res.json();
                 if (data.movie) showMovieDetail(data.movie);
-            } catch (e) {
-                $panelContent.innerHTML = '<div class="loading-state">Failed to load movie details</div>';
+            } catch {
+                $panelContent.innerHTML = '<div class="loading-state">Failed to load details</div>';
             }
         }
 
@@ -1099,13 +1095,9 @@
             $trailerPlayer.innerHTML = '';
         }
 
-        $trailerOverlay.addEventListener('click', e => {
-            if (e.target === $trailerOverlay) closeTrailer();
-        });
+        $trailerOverlay.addEventListener('click', e => { if (e.target === $trailerOverlay) closeTrailer(); });
         document.getElementById('trailerCloseBtn').addEventListener('click', closeTrailer);
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeTrailer();
-        });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeTrailer(); });
 
         $chatInput.focus();
     </script>
