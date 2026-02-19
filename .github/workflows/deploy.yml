@@ -300,14 +300,39 @@ jobs:
             --service service-checker-ai-agent-service \
             --force-new-deployment
 
-      - name: Wait for service stability
+      - name: Wait for frontend service stability
         run: |
-          echo "Waiting for service to become stable..."
+          echo "Waiting for frontend service to become stable..."
           aws ecs wait services-stable \
             --cluster ${{ secrets.ECS_CLUSTER }} \
             --services ${{ secrets.ECS_SERVICE_FRONTEND }} \
             --region ${{ secrets.AWS_REGION }}
-          echo "Deployment completed successfully!"
+          echo "Frontend deployment completed successfully!"
+
+      - name: Wait for backend service stability
+        if: steps.changes.outputs.victoriametrics == 'true' || steps.changes.outputs.grafana == 'true' || steps.changes.outputs.flask == 'true'
+        continue-on-error: true
+        run: |
+          echo "Waiting for backend service to become stable..."
+          aws ecs wait services-stable \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --services ${{ secrets.ECS_SERVICE_BACKEND }} \
+            --region ${{ secrets.AWS_REGION }} || true
+          echo "Backend service stable"
+
+      - name: Sync MeiliSearch via Lambda
+        continue-on-error: true
+        run: |
+          echo "Triggering MeiliSearch sync..."
+          sleep 30
+          aws lambda invoke \
+            --function-name service-checker-data-pipeline \
+            --payload '{"action": "sync", "source": "github-actions"}' \
+            --cli-binary-format raw-in-base64-out \
+            /tmp/sync-response.json
+          echo "Sync response:"
+          cat /tmp/sync-response.json
+          echo ""
 
       - name: Configure AWS credentials for status check
         if: success()

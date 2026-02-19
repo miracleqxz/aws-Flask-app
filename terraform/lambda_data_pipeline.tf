@@ -507,14 +507,16 @@ resource "aws_lambda_function" "data_pipeline" {
 
 resource "aws_cloudwatch_event_rule" "backend_started" {
   name        = "${var.project_name}-backend-started"
-  description = "Triggers data pipeline when backend EC2 enters running state"
+  description = "Triggers data pipeline when backend ECS task reaches RUNNING state"
 
   event_pattern = jsonencode({
-    source      = ["aws.ec2"]
-    detail-type = ["EC2 Instance State-change Notification"]
+    source      = ["aws.ecs"]
+    detail-type = ["ECS Task State Change"]
     detail = {
-      state       = ["running"]
-      instance-id = [aws_instance.backend.id]
+      clusterArn    = [aws_ecs_cluster.main.arn]
+      lastStatus    = ["RUNNING"]
+      desiredStatus = ["RUNNING"]
+      group         = ["service:${aws_ecs_service.backend.name}"]
     }
   })
 
