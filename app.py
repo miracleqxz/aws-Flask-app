@@ -62,21 +62,16 @@ def invoke_lambda(function_name, payload, async_invoke=False):
 @app.route('/')
 @track_request
 def home():
-    return render_template('index.html')
+    return render_template(
+        'ai_movies.html',
+        ai_chat_api_url=os.getenv('AI_CHAT_API_URL', ''),
+        ai_chat_api_key=os.getenv('AI_CHAT_API_KEY', '')
+    )
 
 
 @app.route('/movies')
 @track_request
 def movies_page():
-    ai_mode = request.args.get('ai')
-
-    if ai_mode:
-        return render_template(
-            'ai_movies.html',
-            ai_chat_api_url=os.getenv('AI_CHAT_API_URL', ''),
-            ai_chat_api_key=os.getenv('AI_CHAT_API_KEY', '')
-        )
-
     page = request.args.get('page', 1, type=int)
     per_page = 20
     if page < 1:
