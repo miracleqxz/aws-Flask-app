@@ -83,19 +83,19 @@
         }
 
         .brand-name {
-            font-size: 2.2rem;
+            font-size: 3rem;
             font-weight: 800;
             letter-spacing: -0.04em;
             color: #fff;
-            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7);
         }
 
         .brand-sub {
-            font-size: 0.82rem;
-            color: rgba(200, 220, 240, 0.6);
+            font-size: 0.9rem;
+            color: rgba(200, 220, 240, 0.65);
             font-weight: 400;
-            margin-left: 0.25rem;
-            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+            margin-left: 0.3rem;
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
         }
 
         /* ═══════════════════════════════════════════
@@ -263,61 +263,64 @@
             left: 0;
             right: 0;
             z-index: 70;
-            padding: 0.75rem 1.5rem 1rem;
-            background: linear-gradient(to top, var(--bg) 60%, transparent);
+            padding: 1rem 1.5rem 1.25rem;
+            background: linear-gradient(to top, var(--bg) 65%, transparent);
             pointer-events: none;
         }
 
         .search-dock-inner {
-            max-width: var(--chat-max-width);
+            max-width: 860px;
             margin: 0 auto;
             display: flex;
-            gap: 0.5rem;
+            gap: 0.6rem;
             pointer-events: all;
         }
 
         .search-input {
             flex: 1;
-            padding: 0.9rem 1.3rem;
-            border: 1.5px solid var(--border-light);
-            border-radius: 14px;
-            font-size: 0.95rem;
+            padding: 1.1rem 1.5rem;
+            border: 2px solid rgba(130, 180, 220, 0.18);
+            border-radius: 16px;
+            font-size: 1.1rem;
             font-family: inherit;
             outline: none;
-            background: var(--search-bg);
+            background: rgba(8, 16, 24, 0.92);
             color: var(--text);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px);
             transition: border-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
         }
 
         .search-input::placeholder {
-            color: var(--text-muted);
+            color: var(--text-secondary);
         }
 
         .search-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow), 0 4px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 0 4px var(--accent-glow), 0 6px 30px rgba(0, 0, 0, 0.4);
         }
 
         .search-send {
-            padding: 0.9rem 1.4rem;
+            padding: 1.1rem 1.6rem;
             background: var(--accent);
             color: #fff;
             border: none;
-            border-radius: 14px;
-            font-size: 0.88rem;
+            border-radius: 16px;
+            font-size: 1rem;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.4rem;
             white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(74, 144, 217, 0.25);
         }
 
         .search-send:hover:not(:disabled) {
             background: var(--accent-hover);
+            box-shadow: 0 4px 20px rgba(74, 144, 217, 0.35);
         }
 
         .search-send:disabled {
@@ -326,8 +329,8 @@
         }
 
         .search-send svg {
-            width: 15px;
-            height: 15px;
+            width: 17px;
+            height: 17px;
             fill: currentColor;
         }
 
@@ -635,8 +638,8 @@
 
         .detail-genres span {
             padding: 0.2rem 0.55rem;
-            background: rgba(99, 102, 241, 0.12);
-            color: #a5b4fc;
+            background: rgba(74, 144, 217, 0.14);
+            color: #8ab8e0;
             border-radius: 10px;
             font-size: 0.72rem;
             font-weight: 500;
@@ -674,6 +677,43 @@
             font-size: 0.8rem;
             color: var(--text-secondary);
             border-top: 1px solid var(--border);
+        }
+
+        .similar-section {
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+        }
+
+        .similar-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .similar-row {
+            display: flex;
+            gap: 0.8rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .similar-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .similar-row::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 2px;
+        }
+
+        .similar-row .movie-card {
+            flex: 0 0 140px;
+            min-width: 140px;
+        }
+
+        .similar-row .movie-card img {
+            height: 200px;
         }
 
         /* ═══════════════════════════════════════════
@@ -769,7 +809,7 @@
             }
 
             .brand-name {
-                font-size: 1.5rem;
+                font-size: 2rem;
             }
 
             .brand-sub {
@@ -976,12 +1016,13 @@
             addSplitMsg(userText, 'user');
             if (data.message) addSplitMsg(data.message, 'assistant');
 
+            // Store for similar-movie navigation
+            lastMovieResults = data.movie_results || [];
+
             if (data.movie_detail) {
-                renderSplitDetail(data.movie_detail);
-            } else if (data.movie_results && data.movie_results.length === 1) {
-                renderSplitDetail(data.movie_results[0]);
-            } else if (data.movie_results && data.movie_results.length > 1) {
-                renderSplitGrid(data.movie_results);
+                renderSplitDetail(data.movie_detail, lastMovieResults);
+            } else if (lastMovieResults.length > 0) {
+                showBestMatch(userText, lastMovieResults);
             } else {
                 $splitContent.innerHTML = '<div class="loading-state">No results to show yet</div>';
                 $splitTitle.textContent = 'Chat';
@@ -991,6 +1032,9 @@
         }
 
         function closeSplit() {
+            // Stop any playing iframes (trailers)
+            const iframes = $splitContent.querySelectorAll('iframe');
+            iframes.forEach(iframe => { iframe.src = ''; });
             $splitOverlay.classList.remove('visible');
             document.body.style.overflow = '';
             chatHistory = [];
@@ -1046,12 +1090,12 @@
                     chatHistory.push({ role: 'assistant', content: data.message });
                 }
 
+                if (data.movie_results) lastMovieResults = data.movie_results;
+
                 if (data.movie_detail) {
-                    renderSplitDetail(data.movie_detail);
-                } else if (data.movie_results && data.movie_results.length === 1) {
-                    renderSplitDetail(data.movie_results[0]);
+                    renderSplitDetail(data.movie_detail, data.movie_results || []);
                 } else if (data.movie_results && data.movie_results.length > 0) {
-                    renderSplitGrid(data.movie_results);
+                    showBestMatch(text, data.movie_results);
                 }
 
             } catch (e) {
@@ -1060,11 +1104,47 @@
             }
         }
 
-        function renderSplitDetail(movie) {
+        function showBestMatch(query, movies) {
+            const q = query.toLowerCase().trim();
+            // Find exact title match first
+            let best = movies.find(m => m.title && m.title.toLowerCase() === q);
+            // Fallback: find title that starts with query
+            if (!best) best = movies.find(m => m.title && m.title.toLowerCase().startsWith(q));
+            // Fallback: highest-rated
+            if (!best) best = movies.reduce((a, b) => (parseFloat(b.rating) || 0) > (parseFloat(a.rating) || 0) ? b : a, movies[0]);
+            const similar = movies.filter(m => m.id !== best.id).sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+            renderSplitDetail(best, similar);
+        }
+
+        function renderSplitDetail(movie, similarMovies) {
             $splitTitle.textContent = movie.title || 'Movie Detail';
             const poster = movie.poster_filename ? `/api/poster/${movie.poster_filename}` : '';
             const genres = Array.isArray(movie.genres) ? movie.genres : [];
             const desc = movie.description || '';
+            const similar = similarMovies || [];
+
+            let similarHtml = '';
+            if (similar.length > 0) {
+                similarHtml = `
+                    <div class="similar-section">
+                        <div class="similar-title">Similar Movies</div>
+                        <div class="similar-row">
+                            ${similar.map(m => {
+                    const sp = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                    const sg = Array.isArray(m.genres) ? m.genres.join(', ') : '';
+                    return `
+                                    <div class="movie-card" onclick="showMovieInSplit(${m.id}, '${(m.poster_filename || '').replace(/'/g, "\\'")}',' ${(m.title || '').replace(/'/g, "\\'")}',' ${m.rating}', '${m.year}', '${(m.director || '').replace(/'/g, "\\'")}',' ${sg.replace(/'/g, "\\'")}',' ${(m.description || '').replace(/'/g, "\\'")}')">
+                                        ${sp ? `<img src="${sp}" alt="${m.title}" loading="lazy">` : '<div style="height:200px;background:var(--card);"></div>'}
+                                        <div class="card-body">
+                                            <div class="card-title">${m.title}</div>
+                                            <span class="card-rating">${m.rating}/10</span>
+                                            <div class="card-meta">${m.year}${sg ? ' · ' + sg : ''}</div>
+                                        </div>
+                                    </div>`;
+                }).join('')}
+                        </div>
+                    </div>`;
+            }
 
             $splitContent.innerHTML = `
                 <div class="detail-card">
@@ -1082,14 +1162,37 @@
                         </div>
                     </div>
                     <div class="detail-trailer" id="inlineTrailer">
-                        <div class="trailer-placeholder" style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:var(--text-muted);gap:8px;font-size:0.85rem;">
+                        <div class="trailer-placeholder">
                             <div class="spinner" style="border-top-color:#c33;"></div>
                             Loading trailer…
                         </div>
                     </div>
+                    ${similarHtml}
                 </div>`;
 
             if (movie.id) loadInlineTrailer(movie.id, movie.title, movie.year);
+        }
+
+        // Store last known movies for re-rendering from similar clicks
+        let lastMovieResults = [];
+
+        function showMovieInSplit(id, posterFn, title, rating, year, director, genres, desc) {
+            // Stop current trailer
+            const iframes = $splitContent.querySelectorAll('iframe');
+            iframes.forEach(f => { f.src = ''; });
+            const movie = {
+                id: id,
+                poster_filename: posterFn.trim(),
+                title: title.trim(),
+                rating: rating.trim(),
+                year: year.trim(),
+                director: director.trim(),
+                genres: genres.trim() ? genres.trim().split(', ') : [],
+                description: desc.trim()
+            };
+            const similar = lastMovieResults.filter(m => m.id !== id)
+                .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+            renderSplitDetail(movie, similar);
         }
 
         async function loadInlineTrailer(movieId, title, year) {
@@ -1126,18 +1229,19 @@
                 const poster = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
                 const genres = Array.isArray(m.genres) ? m.genres.join(', ') : '';
                 return `
-                    <a href="/movie/${m.id}" class="movie-card">
+                    <div class="movie-card" onclick="showMovieInSplit(${m.id}, '${(m.poster_filename || '').replace(/'/g, "\\'")}',' ${(m.title || '').replace(/'/g, "\\'")}',' ${m.rating}', '${m.year}', '${(m.director || '').replace(/'/g, "\\'")}',' ${(genres || '').replace(/'/g, "\\'")}',' ${(m.description || '').replace(/'/g, "\\'")}')">
                         ${poster ? `<img src="${poster}" alt="${m.title}" loading="lazy">` : '<div style="height:255px;background:var(--card);"></div>'}
                         <div class="card-body">
                             <div class="card-title">${m.title}</div>
                             <span class="card-rating">${m.rating}/10</span>
                             <div class="card-meta">${m.year}${genres ? ' · ' + genres : ''}</div>
                         </div>
-                    </a>`;
+                    </div>`;
             }).join('')}
             </div>`;
         }
 
+        window.scrollTo(0, 0);
         loadMovies(1);
         $searchInput.focus();
     </script>
