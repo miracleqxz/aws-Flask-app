@@ -19,7 +19,6 @@ ssm = boto3.client('ssm')
 AI_AGENT_INSTANCE_ID = os.environ['AI_AGENT_INSTANCE_ID']
 DYNAMODB_TABLE = os.environ['DYNAMODB_TABLE']
 HEARTBEAT_TIMEOUT = int(os.environ.get('HEARTBEAT_TIMEOUT_MINUTES', '5'))
-AI_AGENT_API_URL = os.environ.get('AI_AGENT_API_URL', '')
 
 
 def get_table():
@@ -183,11 +182,15 @@ def update_heartbeat():
 
 
 def check_activity():
-    if not AI_AGENT_API_URL:
-        logger.warning("AI_AGENT_API_URL not configured, skipping activity check")
+    """Check AI agent activity via its HTTP endpoint on the backend instance."""
+    # Dynamically resolve the backend instance's public IP
+    instance_info = get_instance_state()
+    public_ip = instance_info.get('public_ip', '')
+    if not public_ip:
+        logger.warning("Backend instance has no public IP, skipping activity check")
         return None
 
-    url = f"{AI_AGENT_API_URL}/activity/check"
+    url = f"http://{public_ip}:5001/activity/check"
     req = Request(url, method='GET')
     req.add_header('Content-Type', 'application/json')
 

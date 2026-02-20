@@ -9,8 +9,7 @@ logger.setLevel(logging.INFO)
 ec2 = boto3.client('ec2')
 
 BACKEND_INSTANCE_ID = os.environ['BACKEND_INSTANCE_ID']
-AI_AGENT_INSTANCE_ID = os.environ['AI_AGENT_INSTANCE_ID']
-INSTANCE_IDS = [BACKEND_INSTANCE_ID, AI_AGENT_INSTANCE_ID]
+INSTANCE_IDS = [BACKEND_INSTANCE_ID]
 
 
 def get_states():

@@ -118,10 +118,9 @@ resource "aws_lambda_function" "ai_agent_control" {
 
   environment {
     variables = {
-      AI_AGENT_INSTANCE_ID      = aws_instance.ai_agent.id
+      AI_AGENT_INSTANCE_ID      = aws_instance.backend.id
       DYNAMODB_TABLE            = aws_dynamodb_table.ai_agent_state.name
       HEARTBEAT_TIMEOUT_MINUTES = tostring(var.heartbeat_timeout_minutes)
-      AI_AGENT_API_URL          = aws_apigatewayv2_api.ai_chat.api_endpoint
     }
   }
 
@@ -129,7 +128,7 @@ resource "aws_lambda_function" "ai_agent_control" {
     Name = var.lambda_ai_agent_function_name
   })
 
-  depends_on = [aws_cloudwatch_log_group.lambda_ai_agent, aws_apigatewayv2_api.ai_chat]
+  depends_on = [aws_cloudwatch_log_group.lambda_ai_agent]
 }
 
 resource "aws_apigatewayv2_api" "ai_agent_control" {

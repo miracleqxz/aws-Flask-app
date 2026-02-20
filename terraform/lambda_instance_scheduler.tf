@@ -56,8 +56,7 @@ resource "aws_lambda_function" "instance_scheduler" {
 
   environment {
     variables = {
-      BACKEND_INSTANCE_ID  = aws_instance.backend.id
-      AI_AGENT_INSTANCE_ID = aws_instance.ai_agent.id
+      BACKEND_INSTANCE_ID = aws_instance.backend.id
     }
   }
 
