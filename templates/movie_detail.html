@@ -5,63 +5,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ movie.title }} - Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        * {
+        *,
+        *::before,
+        *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --bg: #0a1118;
+            --surface: rgba(10, 20, 30, 0.88);
+            --surface-solid: #0c1620;
+            --card: rgba(12, 22, 35, 0.9);
+            --border: rgba(130, 180, 220, 0.08);
+            --border-light: rgba(130, 180, 220, 0.14);
+            --text: #dce8f0;
+            --text-secondary: #8aa8c0;
+            --text-muted: #4a6a82;
+            --accent: #4a90d9;
+            --gold: #e8b84a;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #ffffff;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 0;
+        }
+
+        .hero-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70vh;
+            background: url('/static/background.webp') center top / cover no-repeat;
+            z-index: 0;
+        }
+
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom,
+                    rgba(10, 17, 24, 0.1) 0%,
+                    rgba(10, 17, 24, 0.35) 50%,
+                    rgba(10, 17, 24, 0.8) 75%,
+                    var(--bg) 100%);
         }
 
         .container {
+            position: relative;
+            z-index: 1;
             max-width: 1000px;
             margin: 0 auto;
+            padding: 40px 20px;
         }
 
         .back-link {
-            display: inline-block;
-            color: #2563eb;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
             text-decoration: none;
             margin-bottom: 20px;
             font-size: 0.95em;
+            padding: 0.5rem 1rem;
+            background: var(--card);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            transition: all 0.2s;
         }
 
         .back-link:hover {
-            text-decoration: underline;
+            background: rgba(18, 32, 50, 0.95);
+            color: var(--text);
         }
 
         .cache-badge {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.9em;
+            font-size: 0.8em;
             margin-bottom: 20px;
             letter-spacing: 0.5px;
         }
 
         .cache-badge.from-database {
-            background: #3b82f6;
-            color: white;
+            background: rgba(59, 130, 246, 0.2);
+            color: #6ab0ff;
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
 
         .cache-badge.from-cache {
-            background: #10b981;
-            color: white;
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .movie-container {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
+            background: var(--card);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
         .movie-hero {
@@ -73,8 +129,8 @@
 
         .movie-poster {
             width: 100%;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         .movie-info {
@@ -86,7 +142,7 @@
         .movie-title {
             font-size: 2.5em;
             font-weight: bold;
-            color: #1f2937;
+            color: var(--text);
             margin-bottom: 15px;
         }
 
@@ -101,7 +157,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 1.05em;
         }
 
@@ -109,8 +165,8 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #fbbf24;
-            color: white;
+            background: var(--gold);
+            color: #1a1a1a;
             padding: 10px 20px;
             border-radius: 8px;
             font-weight: bold;
@@ -118,20 +174,20 @@
         }
 
         .movie-description {
-            background: #f9fafb;
+            background: rgba(10, 18, 28, 0.6);
             padding: 25px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--border);
         }
 
         .description-title {
             font-size: 1.3em;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text);
             margin-bottom: 12px;
         }
 
         .description-text {
-            color: #4b5563;
+            color: var(--text-secondary);
             line-height: 1.8;
             font-size: 1.05em;
         }
@@ -141,15 +197,15 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             padding: 25px;
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
+            background: rgba(10, 18, 28, 0.6);
+            border-top: 1px solid var(--border);
         }
 
         /* ── YouTube-style Trailer Section ── */
         .trailer-section {
-            background: #0f0f0f;
+            background: #0a0a0a;
             padding: 0;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--border);
         }
 
         .trailer-player-wrapper {
@@ -168,7 +224,7 @@
 
         .trailer-info-bar {
             padding: 16px 20px;
-            background: #0f0f0f;
+            background: #0a0a0a;
         }
 
         .trailer-title {
@@ -179,7 +235,7 @@
         }
 
         .trailer-meta {
-            color: #aaa;
+            color: var(--text-muted);
             font-size: 0.85em;
         }
 
@@ -189,7 +245,7 @@
             justify-content: center;
             height: 100%;
             min-height: 200px;
-            color: #aaa;
+            color: var(--text-muted);
             font-size: 0.95em;
             gap: 10px;
         }
@@ -216,7 +272,7 @@
             justify-content: center;
             height: 100%;
             min-height: 200px;
-            color: #aaa;
+            color: var(--text-muted);
             text-align: center;
             gap: 8px;
             padding: 20px;
@@ -230,12 +286,13 @@
         .stat-item {
             text-align: center;
             padding: 15px;
-            background: white;
+            background: var(--card);
+            border: 1px solid var(--border);
             border-radius: 10px;
         }
 
         .stat-label {
-            color: #6b7280;
+            color: var(--text-muted);
             font-size: 0.85em;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -243,7 +300,7 @@
         }
 
         .stat-value {
-            color: #1f2937;
+            color: var(--text);
             font-size: 1.3em;
             font-weight: bold;
         }
@@ -257,6 +314,7 @@
 </head>
 
 <body>
+    <div class="hero-bg"></div>
     <div class="container">
         <a href="/" class="back-link">← Back to All Movies</a>
 

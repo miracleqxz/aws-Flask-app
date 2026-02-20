@@ -82,6 +82,19 @@ def api_movies():
     return jsonify(result)
 
 
+@app.route('/api/movies/similar/<int:movie_id>')
+def api_similar_movies(movie_id):
+    from database.movies_db import get_similar_movies
+    limit = request.args.get('limit', 10, type=int)
+    if limit > 20:
+        limit = 20
+    movies = get_similar_movies(movie_id, limit)
+    # Remove the 'overlap' field added by the SQL query
+    for m in movies:
+        m.pop('overlap', None)
+    return jsonify({'movies': movies})
+
+
 @app.route('/movie/<int:movie_id>')
 @track_request
 def movie_detail(movie_id):

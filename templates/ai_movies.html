@@ -395,7 +395,9 @@
         .split-left-content {
             flex: 1;
             overflow-y: auto;
-            padding: 1.25rem;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            padding: 0;
         }
 
         .split-left-content::-webkit-scrollbar {
@@ -717,6 +719,64 @@
         }
 
         /* ═══════════════════════════════════════════
+           TIKTOK-STYLE SLIDES
+        ═══════════════════════════════════════════ */
+        .movie-slide {
+            min-height: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-counter {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        .slide-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .slide-dot.active {
+            background: var(--accent);
+            height: 18px;
+            border-radius: 3px;
+        }
+
+        .swipe-hint {
+            text-align: center;
+            padding: 0.8rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            animation: pulseHint 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseHint {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ═══════════════════════════════════════════
            LOADING
         ═══════════════════════════════════════════ */
         .spinner {
@@ -895,6 +955,7 @@
 
         let currentPage = 1;
         let chatHistory = [];
+        let isInitialLoad = true;
 
         $searchInput.addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
@@ -915,7 +976,11 @@
                 renderGrid(data.movies);
                 renderPagination(data.page, data.pages, data.total);
                 currentPage = data.page;
-                window.scrollTo({ top: document.querySelector('.content-area').offsetTop - 20, behavior: 'smooth' });
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                } else {
+                    window.scrollTo({ top: document.querySelector('.content-area').offsetTop - 20, behavior: 'smooth' });
+                }
             } catch (e) {
                 $grid.innerHTML = '<div class="loading-state">Failed to load movies</div>';
             }
@@ -1035,6 +1100,10 @@
             // Stop any playing iframes (trailers)
             const iframes = $splitContent.querySelectorAll('iframe');
             iframes.forEach(iframe => { iframe.src = ''; });
+            // Clean up slide observer and dot nav
+            if (slideObserver) { slideObserver.disconnect(); slideObserver = null; }
+            const dots = document.getElementById('slideDots');
+            if (dots) dots.remove();
             $splitOverlay.classList.remove('visible');
             document.body.style.overflow = '';
             chatHistory = [];
@@ -1118,86 +1187,149 @@
 
         function renderSplitDetail(movie, similarMovies) {
             $splitTitle.textContent = movie.title || 'Movie Detail';
+            // Build slide list: main movie first, then similar
+            const allSlides = [movie];
+            const provided = (similarMovies || []).filter(m => m.id !== movie.id);
+
+            // Render first slide immediately, fetch similar async if needed
+            renderSlides(allSlides, true);
+
+            if (provided.length > 0) {
+                provided.forEach(m => allSlides.push(m));
+                renderSlides(allSlides, false);
+            } else if (movie.id) {
+                fetchAndAppendSimilarSlides(movie.id, allSlides);
+            }
+        }
+
+        function buildSlideHTML(movie, index, total) {
             const poster = movie.poster_filename ? `/api/poster/${movie.poster_filename}` : '';
             const genres = Array.isArray(movie.genres) ? movie.genres : [];
             const desc = movie.description || '';
-            const similar = similarMovies || [];
+            const hint = index === 0 && total > 1 ? `<div class="swipe-hint">\u2193 Scroll for more movies</div>` : '';
 
-            let similarHtml = '';
-            if (similar.length > 0) {
-                similarHtml = `
-                    <div class="similar-section">
-                        <div class="similar-title">Similar Movies</div>
-                        <div class="similar-row">
-                            ${similar.map(m => {
-                    const sp = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
-                    const sg = Array.isArray(m.genres) ? m.genres.join(', ') : '';
-                    return `
-                                    <div class="movie-card" onclick="showMovieInSplit(${m.id}, '${(m.poster_filename || '').replace(/'/g, "\\'")}',' ${(m.title || '').replace(/'/g, "\\'")}',' ${m.rating}', '${m.year}', '${(m.director || '').replace(/'/g, "\\'")}',' ${sg.replace(/'/g, "\\'")}',' ${(m.description || '').replace(/'/g, "\\'")}')">
-                                        ${sp ? `<img src="${sp}" alt="${m.title}" loading="lazy">` : '<div style="height:200px;background:var(--card);"></div>'}
-                                        <div class="card-body">
-                                            <div class="card-title">${m.title}</div>
-                                            <span class="card-rating">${m.rating}/10</span>
-                                            <div class="card-meta">${m.year}${sg ? ' · ' + sg : ''}</div>
-                                        </div>
-                                    </div>`;
-                }).join('')}
+            return `
+                <div class="movie-slide" data-slide-index="${index}" data-movie-id="${movie.id || ''}">
+                    <div class="detail-card" style="flex:1;display:flex;flex-direction:column;">
+                        <div class="detail-hero">
+                            ${poster ? `<img src="${poster}" alt="${movie.title}" class="detail-poster">` : ''}
+                            <div class="detail-info">
+                                <h2>${movie.title}</h2>
+                                <div class="detail-meta">
+                                    <span class="tag rating">${movie.rating}/10</span>
+                                    <span class="tag">${movie.year || ''}</span>
+                                    ${movie.director ? `<span class="tag">${movie.director}</span>` : ''}
+                                </div>
+                                ${genres.length ? `<div class="detail-genres">${genres.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
+                                ${desc ? `<p class="detail-desc">${desc}</p>` : ''}
+                            </div>
                         </div>
-                    </div>`;
+                        <div class="detail-trailer" data-trailer-id="${movie.id || ''}" style="flex:1;min-height:0;">
+                            <div class="trailer-placeholder">
+                                <div class="spinner" style="border-top-color:#c33;"></div>
+                                Loading trailer\u2026
+                            </div>
+                        </div>
+                    </div>
+                    ${hint}
+                </div>`;
+        }
+
+        function renderSlides(movies, isInitial) {
+            const total = movies.length;
+            if (isInitial) {
+                $splitContent.innerHTML = movies.map((m, i) => buildSlideHTML(m, i, total)).join('');
+            } else {
+                // Append new slides (skip first which already exists)
+                const existing = $splitContent.querySelectorAll('.movie-slide').length;
+                for (let i = existing; i < movies.length; i++) {
+                    $splitContent.insertAdjacentHTML('beforeend', buildSlideHTML(movies[i], i, total));
+                }
+                // Update first slide hint if we now have more
+                const firstHint = $splitContent.querySelector('.movie-slide[data-slide-index="0"] .swipe-hint');
+                if (!firstHint && total > 1) {
+                    const firstSlide = $splitContent.querySelector('.movie-slide[data-slide-index="0"]');
+                    if (firstSlide) firstSlide.insertAdjacentHTML('beforeend', '<div class="swipe-hint">\u2193 Scroll for more movies</div>');
+                }
             }
 
-            $splitContent.innerHTML = `
-                <div class="detail-card">
-                    <div class="detail-hero">
-                        ${poster ? `<img src="${poster}" alt="${movie.title}" class="detail-poster">` : ''}
-                        <div class="detail-info">
-                            <h2>${movie.title}</h2>
-                            <div class="detail-meta">
-                                <span class="tag rating">${movie.rating}/10</span>
-                                <span class="tag">${movie.year || ''}</span>
-                                ${movie.director ? `<span class="tag">${movie.director}</span>` : ''}
-                            </div>
-                            ${genres.length ? `<div class="detail-genres">${genres.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
-                            ${desc ? `<p class="detail-desc">${desc}</p>` : ''}
-                        </div>
-                    </div>
-                    <div class="detail-trailer" id="inlineTrailer">
-                        <div class="trailer-placeholder">
-                            <div class="spinner" style="border-top-color:#c33;"></div>
-                            Loading trailer…
-                        </div>
-                    </div>
-                    ${similarHtml}
-                </div>`;
+            // Build dot nav
+            buildDotNav(total);
 
-            if (movie.id) loadInlineTrailer(movie.id, movie.title, movie.year);
+            // Setup IntersectionObserver for lazy trailer loading
+            setupSlideObserver();
+
+            // Scroll to top
+            $splitContent.scrollTop = 0;
         }
 
-        // Store last known movies for re-rendering from similar clicks
-        let lastMovieResults = [];
+        function buildDotNav(total) {
+            let dots = document.getElementById('slideDots');
+            if (dots) dots.remove();
+            if (total <= 1) return;
 
-        function showMovieInSplit(id, posterFn, title, rating, year, director, genres, desc) {
-            // Stop current trailer
-            const iframes = $splitContent.querySelectorAll('iframe');
-            iframes.forEach(f => { f.src = ''; });
-            const movie = {
-                id: id,
-                poster_filename: posterFn.trim(),
-                title: title.trim(),
-                rating: rating.trim(),
-                year: year.trim(),
-                director: director.trim(),
-                genres: genres.trim() ? genres.trim().split(', ') : [],
-                description: desc.trim()
-            };
-            const similar = lastMovieResults.filter(m => m.id !== id)
-                .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-            renderSplitDetail(movie, similar);
+            dots = document.createElement('div');
+            dots.id = 'slideDots';
+            dots.className = 'slide-counter';
+            for (let i = 0; i < total; i++) {
+                const dot = document.createElement('div');
+                dot.className = `slide-dot${i === 0 ? ' active' : ''}`;
+                dot.onclick = () => {
+                    const slide = $splitContent.querySelector(`.movie-slide[data-slide-index="${i}"]`);
+                    if (slide) slide.scrollIntoView({ behavior: 'smooth' });
+                };
+                dots.appendChild(dot);
+            }
+            // Append to split-left (relative positioned parent)
+            const splitLeft = $splitContent.parentElement;
+            splitLeft.style.position = 'relative';
+            splitLeft.appendChild(dots);
         }
 
-        async function loadInlineTrailer(movieId, title, year) {
-            const container = document.getElementById('inlineTrailer');
-            if (!container) return;
+        let slideObserver = null;
+        function setupSlideObserver() {
+            if (slideObserver) slideObserver.disconnect();
+
+            slideObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const slide = entry.target;
+                    const movieId = slide.dataset.movieId;
+                    const index = parseInt(slide.dataset.slideIndex);
+                    const trailerEl = slide.querySelector('.detail-trailer');
+
+                    if (entry.isIntersecting) {
+                        // Update title
+                        const h2 = slide.querySelector('h2');
+                        if (h2) $splitTitle.textContent = h2.textContent;
+
+                        // Update dot nav
+                        document.querySelectorAll('.slide-dot').forEach((d, i) => {
+                            d.classList.toggle('active', i === index);
+                        });
+
+                        // Load trailer if not loaded
+                        if (trailerEl && !trailerEl.dataset.loaded && movieId) {
+                            trailerEl.dataset.loaded = '1';
+                            loadSlideTrailer(trailerEl, movieId, h2?.textContent || '', '');
+                        }
+                    } else {
+                        // Stop trailer when scrolled away
+                        const iframe = trailerEl?.querySelector('iframe');
+                        if (iframe) iframe.src = '';
+                        if (trailerEl) trailerEl.dataset.loaded = '';
+                    }
+                });
+            }, {
+                root: $splitContent,
+                threshold: 0.6
+            });
+
+            $splitContent.querySelectorAll('.movie-slide').forEach(slide => {
+                slideObserver.observe(slide);
+            });
+        }
+
+        async function loadSlideTrailer(container, movieId, title, year) {
             try {
                 const res = await fetch(`/api/youtube/trailer/${movieId}`);
                 if (!res.ok) throw new Error('No trailer');
@@ -1212,7 +1344,6 @@
                     </div>
                     <div style="padding:0.6rem 1rem;border-top:1px solid var(--border);">
                         <div style="color:var(--text);font-size:0.85rem;font-weight:600;">${data.title || 'Official Trailer'}</div>
-                        <div style="color:var(--text-muted);font-size:0.75rem;">${title} (${year || ''})</div>
                     </div>`;
             } catch (e) {
                 container.innerHTML = `
@@ -1222,24 +1353,23 @@
             }
         }
 
-        function renderSplitGrid(movies) {
-            $splitTitle.textContent = 'Recommendations';
-            $splitContent.innerHTML = `<div class="ai-grid">
-                ${movies.map(m => {
-                const poster = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
-                const genres = Array.isArray(m.genres) ? m.genres.join(', ') : '';
-                return `
-                    <div class="movie-card" onclick="showMovieInSplit(${m.id}, '${(m.poster_filename || '').replace(/'/g, "\\'")}',' ${(m.title || '').replace(/'/g, "\\'")}',' ${m.rating}', '${m.year}', '${(m.director || '').replace(/'/g, "\\'")}',' ${(genres || '').replace(/'/g, "\\'")}',' ${(m.description || '').replace(/'/g, "\\'")}')">
-                        ${poster ? `<img src="${poster}" alt="${m.title}" loading="lazy">` : '<div style="height:255px;background:var(--card);"></div>'}
-                        <div class="card-body">
-                            <div class="card-title">${m.title}</div>
-                            <span class="card-rating">${m.rating}/10</span>
-                            <div class="card-meta">${m.year}${genres ? ' · ' + genres : ''}</div>
-                        </div>
-                    </div>`;
-            }).join('')}
-            </div>`;
+        async function fetchAndAppendSimilarSlides(movieId, allSlides) {
+            try {
+                const res = await fetch(`/api/movies/similar/${movieId}?limit=10`);
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.movies && data.movies.length > 0) {
+                    data.movies.forEach(m => allSlides.push(m));
+                    renderSlides(allSlides, false);
+                }
+            } catch (e) { /* silent */ }
         }
+
+        function esc(s) { return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+        // Store last known movies for re-rendering from similar clicks
+        let lastMovieResults = [];
+
 
         window.scrollTo(0, 0);
         loadMovies(1);
