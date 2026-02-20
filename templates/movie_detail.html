@@ -310,6 +310,85 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ── Similar Movies ── */
+        .similar-section {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border);
+            background: rgba(10, 18, 28, 0.4);
+        }
+
+        .similar-section h3 {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .similar-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .similar-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .similar-row::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 2px;
+        }
+
+        .similar-card {
+            flex: 0 0 140px;
+            min-width: 140px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .similar-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .similar-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+        }
+
+        .similar-card-body {
+            padding: 8px 10px;
+        }
+
+        .similar-card-title {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .similar-card-meta {
+            font-size: 0.7em;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .similar-card-rating {
+            font-size: 0.72em;
+            color: var(--gold);
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -372,6 +451,14 @@
                 </div>
             </div>
 
+            <!-- Similar Movies -->
+            <div class="similar-section" id="similarSection">
+                <h3>Similar Movies</h3>
+                <div class="similar-row" id="similarRow">
+                    <div style="color:var(--text-muted);font-size:0.85em;padding:0.5rem;">Loading…</div>
+                </div>
+            </div>
+
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-label">Movie ID</div>
@@ -429,6 +516,37 @@
                         <span>Trailer not available</span>
                     </div>`;
                 infoBar.style.display = 'none';
+            }
+        })();
+
+        // Load similar movies
+        (async function loadSimilar() {
+            const row = document.getElementById('similarRow');
+            const section = document.getElementById('similarSection');
+            try {
+                const res = await fetch('/api/movies/similar/{{ movie.id }}?limit=10');
+                if (!res.ok) throw new Error('fail');
+                const data = await res.json();
+                const movies = data.movies || [];
+                if (movies.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+                row.innerHTML = movies.map(m => {
+                    const poster = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                    const genres = Array.isArray(m.genres) ? m.genres.join(', ') : '';
+                    return `
+                        <a href="/movie/${m.id}" class="similar-card">
+                            ${poster ? `<img src="${poster}" alt="${m.title}" loading="lazy">` : '<div style="height:190px;background:var(--surface);"></div>'}
+                            <div class="similar-card-body">
+                                <div class="similar-card-title">${m.title}</div>
+                                <span class="similar-card-rating">${m.rating}/10</span>
+                                <div class="similar-card-meta">${m.year}${genres ? ' · ' + genres : ''}</div>
+                            </div>
+                        </a>`;
+                }).join('');
+            } catch (e) {
+                section.style.display = 'none';
             }
         })();
     </script>

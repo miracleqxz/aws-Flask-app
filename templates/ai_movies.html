@@ -70,31 +70,35 @@
         }
 
         /* ═══════════════════════════════════════════
-           BRANDING (top-left)
+           BRANDING (centered on hero)
         ═══════════════════════════════════════════ */
         .brand {
-            position: fixed;
-            top: 1.2rem;
-            left: 1.5rem;
-            z-index: 60;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 55vh;
+            z-index: 2;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            pointer-events: none;
         }
 
         .brand-name {
-            font-size: 3rem;
+            font-size: 6rem;
             font-weight: 800;
             letter-spacing: -0.04em;
             color: #fff;
-            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.7);
+            text-shadow: 0 4px 40px rgba(0, 0, 0, 0.7);
         }
 
         .brand-sub {
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             color: rgba(200, 220, 240, 0.65);
             font-weight: 400;
-            margin-left: 0.3rem;
+            margin-top: 0.3rem;
             text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
         }
 
@@ -395,8 +399,7 @@
         .split-left-content {
             flex: 1;
             overflow-y: auto;
-            scroll-snap-type: y mandatory;
-            scroll-behavior: smooth;
+            scroll-snap-type: y proximity;
             padding: 0;
         }
 
@@ -724,10 +727,48 @@
         .movie-slide {
             min-height: 100%;
             scroll-snap-align: start;
-            scroll-snap-stop: always;
             padding: 1.25rem;
             display: flex;
             flex-direction: column;
+        }
+
+        .slide-similar {
+            border-top: 1px solid var(--border);
+            padding: 1rem 0 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .slide-similar-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.6rem;
+        }
+
+        .slide-similar-row {
+            display: flex;
+            gap: 0.7rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .slide-similar-row::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .slide-similar-row::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 2px;
+        }
+
+        .slide-similar-row .movie-card {
+            flex: 0 0 130px;
+            min-width: 130px;
+            cursor: pointer;
+        }
+
+        .slide-similar-row .movie-card img {
+            height: 180px;
         }
 
         .slide-counter {
@@ -1224,16 +1265,25 @@
                                 ${desc ? `<p class="detail-desc">${desc}</p>` : ''}
                             </div>
                         </div>
-                        <div class="detail-trailer" data-trailer-id="${movie.id || ''}" style="flex:1;min-height:0;">
+                        <div class="detail-trailer" data-trailer-id="${movie.id || ''}">
                             <div class="trailer-placeholder">
                                 <div class="spinner" style="border-top-color:#c33;"></div>
                                 Loading trailer\u2026
+                            </div>
+                        </div>
+                        <div class="slide-similar" data-similar-for="${movie.id || ''}">
+                            <div class="slide-similar-title">Similar Movies</div>
+                            <div class="slide-similar-row">
+                                <div style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.8rem;padding:0.5rem;">
+                                    <div class="spinner"></div> Loading\u2026
+                                </div>
                             </div>
                         </div>
                     </div>
                     ${hint}
                 </div>`;
         }
+
 
         function renderSlides(movies, isInitial) {
             const total = movies.length;
@@ -1296,6 +1346,7 @@
                     const movieId = slide.dataset.movieId;
                     const index = parseInt(slide.dataset.slideIndex);
                     const trailerEl = slide.querySelector('.detail-trailer');
+                    const similarEl = slide.querySelector('.slide-similar');
 
                     if (entry.isIntersecting) {
                         // Update title
@@ -1312,6 +1363,12 @@
                             trailerEl.dataset.loaded = '1';
                             loadSlideTrailer(trailerEl, movieId, h2?.textContent || '', '');
                         }
+
+                        // Load similar movies if not loaded
+                        if (similarEl && !similarEl.dataset.loaded && movieId) {
+                            similarEl.dataset.loaded = '1';
+                            loadSlideSimilar(similarEl, movieId);
+                        }
                     } else {
                         // Stop trailer when scrolled away
                         const iframe = trailerEl?.querySelector('iframe');
@@ -1321,7 +1378,7 @@
                 });
             }, {
                 root: $splitContent,
-                threshold: 0.6
+                threshold: 0.3
             });
 
             $splitContent.querySelectorAll('.movie-slide').forEach(slide => {
@@ -1351,6 +1408,54 @@
                         Trailer not available
                     </div>`;
             }
+        }
+
+        async function loadSlideSimilar(container, movieId) {
+            const row = container.querySelector('.slide-similar-row');
+            if (!row) return;
+            try {
+                const res = await fetch(`/api/movies/similar/${movieId}?limit=10`);
+                if (!res.ok) throw new Error('Failed');
+                const data = await res.json();
+                const movies = data.movies || [];
+                if (movies.length === 0) {
+                    container.style.display = 'none';
+                    return;
+                }
+                row.innerHTML = movies.map(m => {
+                    const sp = m.poster_filename ? `/api/poster/${m.poster_filename}` : '';
+                    const sg = Array.isArray(m.genres) ? m.genres.join(', ') : '';
+                    return `
+                        <div class="movie-card" onclick="navigateToSlide(${m.id})">
+                            ${sp ? `<img src="${sp}" alt="${m.title}" loading="lazy">` : '<div style="height:180px;background:var(--card);"></div>'}
+                            <div class="card-body">
+                                <div class="card-title">${m.title}</div>
+                                <span class="card-rating">${m.rating}/10</span>
+                                <div class="card-meta">${m.year}${sg ? ' · ' + sg : ''}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (e) {
+                container.style.display = 'none';
+            }
+        }
+
+        function navigateToSlide(movieId) {
+            // Try to find existing slide for this movie
+            const existing = $splitContent.querySelector(`.movie-slide[data-movie-id="${movieId}"]`);
+            if (existing) {
+                existing.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            // Otherwise fetch and show as new detail
+            fetch(`/api/movie/${movieId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.movie) {
+                        renderSplitDetail(data.movie, []);
+                    }
+                })
+                .catch(() => { });
         }
 
         async function fetchAndAppendSimilarSlides(movieId, allSlides) {
