@@ -190,47 +190,6 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
   }
 }
 
-resource "aws_iam_role" "ai_agent_instance_role" {
-  name = "${var.project_name}-ai-agent-instance-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-ai-agent-instance-role"
-    }
-  )
-}
-
-resource "aws_iam_role_policy_attachment" "ai_agent_instance_ssm" {
-  role       = aws_iam_role.ai_agent_instance_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_instance_profile" "ai_agent" {
-  name = "${var.project_name}-ai-agent-instance-profile"
-  role = aws_iam_role.ai_agent_instance_role.name
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-ai-agent-instance-profile"
-    }
-  )
-}
-
 # 4. Lambda Roles
 
 resource "aws_iam_role" "lambda_data_pipeline" {

@@ -63,15 +63,10 @@ variable "availability_zones" {
 }
 
 variable "frontend_instance_type" {
-  description = "EC2 instance type for frontend (flask-app + nginx)"
+  description = "EC2 instance type for frontend (nginx reverse proxy)"
   type        = string
   default     = "t2.micro"
 }
-
-#variable "frontend_key_name" {
-# description = "SSH key pair name for frontend EC2"
-#type        = string
-#}
 
 variable "frontend_associate_public_ip" {
   description = "Associate public IP with frontend instance"
@@ -80,15 +75,9 @@ variable "frontend_associate_public_ip" {
 }
 
 variable "backend_instance_type" {
-  description = "EC2 instance type for backend (redis, meilisearch, monitoring)"
+  description = "EC2 instance type for backend (flask, ai-agent, redis, meilisearch, monitoring)"
   type        = string
-  default     = "t3.small"
-}
-
-variable "ai_agent_instance_type" {
-  description = "EC2 instance type for AI agent"
-  type        = string
-  default     = "t2.small"
+  default     = "t3.medium"
 }
 
 #variable "backend_key_name" {
@@ -208,30 +197,30 @@ variable "ecs_cluster_name" {
   default     = "service-checker-cluster"
 }
 
-# Frontend Task
+# Frontend Task (Nginx only)
 variable "frontend_task_cpu" {
-  description = "CPU units for frontend task (flask-app + nginx)"
+  description = "CPU units for frontend task (nginx only)"
   type        = number
-  default     = 512 # 0.5 vCPU
+  default     = 256 # 0.25 vCPU — Nginx is lightweight
 }
 
 variable "frontend_task_memory" {
   description = "Memory (MB) for frontend task"
   type        = number
-  default     = 768 # Leave ~256MB for OS
+  default     = 256 # Nginx needs very little
 }
 
-# Backend Task
+# Backend Task (flask + ai-agent + redis + meilisearch + monitoring + analytics)
 variable "backend_task_cpu" {
   description = "CPU units for backend task (all services)"
   type        = number
-  default     = 1536 # 1.5 vCPU
+  default     = 1792 # ~1.75 vCPU
 }
 
 variable "backend_task_memory" {
   description = "Memory (MB) for backend task"
   type        = number
-  default     = 1792 # ~1.75GB for all backend services
+  default     = 3584 # ~3.5GB for all backend services including flask + ai-agent
 }
 
 variable "flask_app_image" {
@@ -276,11 +265,7 @@ variable "lambda_ai_agent_function_name" {
   default     = "ai-agent-control"
 }
 
-variable "lambda_ai_chat_proxy_function_name" {
-  description = "Lambda function name for AI chat proxy"
-  type        = string
-  default     = "ai-chat-proxy"
-}
+
 
 variable "ai_chat_api_key" {
   description = "API key for AI chat endpoints"
@@ -387,6 +372,13 @@ variable "lambda_data_pipeline_name" {
   default     = "data-pipeline"
 }
 
+
+variable "grafana_admin_user" {
+  description = "Grafana admin username"
+  type        = string
+  default     = "admin"
+  sensitive   = true
+}
 
 variable "grafana_admin_password" {
   description = "Grafana admin password"
