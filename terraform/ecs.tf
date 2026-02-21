@@ -144,11 +144,15 @@ resource "aws_ecs_task_definition" "backend" {
         }
       ]
 
-      environment = [
+      environment = concat([
         { name = "MEILI_HTTP_ADDR", value = "0.0.0.0:7700" },
-        { name = "MEILI_ENV", value = "production" },
+        { name = "MEILI_ENV", value = var.meilisearch_master_key != "" ? "production" : "development" },
         { name = "MEILI_NO_ANALYTICS", value = "true" }
-      ]
+      ],
+        var.meilisearch_master_key != "" ? [
+          { name = "MEILI_MASTER_KEY", value = var.meilisearch_master_key }
+        ] : []
+      )
 
       healthCheck = {
         command     = ["CMD-SHELL", "curl -f http://localhost:7700/health || exit 1"]
