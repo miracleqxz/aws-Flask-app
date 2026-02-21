@@ -13,11 +13,6 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-
-# ═══════════════════════════════════════════
-#  FRONTEND TASK: Nginx only (reverse proxy)
-# ═══════════════════════════════════════════
-
 resource "aws_ecs_task_definition" "frontend" {
   family                   = "${var.project_name}-frontend"
   network_mode             = "host"
@@ -77,10 +72,6 @@ resource "aws_ecs_task_definition" "frontend" {
 }
 
 
-# ═══════════════════════════════════════════
-#  BACKEND TASK: Flask + AI Agent + Redis + Meilisearch + Monitoring + Analytics
-# ═══════════════════════════════════════════
-
 resource "aws_ecs_task_definition" "backend" {
   family                   = "${var.project_name}-backend"
   network_mode             = "host"
@@ -92,7 +83,6 @@ resource "aws_ecs_task_definition" "backend" {
   memory = var.backend_task_memory
 
   container_definitions = jsonencode([
-    # ── Redis ──
     {
       name              = "redis"
       image             = var.redis_image
@@ -127,7 +117,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── Meilisearch ──
     {
       name              = "meilisearch"
       image             = var.meilisearch_image
@@ -172,7 +161,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── VictoriaMetrics ──
     {
       name              = "victoriametrics"
       image             = var.victoriametrics_image
@@ -213,7 +201,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── Grafana ──
     {
       name              = "grafana"
       image             = var.grafana_image
@@ -251,7 +238,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── Flask App (main web application) ──
     {
       name              = "flask-app"
       image             = var.flask_app_image
@@ -331,7 +317,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── AI Agent ──
     {
       name              = "ai-agent"
       image             = var.ai_agent_image
@@ -399,7 +384,6 @@ resource "aws_ecs_task_definition" "backend" {
       }
     },
 
-    # ── Analytics Worker (SQS consumer) ──
     {
       name              = "analytics-worker"
       image             = var.flask_app_image
@@ -457,9 +441,6 @@ resource "aws_ecs_task_definition" "backend" {
 }
 
 
-# ═══════════════════════════════════════════
-#  ECS SERVICES
-# ═══════════════════════════════════════════
 
 resource "aws_ecs_service" "frontend" {
   name            = "${var.project_name}-frontend-service"
