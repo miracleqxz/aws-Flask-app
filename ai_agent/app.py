@@ -627,6 +627,6 @@ if __name__ == '__main__':
 
     app.run(
         host='0.0.0.0',  # nosec B104 - Required for container/EC2 to accept connections
-        port=5000,
+        port=int(os.getenv('AI_AGENT_PORT', '5001')),
         debug=False
     )
