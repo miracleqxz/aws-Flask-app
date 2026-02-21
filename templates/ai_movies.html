@@ -1196,8 +1196,9 @@
                 removeSplitTyping();
 
                 if (data.message) {
-                    addSplitMsg(data.message, 'assistant');
-                    chatHistory.push({ role: 'assistant', content: data.message });
+                    const displayMsg = data.message.replace(/\[([^\]]+)\]/g, '$1');
+                    addSplitMsg(displayMsg, 'assistant');
+                    chatHistory.push({ role: 'assistant', content: displayMsg });
                 }
 
                 if (data.movie_results) lastMovieResults = data.movie_results;
@@ -1216,16 +1217,25 @@
 
         function showBestMatch(query, msg, movies) {
             if (!movies || movies.length === 0) return;
-            const q = query.toLowerCase().trim();
-            const messageText = (msg || '').toLowerCase();
-
-            let best = movies.find(m => m.title && m.title.toLowerCase() === q);
-            if (!best) {
-                best = movies.find(m => m.title && messageText.includes(m.title.toLowerCase()));
+            const mentionedTitles = [...(msg || '').matchAll(/\[([^\]]+)\]/g)].map(m => m[1].toLowerCase().trim());
+            let mentionedMovies = [];
+            let otherMovies = [];
+            movies.forEach(m => {
+                if (m.title && mentionedTitles.includes(m.title.toLowerCase().trim())) {
+                    mentionedMovies.push(m);
+                } else {
+                    otherMovies.push(m);
+                }
+            });
+            let best;
+            if (mentionedMovies.length > 0) {
+                best = mentionedMovies.shift();
+            } else {
+                const q = query.toLowerCase().trim();
+                best = movies.find(m => m.title && m.title.toLowerCase() === q) || movies[0];
+                otherMovies = otherMovies.filter(m => m.id !== best.id);
             }
-            if (!best) best = movies[0];
-
-            const similar = movies.filter(m => m.id !== best.id);
+            const similar = [...mentionedMovies, ...otherMovies];
             renderSplitDetail(best, similar);
         }
 

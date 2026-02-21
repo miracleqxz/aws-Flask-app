@@ -57,6 +57,7 @@ YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
 
 AI_CHAT_MAX_REQUESTS = int(os.getenv('AI_CHAT_MAX_REQUESTS', '10'))
 AI_CHAT_WINDOW_SECONDS = int(os.getenv('AI_CHAT_WINDOW_SECONDS', '60'))
+AI_CHAT_DAILY_LIMIT = int(os.getenv('AI_CHAT_DAILY_LIMIT', '100'))
 AI_CHAT_IDLE_TIMEOUT_MINUTES = int(os.getenv('AI_CHAT_IDLE_TIMEOUT_MINUTES', '5'))
 
 MAX_TOOL_CALL_ROUNDS = 5
@@ -112,28 +113,51 @@ def send_heartbeat():
 
 # --- Rate limiter with Lua script (atomic) ---
 RATE_LIMIT_LUA = """
-local key = KEYS[1]
+local short_key = KEYS[1]
+local daily_key = KEYS[2]
+
 local max_requests = tonumber(ARGV[1])
 local window = tonumber(ARGV[2])
-local now = tonumber(ARGV[3])
+local max_daily_requests = tonumber(ARGV[3])
+local daily_window = tonumber(ARGV[4])
+local now = tonumber(ARGV[5])
 
-redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
-local count = redis.call('ZCARD', key)
+-- Check short-term limit
+redis.call('ZREMRANGEBYSCORE', short_key, 0, now - window)
+local short_count = redis.call('ZCARD', short_key)
 
-if count >= max_requests then
-    local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+if short_count >= max_requests then
+    local oldest = redis.call('ZRANGE', short_key, 0, 0, 'WITHSCORES')
     local reset_at = 0
     if #oldest > 0 then
         reset_at = tonumber(oldest[2]) + window
     end
-    return {0, 0, reset_at}
+    return {0, 0, reset_at, 'minute'}
 end
 
-redis.call('ZADD', key, now, tostring(now) .. ':' .. tostring(math.random(100000)))
-redis.call('EXPIRE', key, window)
+-- Check daily limit
+redis.call('ZREMRANGEBYSCORE', daily_key, 0, now - daily_window)
+local daily_count = redis.call('ZCARD', daily_key)
 
-local remaining = max_requests - count - 1
-return {1, remaining, now + window}
+if daily_count >= max_daily_requests then
+    local oldest = redis.call('ZRANGE', daily_key, 0, 0, 'WITHSCORES')
+    local reset_at = 0
+    if #oldest > 0 then
+        reset_at = tonumber(oldest[2]) + daily_window
+    end
+    return {0, 0, reset_at, 'daily'}
+end
+
+-- If both pass, record the request in both windows
+local req_id = tostring(now) .. ':' .. tostring(math.random(100000))
+redis.call('ZADD', short_key, now, req_id)
+redis.call('EXPIRE', short_key, window)
+
+redis.call('ZADD', daily_key, now, req_id)
+redis.call('EXPIRE', daily_key, daily_window)
+
+local remaining = max_requests - short_count - 1
+return {1, remaining, now + window, 'ok'}
 """
 
 
@@ -142,26 +166,38 @@ def check_rate_limit(user_id):
     if not r:
         return {'allowed': True, 'remaining': AI_CHAT_MAX_REQUESTS}
 
-    key = f"ai_chat_rate_limit:{user_id}"
+    short_key = f"ai_chat_rate_limit:{user_id}"
+    daily_key = f"ai_chat_daily_limit:{user_id}"
     current_time = time.time()
+    
+    # 24 hours in seconds
+    daily_window = 24 * 60 * 60
 
     try:
         result = r.eval(
-            RATE_LIMIT_LUA, 1, key,
-            AI_CHAT_MAX_REQUESTS, AI_CHAT_WINDOW_SECONDS, current_time
+            RATE_LIMIT_LUA, 2, short_key, daily_key,
+            AI_CHAT_MAX_REQUESTS, AI_CHAT_WINDOW_SECONDS, 
+            AI_CHAT_DAILY_LIMIT, daily_window, current_time
         )
 
         allowed = int(result[0]) == 1
         remaining = max(0, int(result[1]))
         reset_at = int(result[2])
+        limit_type = result[3]
 
         if not allowed:
             remaining_seconds = reset_at - int(current_time)
+            msg = f'Rate limit exceeded. Try again in {remaining_seconds} seconds.'
+            if limit_type == 'daily':
+                hours = remaining_seconds // 3600
+                mins = (remaining_seconds % 3600) // 60
+                msg = f'Daily limit reached ({AI_CHAT_DAILY_LIMIT} messages). Try again in {hours}h {mins}m.'
+            
             return {
                 'allowed': False,
                 'remaining': 0,
                 'reset_at': reset_at,
-                'message': f'Rate limit exceeded. Try again in {remaining_seconds} seconds.'
+                'message': msg
             }
 
         return {
