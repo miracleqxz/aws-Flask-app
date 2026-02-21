@@ -1205,7 +1205,7 @@
                 if (data.movie_detail) {
                     renderSplitDetail(data.movie_detail, data.movie_results || []);
                 } else if (data.movie_results && data.movie_results.length > 0) {
-                    showBestMatch(text, data.movie_results);
+                    showBestMatch(text, data.message, data.movie_results);
                 }
 
             } catch (e) {
@@ -1214,13 +1214,17 @@
             }
         }
 
-        function showBestMatch(query, movies) {
+        function showBestMatch(query, msg, movies) {
             if (!movies || movies.length === 0) return;
             const q = query.toLowerCase().trim();
-            // Try to find exact title match first (if user typed exactly the movie name)
+            const messageText = (msg || '').toLowerCase();
+
             let best = movies.find(m => m.title && m.title.toLowerCase() === q);
-            // Fallback: simply take the first movie from the results (AI agent already sorts/ranks them)
+            if (!best) {
+                best = movies.find(m => m.title && messageText.includes(m.title.toLowerCase()));
+            }
             if (!best) best = movies[0];
+
             const similar = movies.filter(m => m.id !== best.id);
             renderSplitDetail(best, similar);
         }
