@@ -4,6 +4,7 @@ import json
 import logging
 import threading
 import time
+import re
 from datetime import datetime, timezone
 
 import redis
@@ -576,6 +577,16 @@ def chat():
                 for part in final_response.candidates[0].content.parts:
                     if hasattr(part, 'text') and part.text:
                         assistant_message_content = part.text
+
+        # Fallback: if model generated text with [movie] but didn't actually call search
+        if not movie_results and assistant_message_content:
+            matches = re.findall(r'\[([^\]]+)\]', assistant_message_content)
+            if matches:
+                fallback_title = matches[0]
+                logger.info(f"Fallback search triggered for unsearched title: {fallback_title}")
+                movies = search_movies(fallback_title, limit=5)
+                if movies:
+                    movie_results.extend(movies)
 
         return jsonify({
             'message': assistant_message_content,
