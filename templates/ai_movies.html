@@ -1215,14 +1215,13 @@
         }
 
         function showBestMatch(query, movies) {
+            if (!movies || movies.length === 0) return;
             const q = query.toLowerCase().trim();
-            // Find exact title match first
+            // Try to find exact title match first (if user typed exactly the movie name)
             let best = movies.find(m => m.title && m.title.toLowerCase() === q);
-            // Fallback: find title that starts with query
-            if (!best) best = movies.find(m => m.title && m.title.toLowerCase().startsWith(q));
-            // Fallback: highest-rated
-            if (!best) best = movies.reduce((a, b) => (parseFloat(b.rating) || 0) > (parseFloat(a.rating) || 0) ? b : a, movies[0]);
-            const similar = movies.filter(m => m.id !== best.id).sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+            // Fallback: simply take the first movie from the results (AI agent already sorts/ranks them)
+            if (!best) best = movies[0];
+            const similar = movies.filter(m => m.id !== best.id);
             renderSplitDetail(best, similar);
         }
 
