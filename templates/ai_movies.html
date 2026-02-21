@@ -1099,7 +1099,11 @@
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
 
-                if (data.message) chatHistory.push({ role: 'assistant', content: data.message });
+                if (data.message) {
+                    const displayMsg = data.message.replace(/\[([^\]]+)\]/g, '$1');
+                    chatHistory.push({ role: 'assistant', content: displayMsg });
+                    data._display_message = displayMsg;
+                }
 
                 if (data.movie_detail || (data.movie_results && data.movie_results.length > 0) || data.message) {
                     openSplit(text, data);
@@ -1120,7 +1124,9 @@
 
             $splitChat.innerHTML = '';
             addSplitMsg(userText, 'user');
-            if (data.message) addSplitMsg(data.message, 'assistant');
+            if (data.message) {
+                addSplitMsg(data._display_message || data.message.replace(/\[([^\]]+)\]/g, '$1'), 'assistant');
+            }
 
             // Store for similar-movie navigation
             lastMovieResults = data.movie_results || [];
@@ -1128,7 +1134,7 @@
             if (data.movie_detail) {
                 renderSplitDetail(data.movie_detail, lastMovieResults);
             } else if (lastMovieResults.length > 0) {
-                showBestMatch(userText, lastMovieResults);
+                showBestMatch(userText, data.message, lastMovieResults);
             } else {
                 $splitContent.innerHTML = '<div class="loading-state">No results to show yet</div>';
                 $splitTitle.textContent = 'Chat';
