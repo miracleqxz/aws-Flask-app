@@ -2,7 +2,7 @@
 
 Guidy is an AI-powered movie recommendation platform deployed on AWS using Terraform. It features a modern web interface, a fast search engine, and an intelligent chat assistant that helps users find the perfect movie based on their mood or preferences.
 
-I developed this project to explore the practical integration of LLMs into web applications and to practice creating, configuring, and maintaining a microservice architecture on AWS via Terraform.
+I developed this project to explore the practical integration of LLMs into web applications and to practice creating, configuring, and maintaining a microservice architecture.
 
 ## Key Features
 
